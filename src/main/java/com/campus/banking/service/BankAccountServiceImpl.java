@@ -1,6 +1,7 @@
 package com.campus.banking.service;
 
 
+import com.campus.banking.exception.InsufficientFundsException;
 import com.campus.banking.model.BankAccount;
 
 public class BankAccountServiceImpl implements BankAccountService {
