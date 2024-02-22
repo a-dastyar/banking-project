@@ -9,11 +9,11 @@ public class Main {
         BankAccount account = BankAccount.builder()
                 .accountHolderName("Tester")
                 .accountNumber("1000")
-                .amount(0.0d)
+                .balance(0.0d)
                 .build();
         BankAccountService service = new BankAccountServiceImpl();
         service.deposit(account, 10.0);
 
-        System.out.println(account.getAmount());
+        System.out.println(account.getBalance());
     }
 }

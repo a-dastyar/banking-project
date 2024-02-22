@@ -11,15 +11,15 @@ public class BankAccountServiceImpl implements BankAccountService {
         if (amount < 0) {
             throw new IllegalArgumentException("Can not deposit negative amount");
         }
-        account.setAmount(account.getAmount() + amount);
+        account.setBalance(account.getBalance() + amount);
     }
 
     @Override
     public void withdraw(BankAccount account, double amount) {
-        if (amount < 0 || amount > account.getAmount()) {
+        if (amount < 0 || amount > account.getBalance()) {
             throw new InsufficientFundsException("Can not deposit negative amount");
         }
-        account.setAmount(account.getAmount() - amount);
+        account.setBalance(account.getBalance() - amount);
     }
 
 }
