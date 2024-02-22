@@ -19,14 +19,14 @@ public class CheckingAccountService extends BankAccountServiceImpl {
 
         CheckingAccount checkingAccount = (CheckingAccount)account;
 
-        if (checkingAccount.getOverDraft() > 0.0d) {
+        if (checkingAccount.getDebt() > 0.0d) {
             throw new InsufficientFundsException("Can not withdraw while you have debt");
         }
 
         double balance = checkingAccount.getBalance();
         if (amount > balance &&
             amount <= balance + checkingAccount.getOverDraftLimit()) {
-            checkingAccount.setOverDraft(amount - balance);
+            checkingAccount.setDebt(amount - balance);
             amount = balance;
         }
 

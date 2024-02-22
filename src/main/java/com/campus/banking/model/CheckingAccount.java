@@ -12,11 +12,11 @@ public class CheckingAccount extends BankAccount {
     @Getter
     private double overDraftLimit;
     @Getter @Setter
-    private double overDraft;
+    private double debt;
 
     public CheckingAccount(String accountNumber, String accountHolderName, double balance, double overDraftLimit, double overDraft) {
         super(accountNumber, accountHolderName, balance);
         this.overDraftLimit = overDraftLimit;
-        this.overDraft = overDraft;
+        this.debt = overDraft;
     }
 }
