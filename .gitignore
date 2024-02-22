@@ -88,3 +88,4 @@ nb-configuration.xml
 ## File system
 ##############################
 .directory
+database.json
