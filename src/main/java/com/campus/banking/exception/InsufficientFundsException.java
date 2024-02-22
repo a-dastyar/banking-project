@@ -1,4 +1,4 @@
-package com.campus.banking.service;
+package com.campus.banking.exception;
 
 import lombok.experimental.StandardException;
 
