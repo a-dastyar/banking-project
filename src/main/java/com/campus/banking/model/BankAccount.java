@@ -17,6 +17,6 @@ public class BankAccount {
     private double balance;
 
     public BankAccount(String accountNumber, String accountHolderName) {
-        this(accountNumber, accountHolderName, 0.0f);
+        this(accountNumber, accountHolderName, 0.0d);
     }
 }
