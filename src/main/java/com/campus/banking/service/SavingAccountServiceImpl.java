@@ -24,7 +24,7 @@ public class SavingAccountServiceImpl extends BankAccountServiceImpl implements 
 
     @Override
     public void applyInterest(SavingAccount account) {
-        double interest = account.getBalance() * account.getInterestRate();
+        double interest = account.getBalance() * SavingAccount.INTEREST_RATE;
 
         deposit(account, interest);
     }
