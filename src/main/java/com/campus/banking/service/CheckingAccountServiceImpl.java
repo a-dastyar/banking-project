@@ -16,6 +16,8 @@ public class CheckingAccountServiceImpl extends BankAccountServiceImpl implement
 
         amount = payDebt(checkingAccount, amount);
 
+        withdraw(checkingAccount, 0);
+
         super.deposit(checkingAccount, amount);
     }
 
@@ -27,13 +29,20 @@ public class CheckingAccountServiceImpl extends BankAccountServiceImpl implement
 
         CheckingAccount checkingAccount = (CheckingAccount)account;
 
-        if (checkingAccount.getDebt() > 0.0d) {
-            throw new InsufficientFundsException("Can not withdraw while you have debt");
+        if (checkingAccount.getDebt() == checkingAccount.getOverDraftLimit()) {
+            throw new InsufficientFundsException("Can not withdraw while you have maximum debt");
+        }
+
+        if (amount + CheckingAccount.TRANSACTION_FEE + checkingAccount.getDebt() > account.getBalance() + checkingAccount.getOverDraftLimit()) {
+            throw new InsufficientFundsException("Can not withdraw more than your balance: " + checkingAccount.getBalance() + " + your over draft limit: " + checkingAccount.getOverDraftLimit());
         }
 
         amount = getOverDraft(checkingAccount, amount);
 
-        super.withdraw(checkingAccount, amount);
+        if (checkingAccount.getBalance() != 0.0d) {
+            super.withdraw(checkingAccount, amount);
+            super.withdraw(checkingAccount, CheckingAccount.TRANSACTION_FEE);
+        }
     }
 
     private double payDebt(CheckingAccount checkingAccount, double amount) {
@@ -53,10 +62,13 @@ public class CheckingAccountServiceImpl extends BankAccountServiceImpl implement
 
     private double getOverDraft(CheckingAccount checkingAccount, double amount) {
         double balance = checkingAccount.getBalance();
-        if (amount > balance &&
-            amount <= balance + checkingAccount.getOverDraftLimit()) {
-                checkingAccount.setDebt(amount - balance);
-                amount = balance;
+        double debt = checkingAccount.getDebt();
+        int fee = CheckingAccount.TRANSACTION_FEE;
+
+        if (amount + fee > balance &&
+            amount + fee <= balance + checkingAccount.getOverDraftLimit() - debt) {
+                checkingAccount.setDebt(debt + amount + fee - balance);
+                amount = balance - fee;
         }
 
         return amount;
