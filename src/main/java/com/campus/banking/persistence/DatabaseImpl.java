@@ -10,9 +10,12 @@ import java.util.concurrent.locks.ReentrantLock;
 import com.campus.banking.exception.LoadFailureException;
 import com.campus.banking.exception.SaveFailureException;
 import com.campus.banking.model.BankAccount;
+import com.campus.banking.model.SavingAccount;
 import com.campus.banking.utils.AutoCloseableLock;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
+import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 
 public enum DatabaseImpl implements Database {
     INSTANCE;
@@ -21,6 +24,14 @@ public enum DatabaseImpl implements Database {
     private ObjectMapper mapper = new ObjectMapper();
     private AutoCloseableLock lock = new AutoCloseableLock(new ReentrantLock());
     private String filePath = "database.json";
+
+    // {
+    //     PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
+    //             .allowIfBaseType(BankAccount.class)
+    //             .allowIfSubType(SavingAccount.class)
+    //             .build();
+    //     mapper.activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.NON_FINAL);
+    // }
 
     @Override
     public void add(BankAccount account) {
@@ -51,17 +62,18 @@ public enum DatabaseImpl implements Database {
     @Override
     public void persist() throws SaveFailureException {
         try (var l = lock.lock()) {
-            mapper.writerWithDefaultPrettyPrinter()
+            mapper.writerFor(new TypeReference<Map<String, BankAccount>>() {})
+                    .withDefaultPrettyPrinter()
                     .writeValue(new File(this.filePath), map);
         } catch (IOException e) {
             throw new SaveFailureException(e);
-        } 
+        }
     }
 
     @Override
     public void load() throws LoadFailureException {
         try (var l = lock.lock()) {
-            map = (Map<String, BankAccount>) mapper.readValue(new File(this.filePath), new TypeReference<Map<String,BankAccount>>(){});
+            map =mapper.readValue(new File(this.filePath),new TypeReference<Map<String, BankAccount>>() {});
         } catch (IOException e) {
             throw new LoadFailureException(e);
         }
