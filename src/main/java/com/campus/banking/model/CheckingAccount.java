@@ -1,7 +1,5 @@
 package com.campus.banking.model;
 
-import com.fasterxml.jackson.annotation.JsonTypeName;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -16,7 +14,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class CheckingAccount extends BankAccount {
-    
+
     public static final int TRANSACTION_FEE = 100;
 
     private double overDraftLimit;

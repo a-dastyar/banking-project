@@ -1,7 +1,5 @@
 package com.campus.banking.model;
 
-import com.fasterxml.jackson.annotation.JsonTypeName;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
