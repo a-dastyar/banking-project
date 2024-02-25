@@ -19,16 +19,25 @@ public class Main {
         System.out.println(account.getBalance());
 
 
-        CheckingAccount checkingAccount = new CheckingAccount("1001", "CheckingTester", 10.0d, 10.0d, 0.0d);
+        CheckingAccount checkingAccount = new CheckingAccount("1001", "CheckingTester", 110.0d, 10.0d, 0.0d);
         CheckingAccountServiceImpl checkingAccountService = new CheckingAccountServiceImpl();
 
         checkingAccountService.withdraw(checkingAccount, 5.0d);
-        System.out.println(checkingAccount.getBalance());
-        
-        checkingAccountService.withdraw(checkingAccount, 10.0d);
-        System.out.println(checkingAccount.getBalance());
+        System.out.println(checkingAccount.getBalance() + " | " + checkingAccount.getDebt());
 
-        checkingAccountService.withdraw(checkingAccount, 5.0d);
-        System.out.println(checkingAccount.getBalance());
+
+        CheckingAccount checkingAccount2 = new CheckingAccount("null", "null", 10000, 100000, 0);
+
+        checkingAccountService.withdraw(checkingAccount2, 100000);
+        System.out.println(checkingAccount2.getBalance() + " | " + checkingAccount2.getDebt());
+
+        checkingAccountService.withdraw(checkingAccount2, 9800);
+        System.out.println(checkingAccount2.getBalance() + " | " + checkingAccount2.getDebt());
+
+        checkingAccountService.deposit(checkingAccount2, 100);
+        System.out.println(checkingAccount2.getBalance() + " | " + checkingAccount2.getDebt());
+
+        checkingAccountService.deposit(checkingAccount2, 101);
+        System.out.println(checkingAccount2.getBalance() + " | " + checkingAccount2.getDebt());
     }
 }
