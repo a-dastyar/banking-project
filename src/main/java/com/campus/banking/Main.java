@@ -4,7 +4,7 @@ import com.campus.banking.model.BankAccount;
 import com.campus.banking.model.CheckingAccount;
 import com.campus.banking.service.BankAccountService;
 import com.campus.banking.service.BankAccountServiceImpl;
-import com.campus.banking.service.CheckingAccountService;
+import com.campus.banking.service.CheckingAccountServiceImpl;
 
 public class Main {
     public static void main(String[] args) {
@@ -20,7 +20,7 @@ public class Main {
 
 
         CheckingAccount checkingAccount = new CheckingAccount("1001", "CheckingTester", 10.0d, 10.0d, 0.0d);
-        CheckingAccountService checkingAccountService = new CheckingAccountService();
+        CheckingAccountServiceImpl checkingAccountService = new CheckingAccountServiceImpl();
 
         checkingAccountService.withdraw(checkingAccount, 5.0d);
         System.out.println(checkingAccount.getBalance());

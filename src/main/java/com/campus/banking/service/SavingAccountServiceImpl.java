@@ -5,7 +5,7 @@ import com.campus.banking.exception.InvalidTransactionException;
 import com.campus.banking.model.BankAccount;
 import com.campus.banking.model.SavingAccount;
 
-public class SavingAccountService extends BankAccountServiceImpl {
+public class SavingAccountServiceImpl extends BankAccountServiceImpl {
     @Override
     public void deposit(BankAccount account, double amount) {
         super.deposit(account, amount);
