@@ -14,17 +14,9 @@ public class CheckingAccountServiceImpl extends BankAccountServiceImpl implement
 
         CheckingAccount checkingAccount = (CheckingAccount)account;
 
-        double debt = checkingAccount.getDebt();
-        if (debt > 0.0d && amount > 0.0d) {
-            if (amount >= debt) {
-                checkingAccount.setDebt(0.0d);
-                amount -= debt;
-            } else {
-                checkingAccount.setDebt(debt - amount);
-                amount = 0.0d;
-            }
-        }
-        super.deposit(account, amount);
+        amount = payDebt(checkingAccount, amount);
+
+        super.deposit(checkingAccount, amount);
     }
 
     @Override
@@ -39,6 +31,27 @@ public class CheckingAccountServiceImpl extends BankAccountServiceImpl implement
             throw new InsufficientFundsException("Can not withdraw while you have debt");
         }
 
+        amount = getOverDraft(checkingAccount, amount);
+
+        super.withdraw(checkingAccount, amount);
+    }
+
+    private double payDebt(CheckingAccount checkingAccount, double amount) {
+        double debt = checkingAccount.getDebt();
+        if (debt > 0.0d && amount > 0.0d) {
+            if (amount >= debt) {
+                checkingAccount.setDebt(0.0d);
+                amount -= debt;
+            } else {
+                checkingAccount.setDebt(debt - amount);
+                amount = 0.0d;
+            }
+        }
+
+        return amount;
+    }
+
+    private double getOverDraft(CheckingAccount checkingAccount, double amount) {
         double balance = checkingAccount.getBalance();
         if (amount > balance &&
             amount <= balance + checkingAccount.getOverDraftLimit()) {
@@ -46,6 +59,6 @@ public class CheckingAccountServiceImpl extends BankAccountServiceImpl implement
                 amount = balance;
         }
 
-        super.withdraw(checkingAccount, amount);
+        return amount;
     }
 }
