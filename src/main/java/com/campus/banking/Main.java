@@ -1,43 +1,52 @@
 package com.campus.banking;
 
+import com.campus.banking.exception.LoadFailureException;
+import com.campus.banking.exception.SaveFailureException;
 import com.campus.banking.model.BankAccount;
 import com.campus.banking.model.CheckingAccount;
+import com.campus.banking.persistence.BankAccountDAO;
+import com.campus.banking.persistence.BankAccountDAOImpl;
+import com.campus.banking.persistence.Database;
+import com.campus.banking.persistence.DatabaseImpl;
 import com.campus.banking.service.BankAccountService;
 import com.campus.banking.service.BankAccountServiceImpl;
 import com.campus.banking.service.CheckingAccountServiceImpl;
 
 public class Main {
-    public static void main(String[] args) {
-        BankAccount account = BankAccount.builder()
-                .accountHolderName("Tester")
-                .accountNumber("1000")
-                .balance(0.0d)
-                .build();
-        BankAccountService service = new BankAccountServiceImpl();
-        service.deposit(account, 10.0);
+	public static void main(String[] args) {
+		BankAccount account = BankAccount.builder()
+				.accountHolderName("Tester")
+				.accountNumber("1000")
+				.balance(0.0d)
+				.build();
+		BankAccountService service = new BankAccountServiceImpl();
+		service.deposit(account, 10.0);
+    System.out.println(account.getBalance());
 
-        System.out.println(account.getBalance());
-
-
-        CheckingAccount checkingAccount = new CheckingAccount("1001", "CheckingTester", 110.0d, 10.0d, 0.0d);
-        CheckingAccountServiceImpl checkingAccountService = new CheckingAccountServiceImpl();
-
-        checkingAccountService.withdraw(checkingAccount, 5.0d);
-        System.out.println(checkingAccount.getBalance() + " | " + checkingAccount.getDebt());
-
-
-        CheckingAccount checkingAccount2 = new CheckingAccount("null", "null", 10000, 100000, 0);
-
-        checkingAccountService.withdraw(checkingAccount2, 100000);
-        System.out.println(checkingAccount2.getBalance() + " | " + checkingAccount2.getDebt());
-
-        checkingAccountService.withdraw(checkingAccount2, 9800);
-        System.out.println(checkingAccount2.getBalance() + " | " + checkingAccount2.getDebt());
-
-        checkingAccountService.deposit(checkingAccount2, 100);
-        System.out.println(checkingAccount2.getBalance() + " | " + checkingAccount2.getDebt());
-
-        checkingAccountService.deposit(checkingAccount2, 101);
-        System.out.println(checkingAccount2.getBalance() + " | " + checkingAccount2.getDebt());
-    }
+		Database db = DatabaseImpl.INSTANCE;
+		BankAccountDAO dao = new BankAccountDAOImpl(db);
+		
+		String owner = dao.findByAccountNumber(account.getAccountNumber())
+				.map(BankAccount::getAccountHolderName)
+				.orElse("Not Found");
+		System.out.println("Before adding: Account number " + account.getAccountNumber() + " in database "
+				+ owner);
+		dao.add(account);
+		owner = dao.findByAccountNumber(account.getAccountNumber())
+				.map(BankAccount::getAccountHolderName)
+				.orElse("Not Found");
+		System.out.println(
+				"After adding: Account number " + account.getAccountNumber() + " in database " + owner);
+		try {
+			db.persist();
+		} catch (SaveFailureException e) {
+			System.err.println("Failed to save to file");
+		}
+		try {
+			db.load();
+		} catch (LoadFailureException e) {
+			System.err.println("Failed to read from file");
+		}
+		dao.list().forEach(System.out::println);
+	}
 }
