@@ -5,12 +5,7 @@ import com.campus.banking.exception.InvalidTransactionException;
 import com.campus.banking.model.BankAccount;
 import com.campus.banking.model.SavingAccount;
 
-public class SavingAccountServiceImpl extends BankAccountServiceImpl {
-    @Override
-    public void deposit(BankAccount account, double amount) {
-        super.deposit(account, amount);
-    }
-
+public class SavingAccountServiceImpl extends BankAccountServiceImpl implements SavingAccountService {
     @Override
     public void withdraw(BankAccount account, double amount) {
         if (!(account instanceof SavingAccount)) {
@@ -25,5 +20,12 @@ public class SavingAccountServiceImpl extends BankAccountServiceImpl {
         }
 
         super.withdraw(savingAccount, amount);
+    }
+
+    @Override
+    public void applyInterest(SavingAccount account) {
+        double interest = account.getBalance() * account.getInterestRate();
+
+        deposit(account, interest);
     }
 }
