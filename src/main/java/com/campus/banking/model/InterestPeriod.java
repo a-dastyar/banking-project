@@ -1,6 +1,6 @@
-package com.campus.banking.utils;
+package com.campus.banking.model;
 
-public enum InterestType {
+public enum InterestPeriod {
     MONTHLY,
     YEARLY
 }
