@@ -14,9 +14,9 @@ import lombok.With;
 public class BankAccount {
     private String accountNumber;
     private String accountHolderName;
-    private double amount;
+    private double balance;
 
     public BankAccount(String accountNumber, String accountHolderName) {
-        this(accountNumber, accountHolderName, 0.0f);
+        this(accountNumber, accountHolderName, 0.0d);
     }
 }

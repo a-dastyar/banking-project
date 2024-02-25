@@ -3,23 +3,25 @@ package com.campus.banking;
 import com.campus.banking.exception.LoadFailureException;
 import com.campus.banking.exception.SaveFailureException;
 import com.campus.banking.model.BankAccount;
+import com.campus.banking.model.CheckingAccount;
 import com.campus.banking.persistence.BankAccountDAO;
 import com.campus.banking.persistence.BankAccountDAOImpl;
 import com.campus.banking.persistence.Database;
 import com.campus.banking.persistence.DatabaseImpl;
 import com.campus.banking.service.BankAccountService;
 import com.campus.banking.service.BankAccountServiceImpl;
+import com.campus.banking.service.CheckingAccountServiceImpl;
 
 public class Main {
 	public static void main(String[] args) {
 		BankAccount account = BankAccount.builder()
 				.accountHolderName("Tester")
 				.accountNumber("1000")
-				.amount(0.0d)
+				.balance(0.0d)
 				.build();
 		BankAccountService service = new BankAccountServiceImpl();
 		service.deposit(account, 10.0);
-		System.out.println(account.getAmount());
+    System.out.println(account.getBalance());
 
 		Database db = DatabaseImpl.INSTANCE;
 		BankAccountDAO dao = new BankAccountDAOImpl(db);
