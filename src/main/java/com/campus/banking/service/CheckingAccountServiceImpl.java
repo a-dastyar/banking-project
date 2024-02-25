@@ -5,9 +5,25 @@ import com.campus.banking.exception.InvalidAccountTypeException;
 import com.campus.banking.model.BankAccount;
 import com.campus.banking.model.CheckingAccount;
 
-public class CheckingAccountServiceImpl extends BankAccountServiceImpl {
+public class CheckingAccountServiceImpl extends BankAccountServiceImpl implements CheckingAccountService {
     @Override
     public void deposit(BankAccount account, double amount) {
+        if (!(account instanceof CheckingAccount)) {
+            throw new InvalidAccountTypeException("BankAccount type must be from type CheckingAccount");
+        }
+
+        CheckingAccount checkingAccount = (CheckingAccount)account;
+
+        double debt = checkingAccount.getDebt();
+        if (debt > 0.0d && amount > 0.0d) {
+            if (amount >= debt) {
+                checkingAccount.setDebt(0.0d);
+                amount -= debt;
+            } else {
+                checkingAccount.setDebt(debt - amount);
+                amount = 0.0d;
+            }
+        }
         super.deposit(account, amount);
     }
 
@@ -26,8 +42,8 @@ public class CheckingAccountServiceImpl extends BankAccountServiceImpl {
         double balance = checkingAccount.getBalance();
         if (amount > balance &&
             amount <= balance + checkingAccount.getOverDraftLimit()) {
-            checkingAccount.setDebt(amount - balance);
-            amount = balance;
+                checkingAccount.setDebt(amount - balance);
+                amount = balance;
         }
 
         super.withdraw(checkingAccount, amount);
