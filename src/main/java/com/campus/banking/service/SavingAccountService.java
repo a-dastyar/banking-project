@@ -1,5 +1,6 @@
 package com.campus.banking.service;
 
+import com.campus.banking.exception.InvalidAccountTypeException;
 import com.campus.banking.exception.InvalidTransactionException;
 import com.campus.banking.model.BankAccount;
 import com.campus.banking.model.SavingAccount;
@@ -13,8 +14,7 @@ public class SavingAccountService extends BankAccountServiceImpl {
     @Override
     public void withdraw(BankAccount account, double amount) {
         if (!(account instanceof SavingAccount)) {
-            // TODO: make an exception type
-            return;
+            throw new InvalidAccountTypeException("BankAccount type must be from type SavingAccount");
         }
 
         SavingAccount savingAccount = (SavingAccount)account;

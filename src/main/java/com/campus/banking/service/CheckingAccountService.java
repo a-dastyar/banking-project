@@ -1,6 +1,7 @@
 package com.campus.banking.service;
 
 import com.campus.banking.exception.InsufficientFundsException;
+import com.campus.banking.exception.InvalidAccountTypeException;
 import com.campus.banking.model.BankAccount;
 import com.campus.banking.model.CheckingAccount;
 
@@ -13,8 +14,7 @@ public class CheckingAccountService extends BankAccountServiceImpl {
     @Override
     public void withdraw(BankAccount account, double amount) {
         if (!(account instanceof CheckingAccount)) {
-            // TODO: make an exception type
-            return;
+            throw new InvalidAccountTypeException("BankAccount type must be from type CheckingAccount");
         }
 
         CheckingAccount checkingAccount = (CheckingAccount)account;
