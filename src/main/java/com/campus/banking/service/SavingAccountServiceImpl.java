@@ -26,6 +26,6 @@ public class SavingAccountServiceImpl extends BankAccountServiceImpl implements 
     public void applyInterest(SavingAccount account) {
         double interest = account.getBalance() * SavingAccount.INTEREST_RATE;
 
-        deposit(account, interest);
+        super.deposit(account, interest);
     }
 }
