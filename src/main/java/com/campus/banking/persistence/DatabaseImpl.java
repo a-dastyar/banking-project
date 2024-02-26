@@ -24,18 +24,27 @@ public enum DatabaseImpl implements Database {
 
     @Override
     public void add(BankAccount account) {
+        if (account == null || account.getAccountNumber() == null || account.getAccountNumber().isBlank()) {
+            throw new IllegalArgumentException("Account and account number can not be null or blank");
+        }
         try (var l = lock.lock()) {
             map.put(account.getAccountNumber(), account);
         }
     }
-
+    
     @Override
     public BankAccount get(String accountNumber) {
+        if(accountNumber==null || accountNumber.isEmpty()){
+            throw new IllegalArgumentException("Account number can not be null or blank");
+        }
         return map.get(accountNumber);
     }
 
     @Override
     public void remove(String accountNumber) {
+        if(accountNumber==null || accountNumber.isEmpty()){
+            throw new IllegalArgumentException("Account number can not be null or blank");
+        }
         try (var l = lock.lock()) {
             map.remove(accountNumber);
         }
