@@ -51,7 +51,8 @@ public enum DatabaseImpl implements Database {
     @Override
     public void persist() throws SaveFailureException {
         try (var l = lock.lock()) {
-            mapper.writerFor(new TypeReference<Map<String, BankAccount>>() {})
+            mapper.writerFor(new TypeReference<Map<String, BankAccount>>() {
+            })
                     .withDefaultPrettyPrinter()
                     .writeValue(new File(this.filePath), map);
         } catch (IOException e) {
@@ -62,9 +63,18 @@ public enum DatabaseImpl implements Database {
     @Override
     public void load() throws LoadFailureException {
         try (var l = lock.lock()) {
-            map =mapper.readValue(new File(this.filePath),new TypeReference<Map<String, BankAccount>>() {});
+            map = mapper.readValue(new File(this.filePath), new TypeReference<Map<String, BankAccount>>() {
+            });
         } catch (IOException e) {
             throw new LoadFailureException(e);
+        }
+    }
+
+    @Override
+    public void clear() throws SaveFailureException {
+        try (var l = lock.lock()) {
+            map = new HashMap<>();
+            persist();
         }
     }
 

@@ -13,11 +13,12 @@ public interface Database {
     BankAccount get(String accountNumber);
 
     void remove(String accountNumber);
-    
+
     List<BankAccount> list();
 
     void persist() throws SaveFailureException;
 
     void load() throws LoadFailureException;
 
+    void clear() throws SaveFailureException;
 }
