@@ -137,10 +137,10 @@ public class CheckingAccountServiceTest {
     @Test
     void deposit_withDifferentAccountType_shouldFail() {
         var account = BankAccount.builder()
-                .balance(10.0)
+                .balance(1000.0)
                 .build();
-        assertThatThrownBy(() -> service.deposit(account, CheckingAccount.TRANSACTION_FEE - 1.0))
-                .isInstanceOf(LessThanMinimumTransactionException.class);
+        assertThatThrownBy(() -> service.deposit(account, 200))
+                .isInstanceOf(InvalidAccountTypeException.class);
     }
 
     @Test
