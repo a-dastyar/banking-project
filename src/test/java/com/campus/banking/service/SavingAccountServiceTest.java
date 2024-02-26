@@ -84,4 +84,25 @@ public class SavingAccountServiceTest {
         service.deposit(account, 10.0);
         assertThat(account.getBalance()).isEqualTo(20.0);
     }
+
+    @Test
+    void applyInterest_withZeroBalance_shouldNotChangeBalance(){
+        var balance = 0.0d;
+        var account = SavingAccount.builder()
+                .balance(balance)
+                .minimumBalance(0.0)
+                .build();
+        service.applyInterest(account);
+        assertThat(account.getBalance()).isEqualTo(balance);
+    }
+
+    @Test
+    void applyInterest_witPositiveBalance_shouldAddToBalance(){
+        var account = SavingAccount.builder()
+                .balance(10.0)
+                .minimumBalance(0.0)
+                .build();
+        service.applyInterest(account);
+        assertThat(account.getBalance()).isEqualTo(11.0);
+    }
 }
