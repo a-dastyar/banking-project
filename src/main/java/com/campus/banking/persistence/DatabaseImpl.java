@@ -22,14 +22,6 @@ public enum DatabaseImpl implements Database {
     private AutoCloseableLock lock = new AutoCloseableLock(new ReentrantLock());
     private String filePath = "database.json";
 
-    // {
-    //     PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
-    //             .allowIfBaseType(BankAccount.class)
-    //             .allowIfSubType(SavingAccount.class)
-    //             .build();
-    //     mapper.activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.NON_FINAL);
-    // }
-
     @Override
     public void add(BankAccount account) {
         try (var l = lock.lock()) {
