@@ -25,14 +25,15 @@ public class CheckingAccountServiceImpl extends BankAccountServiceImpl implement
     }
 
     private void doDeposit(CheckingAccount account, double amount) {
-        var debt = account.getDebt();
+        final var DEBT = account.getDebt();
+        var debt = DEBT;
         var balance = account.getBalance();
-        if (account.getDebt() > 0.0d) {
-            if (account.getDebt() >= amount) {
+        if (DEBT > 0.0d) {
+            if (DEBT >= amount) {
                 debt -= amount;
             } else {
                 debt = 0;
-                balance += amount - account.getDebt();
+                balance += amount - DEBT;
             }
         } else {
             balance += amount;
@@ -67,9 +68,10 @@ public class CheckingAccountServiceImpl extends BankAccountServiceImpl implement
     }
 
     private void doWithdraw(CheckingAccount account, double amount) {
+        final var BALANCE = account.getBalance();
         var debt = account.getDebt();
-        var balance = account.getBalance();
-        if (amount > account.getBalance()) {
+        var balance = BALANCE;
+        if (amount > BALANCE) {
             var overdraft = amount - balance;
             debt += overdraft;
             balance -= amount - overdraft;
