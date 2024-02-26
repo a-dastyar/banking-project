@@ -24,18 +24,27 @@ public enum DatabaseImpl implements Database {
 
     @Override
     public void add(BankAccount account) {
+        if (account == null || account.getAccountNumber() == null || account.getAccountNumber().isBlank()) {
+            throw new IllegalArgumentException("Account and account number can not be null or blank");
+        }
         try (var l = lock.lock()) {
             map.put(account.getAccountNumber(), account);
         }
     }
-
+    
     @Override
     public BankAccount get(String accountNumber) {
+        if(accountNumber==null || accountNumber.isEmpty()){
+            throw new IllegalArgumentException("Account number can not be null or blank");
+        }
         return map.get(accountNumber);
     }
 
     @Override
     public void remove(String accountNumber) {
+        if(accountNumber==null || accountNumber.isEmpty()){
+            throw new IllegalArgumentException("Account number can not be null or blank");
+        }
         try (var l = lock.lock()) {
             map.remove(accountNumber);
         }
@@ -51,19 +60,30 @@ public enum DatabaseImpl implements Database {
     @Override
     public void persist() throws SaveFailureException {
         try (var l = lock.lock()) {
-            mapper.writerWithDefaultPrettyPrinter()
+            mapper.writerFor(new TypeReference<Map<String, BankAccount>>() {
+            })
+                    .withDefaultPrettyPrinter()
                     .writeValue(new File(this.filePath), map);
         } catch (IOException e) {
             throw new SaveFailureException(e);
-        } 
+        }
     }
 
     @Override
     public void load() throws LoadFailureException {
         try (var l = lock.lock()) {
-            map = (Map<String, BankAccount>) mapper.readValue(new File(this.filePath), new TypeReference<Map<String,BankAccount>>(){});
+            map = mapper.readValue(new File(this.filePath), new TypeReference<Map<String, BankAccount>>() {
+            });
         } catch (IOException e) {
             throw new LoadFailureException(e);
+        }
+    }
+
+    @Override
+    public void clear() throws SaveFailureException {
+        try (var l = lock.lock()) {
+            map = new HashMap<>();
+            persist();
         }
     }
 

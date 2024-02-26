@@ -1,26 +1,29 @@
 package com.campus.banking.model;
 
-import com.campus.banking.utils.InterestType;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.With;
+import lombok.experimental.SuperBuilder;
 
-// TODO: search about @Builder
-@AllArgsConstructor
 @Data
-@EqualsAndHashCode(callSuper = false)
 @With
+@SuperBuilder
+@AllArgsConstructor
+@NoArgsConstructor
+@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class SavingAccount extends BankAccount {
+
     public static final double INTEREST_RATE = 0.1d;
 
-    private InterestType interestType;
+    private InterestPeriod interestPeriod;
+    
     private double minimumBalance;
 
-    public SavingAccount(String accountNumber, String accountHolderName, double balance, InterestType interestType, double minimumBalance) {
+    public SavingAccount(String accountNumber, String accountHolderName, double balance, InterestPeriod interestPeriod, double minimumBalance) {
         super(accountNumber, accountHolderName, balance);
-        this.interestType = interestType;
+        this.interestPeriod = interestPeriod;
         this.minimumBalance = minimumBalance;
     }
 }
