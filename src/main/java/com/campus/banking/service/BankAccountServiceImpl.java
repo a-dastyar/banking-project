@@ -17,7 +17,7 @@ public class BankAccountServiceImpl implements BankAccountService {
     @Override
     public void withdraw(BankAccount account, double amount) {
         if (amount < 0) {
-            throw new IllegalArgumentException("Can not deposit negative amount");
+            throw new IllegalArgumentException("Can not withdraw negative amount");
         }
         if (amount > account.getBalance()) {
             throw new InsufficientFundsException();
