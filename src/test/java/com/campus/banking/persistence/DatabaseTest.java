@@ -121,7 +121,7 @@ public class DatabaseTest {
     }
 
     @Test
-    void persist_withOneBankAccount_shouldSaveToFile() {
+    void persist_withMultipleBankAccount_shouldSaveToFile() {
         try {
             var account = BankAccount.builder()
                     .accountHolderName("Test")
@@ -142,7 +142,7 @@ public class DatabaseTest {
     }
 
     @Test
-    void persist_withMultipleBankAccount_shouldSaveToFile() {
+    void persist_withOneBankAccount_shouldSaveToFile() {
         try {
             var account = BankAccount.builder()
                     .accountHolderName("Test")
