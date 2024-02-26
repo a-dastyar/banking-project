@@ -17,10 +17,8 @@ public class CheckingAccountServiceImpl extends BankAccountServiceImpl implement
             throw new LessThanMinimumTransactionException();
 
         if (account instanceof CheckingAccount checkingAccount) {
-
             doWithdraw(checkingAccount, CheckingAccount.TRANSACTION_FEE);
             doDeposit(checkingAccount, amount);
-
         } else {
             throw new InvalidAccountTypeException("BankAccount type must be from type CheckingAccount");
         }
@@ -88,7 +86,7 @@ public class CheckingAccountServiceImpl extends BankAccountServiceImpl implement
         // Add overdraft
         amount += (checkingAccount.getOverDraftLimit() - checkingAccount.getDebt());
 
-        // Don't allow to empty the account so that there is not enough amount for
+        // Don't allow to empty the account so that there is enough amount for
         // deposit transaction fee
         amount -= CheckingAccount.TRANSACTION_FEE;
         return amount;
