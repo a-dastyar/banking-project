@@ -6,23 +6,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import org.junit.jupiter.api.Test;
 
 import com.campus.banking.exception.InsufficientFundsException;
-import com.campus.banking.exception.InvalidAccountTypeException;
 import com.campus.banking.exception.LessThanMinimumTransactionException;
-import com.campus.banking.model.BankAccount;
 import com.campus.banking.model.CheckingAccount;
 
 public class CheckingAccountServiceTest {
 
     CheckingAccountService service = new CheckingAccountServiceImpl();
-
-    @Test
-    void withdraw_withDifferentAccountType_shouldFail() {
-        var account = BankAccount.builder()
-                .balance(10.0)
-                .build();
-        assertThatThrownBy(() -> service.withdraw(account, 200.0))
-                .isInstanceOf(InvalidAccountTypeException.class);
-    }
 
     @Test
     void withdraw_withNegativeAmount_shouldFail() {
@@ -132,15 +121,6 @@ public class CheckingAccountServiceTest {
         service.withdraw(account, 500.0);
         assertThat(account.getBalance()).isEqualTo(500.0 - CheckingAccount.TRANSACTION_FEE);
         assertThat(account.getDebt()).isEqualTo(0.0d);
-    }
-
-    @Test
-    void deposit_withDifferentAccountType_shouldFail() {
-        var account = BankAccount.builder()
-                .balance(1000.0)
-                .build();
-        assertThatThrownBy(() -> service.deposit(account, 200))
-                .isInstanceOf(InvalidAccountTypeException.class);
     }
 
     @Test

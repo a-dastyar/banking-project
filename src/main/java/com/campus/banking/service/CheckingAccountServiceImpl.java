@@ -1,27 +1,22 @@
 package com.campus.banking.service;
 
 import com.campus.banking.exception.InsufficientFundsException;
-import com.campus.banking.exception.InvalidAccountTypeException;
 import com.campus.banking.exception.LessThanMinimumTransactionException;
-import com.campus.banking.model.BankAccount;
 import com.campus.banking.model.CheckingAccount;
 
-public class CheckingAccountServiceImpl extends BankAccountServiceImpl implements CheckingAccountService {
-    
+public class CheckingAccountServiceImpl extends BankAccountServiceImpl<CheckingAccount>
+        implements CheckingAccountService {
+
     @Override
-    public void deposit(BankAccount account, double amount) {
+    public void deposit(CheckingAccount account, double amount) {
         if (amount < 0)
             throw new IllegalArgumentException("Can not deposit negative amount");
 
-        if (amount <= CheckingAccount.TRANSACTION_FEE) 
+        if (amount <= CheckingAccount.TRANSACTION_FEE)
             throw new LessThanMinimumTransactionException();
 
-        if (account instanceof CheckingAccount checkingAccount) {
-            doWithdraw(checkingAccount, CheckingAccount.TRANSACTION_FEE);
-            doDeposit(checkingAccount, amount);
-        } else {
-            throw new InvalidAccountTypeException("BankAccount type must be from type CheckingAccount");
-        }
+        doWithdraw(account, CheckingAccount.TRANSACTION_FEE);
+        doDeposit(account, amount);
     }
 
     private void doDeposit(CheckingAccount account, double amount) {
@@ -43,28 +38,21 @@ public class CheckingAccountServiceImpl extends BankAccountServiceImpl implement
     }
 
     @Override
-    public void withdraw(BankAccount account, double amount) {
+    public void withdraw(CheckingAccount account, double amount) {
         if (amount < 0)
             throw new IllegalArgumentException("Can not withdraw negative amount");
 
-        if (amount <= CheckingAccount.TRANSACTION_FEE) 
+        if (amount <= CheckingAccount.TRANSACTION_FEE)
             throw new LessThanMinimumTransactionException();
 
-        if (account instanceof CheckingAccount checkingAccount) {
+        var allowedWithdrawAmount = getAllowedWithdrawAmount(account);
 
-            var allowedWithdrawAmount = getAllowedWithdrawAmount(checkingAccount);
-
-            if (amount + CheckingAccount.TRANSACTION_FEE > allowedWithdrawAmount) {
-                throw new InsufficientFundsException();
-            }
-
-            doWithdraw(checkingAccount, CheckingAccount.TRANSACTION_FEE);
-            doWithdraw(checkingAccount, amount);
-
-        } else {
-            throw new InvalidAccountTypeException("BankAccount type must be from type CheckingAccount");
+        if (amount + CheckingAccount.TRANSACTION_FEE > allowedWithdrawAmount) {
+            throw new InsufficientFundsException();
         }
 
+        doWithdraw(account, CheckingAccount.TRANSACTION_FEE);
+        doWithdraw(account, amount);
     }
 
     private void doWithdraw(CheckingAccount account, double amount) {

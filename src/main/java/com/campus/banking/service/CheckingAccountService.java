@@ -1,5 +1,7 @@
 package com.campus.banking.service;
 
-public interface CheckingAccountService extends BankAccountService {
+import com.campus.banking.model.CheckingAccount;
+
+public interface CheckingAccountService extends BankAccountService<CheckingAccount> {
 
 }

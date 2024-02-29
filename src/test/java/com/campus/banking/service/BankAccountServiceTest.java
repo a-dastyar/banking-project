@@ -10,7 +10,7 @@ import com.campus.banking.model.BankAccount;
 
 public class BankAccountServiceTest {
 
-    BankAccountService service = new BankAccountServiceImpl();
+    BankAccountService<BankAccount> service = new BankAccountServiceImpl<>();
 
     @Test
     void withdraw_withNegativeAmount_shouldFail() {

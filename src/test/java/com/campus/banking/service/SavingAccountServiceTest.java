@@ -5,23 +5,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.Test;
 
-import com.campus.banking.exception.InvalidAccountTypeException;
 import com.campus.banking.exception.InvalidTransactionException;
-import com.campus.banking.model.BankAccount;
 import com.campus.banking.model.SavingAccount;
 
 public class SavingAccountServiceTest {
 
     SavingAccountService service = new SavingAccountServiceImpl();
-
-    @Test
-    void withdraw_withDifferentAccountType_shouldFail() {
-        var account = BankAccount.builder()
-                .balance(10.0)
-                .build();
-        assertThatThrownBy(() -> service.withdraw(account, 5.0))
-                .isInstanceOf(InvalidAccountTypeException.class);
-    }
 
     @Test
     void withdraw_withNegativeAmount_shouldFail() {
