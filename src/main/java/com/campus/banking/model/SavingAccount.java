@@ -15,6 +15,7 @@ import lombok.experimental.SuperBuilder;
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class SavingAccount extends BankAccount {
 
+    // TODO: make interest rate an instance field and make it percentage
     public static final double INTEREST_RATE = 0.1d;
 
     private InterestPeriod interestPeriod;
