@@ -44,18 +44,18 @@ public class DatabaseTest {
                 .accountNumber("10000")
                 .balance(10.0d).build();
         db.add(account);
-        var fromDb = db.get(account.getAccountNumber());
+        var fromDb = db.get(account.getAccountNumber(), BankAccount.class);
         assertThat(fromDb).isEqualTo(account);
     }
 
     @Test
     void get_withNullId_shouldFail() {
-        assertThatThrownBy(() -> db.get(null)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> db.get(null, BankAccount.class)).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void get_withNoneExistingAccountNumber_shouldReturnNull() {
-        var found = db.get("Doesn't exists");
+        var found = db.get("Doesn't exists", BankAccount.class);
         assertThat(found).isNull();
     }
 
@@ -66,7 +66,7 @@ public class DatabaseTest {
                 .accountNumber("10000")
                 .balance(10.0d).build();
         db.add(account);
-        var found = db.get(account.getAccountNumber());
+        var found = db.get(account.getAccountNumber(), BankAccount.class);
         assertThat(found).isEqualTo(account);
     }
 
@@ -83,13 +83,13 @@ public class DatabaseTest {
                 .balance(10.0d).build();
         db.add(account);
         db.remove(account.getAccountNumber());
-        var found = db.get(account.getAccountNumber());
+        var found = db.get(account.getAccountNumber(), BankAccount.class);
         assertThat(found).isNull();
     }
 
     @Test
     void list_withNoAccount_shouldReturnEmptyList() {
-        var list = db.list();
+        var list = db.list(BankAccount.class);
         assertThat(list).isEmpty();
     }
 
@@ -105,7 +105,7 @@ public class DatabaseTest {
                 .balance(10.0d).build();
         db.add(account);
         db.add(account2);
-        var list = db.list();
+        var list = db.list(BankAccount.class);
         assertThat(list.size()).isEqualTo(2);
     }
 
@@ -114,7 +114,7 @@ public class DatabaseTest {
         try {
             db.persist();
             db.load();
-            assertThat(db.list()).isEmpty();
+            assertThat(db.list(BankAccount.class)).isEmpty();
         } catch (LoadFailureException | SaveFailureException e) {
             fail();
         }
@@ -135,7 +135,7 @@ public class DatabaseTest {
             db.add(account2);
             db.persist();
             db.load();
-            assertThat(db.list().size()).isEqualTo(2);
+            assertThat(db.list(BankAccount.class).size()).isEqualTo(2);
         } catch (LoadFailureException | SaveFailureException e) {
             fail();
         }
@@ -151,7 +151,7 @@ public class DatabaseTest {
             db.add(account);
             db.persist();
             db.load();
-            var found = db.get(account.getAccountNumber());
+            var found = db.get(account.getAccountNumber(), BankAccount.class);
             assertThat(found).isEqualTo(account);
         } catch (LoadFailureException | SaveFailureException e) {
             fail();
@@ -170,7 +170,7 @@ public class DatabaseTest {
             db.add(account);
             db.persist();
             db.load();
-            var found = db.get(account.getAccountNumber());
+            var found = db.get(account.getAccountNumber(), BankAccount.class);
             assertThat(found).isInstanceOf(SavingAccount.class);
             var savingAcc = (SavingAccount) found;
             assertThat(savingAcc.getInterestPeriod()).isEqualTo(InterestPeriod.YEARLY);
@@ -191,7 +191,7 @@ public class DatabaseTest {
             db.add(account);
             db.persist();
             db.load();
-            var found = db.get(account.getAccountNumber());
+            var found = db.get(account.getAccountNumber(), BankAccount.class);
             assertThat(found).isInstanceOf(CheckingAccount.class);
             var savingAcc = (CheckingAccount) found;
             assertThat(savingAcc.getOverDraftLimit()).isEqualTo(savingAcc.getOverDraftLimit());
