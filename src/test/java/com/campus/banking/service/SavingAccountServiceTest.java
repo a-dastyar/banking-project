@@ -2,6 +2,10 @@ package com.campus.banking.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.fail;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.junit.jupiter.api.Test;
 
@@ -104,5 +108,11 @@ public class SavingAccountServiceTest {
                 .build();
         service.applyInterest(account);
         assertThat(account.getBalance()).isEqualTo(11.0);
+    }
+
+    @Test
+    void depositAndWithdraw_withConcurrentModification_shouldBeSafe(){
+        // TODO: implement
+        fail();
     }
 }
