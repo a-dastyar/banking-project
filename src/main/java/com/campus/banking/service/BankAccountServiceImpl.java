@@ -1,6 +1,5 @@
 package com.campus.banking.service;
 
-
 import com.campus.banking.exception.InsufficientFundsException;
 import com.campus.banking.model.BankAccount;
 
@@ -11,7 +10,10 @@ public class BankAccountServiceImpl implements BankAccountService {
         if (amount < 0) {
             throw new IllegalArgumentException("Can not deposit negative amount");
         }
-        account.setBalance(account.getBalance() + amount);
+
+        try (var lock = account.getLock().lock()) {
+            account.setBalance(account.getBalance() + amount);
+        }
     }
 
     @Override
@@ -19,10 +21,12 @@ public class BankAccountServiceImpl implements BankAccountService {
         if (amount < 0) {
             throw new IllegalArgumentException("Can not withdraw negative amount");
         }
-        if (amount > account.getBalance()) {
-            throw new InsufficientFundsException();
+        try (var lock = account.getLock().lock()) {
+            if (amount > account.getBalance()) {
+                throw new InsufficientFundsException();
+            }
+            account.setBalance(account.getBalance() - amount);
         }
-        account.setBalance(account.getBalance() - amount);
     }
 
 }
