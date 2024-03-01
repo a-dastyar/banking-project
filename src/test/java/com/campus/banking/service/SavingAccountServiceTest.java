@@ -119,18 +119,18 @@ public class SavingAccountServiceTest {
                 .build();
 
         var amount = 200.0d;
-        IntFunction<Runnable> toRunnable = i -> (Runnable) () -> service.deposit(account, amount);
+        IntFunction<Runnable> toDeposit = i -> (Runnable) () -> service.deposit(account, amount);
 
-        var threads = 100;
-        var deposits = IntStream.range(0, threads)
-                .mapToObj(toRunnable)
+        var concurrentDeposits = 100;
+        var deposits = IntStream.range(0, concurrentDeposits)
+                .mapToObj(toDeposit)
                 .toArray(Runnable[]::new);
 
-        var iteration = 100;
-        IntStream.range(0, iteration)
-                .forEach(r -> modifyBalanceConcurrently(account, deposits));
+        var iterations = 100;
+        IntStream.range(0, iterations)
+                .forEach(r -> runConcurrently(deposits));
 
-        assertThat(account.getBalance()).isEqualTo(amount * threads * iteration);
+        assertThat(account.getBalance()).isEqualTo(amount * concurrentDeposits * iterations);
 
     }
 
@@ -143,18 +143,18 @@ public class SavingAccountServiceTest {
                 .build();
 
         var amount = 200.0d;
-        IntFunction<Runnable> toRunnable = i -> (Runnable) () -> service.withdraw(account, amount);
+        IntFunction<Runnable> toWithdraw = i -> (Runnable) () -> service.withdraw(account, amount);
 
-        var threads = 100;
-        var withdraws = IntStream.range(0, threads)
-                .mapToObj(toRunnable)
+        var concurrentWithdraws = 100;
+        var withdraws = IntStream.range(0, concurrentWithdraws)
+                .mapToObj(toWithdraw)
                 .toArray(Runnable[]::new);
 
-        var iteration = 100;
-        IntStream.range(0, iteration)
-                .forEach(r -> modifyBalanceConcurrently(account, withdraws));
+        var iterations = 100;
+        IntStream.range(0, iterations)
+                .forEach(r -> runConcurrently(withdraws));
 
-        assertThat(account.getBalance()).isEqualTo(balance - (amount * threads * iteration));
+        assertThat(account.getBalance()).isEqualTo(balance - (amount * concurrentWithdraws * iterations));
 
     }
 
@@ -170,28 +170,28 @@ public class SavingAccountServiceTest {
         Runnable withdraw = () -> service.withdraw(account, amount);
         Runnable deposit = () -> service.deposit(account, amount);
 
-        var iteration = 1000;
-        IntStream.range(0, iteration)
-                .forEach(r -> modifyBalanceConcurrently(account, deposit, withdraw));
+        var iterations = 1000;
+        IntStream.range(0, iterations)
+                .forEach(r -> runConcurrently(deposit, withdraw));
 
         assertThat(account.getBalance()).isEqualTo(balance);
     }
 
-    private void modifyBalanceConcurrently(BankAccount account, Runnable... runnables) {
-        var startCountDown = new CountDownLatch(1);
+    private void runConcurrently(Runnable... tasks) {
+        var start = new CountDownLatch(1);
         try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
-            Arrays.stream(runnables)
-                    .map(runnable -> addAwait(runnable, startCountDown))
+            Arrays.stream(tasks)
+                    .map(task -> addAwait(task, start))
                     .forEach(executor::submit);
-            startCountDown.countDown();
+            start.countDown();
         }
     }
 
-    Runnable addAwait(Runnable runnable, CountDownLatch latch) {
+    Runnable addAwait(Runnable task, CountDownLatch start) {
         Runnable awaited = () -> {
             try {
-                latch.await();
-                runnable.run();
+                start.await();
+                task.run();
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
