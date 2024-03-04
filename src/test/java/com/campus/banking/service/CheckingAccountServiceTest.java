@@ -3,10 +3,14 @@ package com.campus.banking.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.List;
+import java.util.function.Predicate;
+
 import org.junit.jupiter.api.Test;
 
 import com.campus.banking.exception.InsufficientFundsException;
 import com.campus.banking.exception.LessThanMinimumTransactionException;
+import com.campus.banking.model.BankAccount;
 import com.campus.banking.model.CheckingAccount;
 
 public class CheckingAccountServiceTest {
@@ -151,7 +155,7 @@ public class CheckingAccountServiceTest {
         service.deposit(account, 300.0 + CheckingAccount.TRANSACTION_FEE);
         assertThat(account.getDebt()).isEqualTo(0.0);
     }
-    
+
     @Test
     void deposit_withMoreThanDebt_shouldDeposit() {
         var account = CheckingAccount.builder()
@@ -164,7 +168,7 @@ public class CheckingAccountServiceTest {
     }
 
     @Test
-    void deposit_witNoDebt_shouldDeposit() {
+    void deposit_withNoDebt_shouldDeposit() {
         var account = CheckingAccount.builder()
                 .balance(0.0)
                 .debt(0.0)
@@ -172,5 +176,49 @@ public class CheckingAccountServiceTest {
         service.deposit(account, 500.0 + CheckingAccount.TRANSACTION_FEE);
         assertThat(account.getDebt()).isEqualTo(0.0);
         assertThat(account.getBalance()).isEqualTo(500.0);
+    }
+
+    @Test
+    void sumBalance_withFalsePredicate_shouldReturnZero() {
+        var account = CheckingAccount.builder()
+                .balance(10.0).build();
+        var sum = service.sumBalance(List.of(account), acc -> false);
+        assertThat(sum).isEqualTo(0.0d);
+    }
+
+    @Test
+    void sumBalance_withAccountsAndTruePredicate_shouldReturnZero() {
+        var accounts = List.of(
+                CheckingAccount.builder().balance(10.0).build(),
+                CheckingAccount.builder().balance(12.0).build(),
+                CheckingAccount.builder().balance(15.0).build(),
+                CheckingAccount.builder().balance(25.0).build());
+        var sum = service.sumBalance(accounts, acc -> true);
+        var expected = accounts.stream().mapToDouble(BankAccount::getBalance).sum();
+        assertThat(sum).isEqualTo(expected);
+    }
+
+    @Test
+    void sumBalance_withAccountsAndPredicateOnBalance_shouldReturnZero() {
+        var accounts = List.of(
+                CheckingAccount.builder().balance(10.0).build(),
+                CheckingAccount.builder().balance(12.0).build(),
+                CheckingAccount.builder().balance(15.0).build(),
+                CheckingAccount.builder().balance(25.0).build());
+        var sum = service.sumBalance(accounts, acc -> acc.getBalance() > 13.0);
+        assertThat(sum).isEqualTo(40.0);
+    }
+
+    @Test
+    void sumBalance_withAccountsAndMultiPredicateOnBalance_shouldReturnZero() {
+        var accounts = List.of(
+                CheckingAccount.builder().balance(10.0).build(),
+                CheckingAccount.builder().balance(12.0).build(),
+                CheckingAccount.builder().balance(15.0).build(),
+                CheckingAccount.builder().balance(25.0).build());
+        Predicate<CheckingAccount> predicate = acc -> acc.getBalance() > 12;
+        predicate = predicate.and(acc -> acc.getBalance() < 25);
+        var sum = service.sumBalance(accounts, predicate);
+        assertThat(sum).isEqualTo(15.0);
     }
 }
