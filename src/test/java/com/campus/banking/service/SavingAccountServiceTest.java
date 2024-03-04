@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 
 import com.campus.banking.exception.InvalidTransactionException;
 import com.campus.banking.model.BankAccount;
-import com.campus.banking.model.CheckingAccount;
 import com.campus.banking.model.SavingAccount;
 
 public class SavingAccountServiceTest {
