@@ -1,5 +1,7 @@
 package com.campus.banking.service;
 
+import java.util.List;
+
 import com.campus.banking.exception.InvalidTransactionException;
 import com.campus.banking.model.SavingAccount;
 
@@ -21,5 +23,10 @@ public class SavingAccountServiceImpl extends BankAccountServiceImpl<SavingAccou
         double interest = account.getBalance() * account.getInterestRate() / 100.0;
 
         super.deposit(account, interest);
+    }
+
+    @Override
+    public void applyInterest(List<SavingAccount> accounts) {
+        accounts.stream().forEach(this::applyInterest);
     }
 }
