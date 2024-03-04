@@ -3,9 +3,14 @@ package com.campus.banking.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.List;
+import java.util.function.Predicate;
+
 import org.junit.jupiter.api.Test;
 
 import com.campus.banking.exception.InvalidTransactionException;
+import com.campus.banking.model.BankAccount;
+import com.campus.banking.model.CheckingAccount;
 import com.campus.banking.model.SavingAccount;
 
 public class SavingAccountServiceTest {
@@ -86,12 +91,74 @@ public class SavingAccountServiceTest {
     }
 
     @Test
-    void applyInterest_witPositiveBalance_shouldAddToBalance(){
+    void applyInterest_withPositiveBalance_shouldAddToBalance(){
         var account = SavingAccount.builder()
                 .balance(10.0)
+                .interestRate(10)
                 .minimumBalance(0.0)
                 .build();
         service.applyInterest(account);
         assertThat(account.getBalance()).isEqualTo(11.0);
+    }
+
+    @Test
+    void applyInterest_withList_shouldAddToBalance(){
+        var account = SavingAccount.builder()
+                .balance(10.0)
+                .interestRate(10)
+                .minimumBalance(0.0)
+                .build();
+        var account2 = SavingAccount.builder()
+                .balance(10.0)
+                .interestRate(20)
+                .minimumBalance(0.0)
+                .build();
+        service.applyInterest(List.of(account,account2));
+        assertThat(account.getBalance()).isEqualTo(11.0);
+        assertThat(account2.getBalance()).isEqualTo(12.0);
+    }
+
+    @Test
+    void sumBalance_withFalsePredicate_shouldReturnZero() {
+        var account = SavingAccount.builder()
+                .balance(10.0).build();
+        var sum = service.sumBalance(List.of(account), acc -> false);
+        assertThat(sum).isEqualTo(0.0d);
+    }
+
+    @Test
+    void sumBalance_withAccountsAndTruePredicate_shouldReturnZero() {
+        var accounts = List.of(
+                SavingAccount.builder().balance(10.0).build(),
+                SavingAccount.builder().balance(12.0).build(),
+                SavingAccount.builder().balance(15.0).build(),
+                SavingAccount.builder().balance(25.0).build());
+        var sum = service.sumBalance(accounts, acc -> true);
+        var expected = accounts.stream().mapToDouble(BankAccount::getBalance).sum();
+        assertThat(sum).isEqualTo(expected);
+    }
+
+    @Test
+    void sumBalance_withAccountsAndPredicateOnBalance_shouldReturnZero() {
+        var accounts = List.of(
+                SavingAccount.builder().balance(10.0).build(),
+                SavingAccount.builder().balance(12.0).build(),
+                SavingAccount.builder().balance(15.0).build(),
+                SavingAccount.builder().balance(25.0).build());
+        var sum = service.sumBalance(accounts, acc -> acc.getBalance() > 13.0);
+        assertThat(sum).isEqualTo(40.0);
+    }
+
+    @Test
+    void sumBalance_withAccountsAndMultiPredicateOnBalance_shouldReturnZero() {
+        var accounts = List.of(
+                SavingAccount.builder().balance(10.0).build(),
+                SavingAccount.builder().balance(12.0).build(),
+                SavingAccount.builder().balance(15.0).build(),
+                SavingAccount.builder().balance(25.0).build());
+        Predicate<SavingAccount> predicate = acc -> acc.getBalance() > 12;
+        predicate = predicate.and(acc -> acc.getBalance() < 25);
+        var sum = service.sumBalance(accounts, predicate);
+        assertThat(sum).isEqualTo(15.0);
     }
 }
