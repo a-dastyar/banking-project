@@ -39,7 +39,6 @@ public enum DatabaseImpl implements Database {
             throw new IllegalArgumentException("Account number can not be null or blank");
         }
         var account = map.get(accountNumber);
-        // TODO check for subclass
         if (clazz.isInstance(account)) {
             return (T) account;
         }
