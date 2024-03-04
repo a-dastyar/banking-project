@@ -46,7 +46,7 @@ public class SavingAccountServiceImpl extends BankAccountServiceImpl implements 
     }
 
     @Override
-    public void applyInterest(List<SavingAccount> accounts) {
+    public void applyInterestConcurrently(List<SavingAccount> accounts) {
         try (var executors = Executors.newVirtualThreadPerTaskExecutor()) {
             for (var account : accounts) {
                 executors.submit(() -> this.applyInterest(account));

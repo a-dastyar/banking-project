@@ -6,5 +6,5 @@ import com.campus.banking.model.SavingAccount;
 
 public interface SavingAccountService extends BankAccountService {
     void applyInterest(SavingAccount account);
-    void applyInterest(List<SavingAccount> accounts);
+    void applyInterestConcurrently(List<SavingAccount> accounts);
 }
