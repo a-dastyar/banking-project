@@ -13,7 +13,7 @@ import com.campus.banking.model.BankAccount;
 public class BankAccountDAOTest {
 
     Database db = DatabaseImpl.INSTANCE;
-    BankAccountDAO dao = new BankAccountDAOImpl(db);
+    BankAccountDAO<BankAccount> dao=new BankAccountDAOImpl(db);
 
     @AfterEach
     void teardown() {
@@ -75,7 +75,7 @@ public class BankAccountDAOTest {
                 .balance(10.0d).build();
         dao.add(account);
         dao.removeByAccountNumber(account.getAccountNumber());
-        var found = db.get(account.getAccountNumber());
+        var found = db.get(account.getAccountNumber(),BankAccount.class);
         assertThat(found).isNull();
     }
 

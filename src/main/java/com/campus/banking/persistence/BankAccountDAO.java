@@ -5,13 +5,13 @@ import java.util.Optional;
 
 import com.campus.banking.model.BankAccount;
 
-public interface BankAccountDAO {
+public interface BankAccountDAO<T extends BankAccount> {
 
-    void add(BankAccount account);
+    void add(T account);
 
-    Optional<BankAccount> findByAccountNumber(String accountNumber);
+    Optional<T> findByAccountNumber(String accountNumber);
 
     void removeByAccountNumber(String accountNumber);
 
-    List<BankAccount> list();
+    List<T> list();
 }

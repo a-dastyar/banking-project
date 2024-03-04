@@ -15,14 +15,15 @@ import lombok.experimental.SuperBuilder;
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class SavingAccount extends BankAccount {
 
-    public static final double INTEREST_RATE = 0.1d;
+    private double interestRate;
 
     private InterestPeriod interestPeriod;
     
     private double minimumBalance;
 
-    public SavingAccount(String accountNumber, String accountHolderName, double balance, InterestPeriod interestPeriod, double minimumBalance) {
+    public SavingAccount(String accountNumber, String accountHolderName, double balance, double interestRate, InterestPeriod interestPeriod, double minimumBalance) {
         super(accountNumber, accountHolderName, balance);
+        this.interestRate = interestRate;
         this.interestPeriod = interestPeriod;
         this.minimumBalance = minimumBalance;
     }

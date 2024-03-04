@@ -9,6 +9,7 @@ import com.campus.banking.persistence.BankAccountDAO;
 import com.campus.banking.persistence.BankAccountDAOImpl;
 import com.campus.banking.persistence.Database;
 import com.campus.banking.persistence.DatabaseImpl;
+import com.campus.banking.persistence.SavingAccountDAOImpl;
 
 public class Main {
 	public static void main(String[] args) {
@@ -22,10 +23,11 @@ public class Main {
 				.interestPeriod(InterestPeriod.MONTHLY).build();
 
 		Database db = DatabaseImpl.INSTANCE;
-		BankAccountDAO dao = new BankAccountDAOImpl(db);
+		BankAccountDAO<BankAccount> bankAccountDAO = new BankAccountDAOImpl(db);
+		BankAccountDAO<SavingAccount> savingAccountDAO = new SavingAccountDAOImpl(db);
 
-		dao.add(account);
-		dao.add(saving);
+		bankAccountDAO.add(account);
+		savingAccountDAO.add(saving);
 
 		try {
 			db.persist();
@@ -37,6 +39,6 @@ public class Main {
 			System.err.println("Failed to read from file");
 			e.printStackTrace();
 		}
-		dao.list().forEach(System.out::println);
+		bankAccountDAO.list().forEach(System.out::println);
 	}
 }
