@@ -23,7 +23,7 @@ public enum DatabaseImpl implements Database {
     private String filePath = "database.json";
 
     @Override
-    public void add(BankAccount account) {
+    public <T extends BankAccount> void add(T account) {
         if (account == null || account.getAccountNumber() == null || account.getAccountNumber().isBlank()) {
             throw new IllegalArgumentException("Account and account number can not be null or blank");
         }
@@ -31,18 +31,23 @@ public enum DatabaseImpl implements Database {
             map.put(account.getAccountNumber(), account);
         }
     }
-    
+
     @Override
-    public BankAccount get(String accountNumber) {
-        if(accountNumber==null || accountNumber.isEmpty()){
+    @SuppressWarnings("unchecked")
+    public <T extends BankAccount> T get(String accountNumber, Class<T> clazz) {
+        if (accountNumber == null || accountNumber.isEmpty()) {
             throw new IllegalArgumentException("Account number can not be null or blank");
         }
-        return map.get(accountNumber);
+        var account = map.get(accountNumber);
+        if (clazz.isInstance(account)) {
+            return (T) account;
+        }
+        return null;
     }
 
     @Override
     public void remove(String accountNumber) {
-        if(accountNumber==null || accountNumber.isEmpty()){
+        if (accountNumber == null || accountNumber.isEmpty()) {
             throw new IllegalArgumentException("Account number can not be null or blank");
         }
         try (var l = lock.lock()) {
@@ -51,9 +56,12 @@ public enum DatabaseImpl implements Database {
     }
 
     @Override
-    public List<BankAccount> list() {
+    @SuppressWarnings("unchecked")
+    public <T extends BankAccount> List<T> list(Class<T> clazz) {
         try (var l = lock.lock()) {
-            return map.values().stream().toList();
+            return (List<T>) map.values().stream()
+                    .filter(account -> clazz.isInstance(account))
+                    .toList();
         }
     }
 

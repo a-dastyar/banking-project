@@ -8,13 +8,13 @@ import com.campus.banking.model.BankAccount;
 
 public interface Database {
 
-    void add(BankAccount account);
+    <T extends BankAccount> void add(T account);
 
-    BankAccount get(String accountNumber);
+    <T extends BankAccount> T get(String accountNumber,Class<T> clazz);
 
     void remove(String accountNumber);
 
-    List<BankAccount> list();
+    <T extends BankAccount> List<T> list(Class<T> clazz);
 
     void persist() throws SaveFailureException;
 
