@@ -6,6 +6,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.util.List;
 import java.util.function.Predicate;
 
+import java.util.Arrays;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.function.IntFunction;
+import java.util.stream.IntStream;
+
 import org.junit.jupiter.api.Test;
 
 import com.campus.banking.exception.InsufficientFundsException;
@@ -220,5 +226,102 @@ public class CheckingAccountServiceTest {
         predicate = predicate.and(acc -> acc.getBalance() < 25);
         var sum = service.sumBalance(accounts, predicate);
         assertThat(sum).isEqualTo(15.0);
+    }
+
+    @Test
+    void deposit_withConcurrentModification_shouldBeSafe() {
+        var balance = 0.0d;
+        var account = CheckingAccount.builder()
+                .balance(balance)
+                .overDraftLimit(0.0d)
+                .debt(0.0d)
+                .build();
+
+        var amount = 200.0d;
+        IntFunction<Runnable> toDeposit = i -> (Runnable) () -> service.deposit(account, amount);
+
+        var concurrentDeposits = 100;
+        var deposits = IntStream.range(0, concurrentDeposits)
+                .mapToObj(toDeposit)
+                .toArray(Runnable[]::new);
+
+        var iterations = 100;
+        IntStream.range(0, iterations)
+                .forEach(r -> runConcurrently(deposits));
+
+        var totalDeposit = amount * concurrentDeposits * iterations;
+        var totalTransactionFee = CheckingAccount.TRANSACTION_FEE * concurrentDeposits * iterations;
+        assertThat(account.getBalance())
+                .isEqualTo(totalDeposit - totalTransactionFee);
+    }
+
+    @Test
+    void withdraw_withConcurrentModification_shouldBeSafe() {
+        var balance = 900000000000000.0d;
+        var account = CheckingAccount.builder()
+                .balance(balance)
+                .overDraftLimit(0.0d)
+                .debt(0.0d)
+                .build();
+
+        var amount = 200.0d;
+        IntFunction<Runnable> toWithdraw = i -> (Runnable) () -> service.withdraw(account, amount);
+
+        var concurrentWithdraws = 100;
+        var withdraws = IntStream.range(0, concurrentWithdraws)
+                .mapToObj(toWithdraw)
+                .toArray(Runnable[]::new);
+
+        var iterations = 100;
+        IntStream.range(0, iterations)
+                .forEach(r -> runConcurrently(withdraws));
+
+        var totalWithdraw = amount * concurrentWithdraws * iterations;
+        var totalTransactionFee = CheckingAccount.TRANSACTION_FEE * concurrentWithdraws * iterations;
+        assertThat(account.getBalance()).isEqualTo(balance - totalWithdraw - totalTransactionFee);
+
+    }
+
+    @Test
+    void depositAndWithdraw_withConcurrentModification_shouldBeSafe() {
+        var balance = 1000000000.0d;
+        var account = CheckingAccount.builder()
+                .balance(balance)
+                .overDraftLimit(0.0d)
+                .debt(0.0d)
+                .build();
+
+        var amount = 200.0d;
+        Runnable withdraw = () -> service.withdraw(account, amount);
+        Runnable deposit = () -> service.deposit(account, amount);
+
+        var iterations = 1000;
+        IntStream.range(0, iterations)
+                .forEach(r -> runConcurrently(deposit, withdraw));
+
+        var totalTransactionFee = CheckingAccount.TRANSACTION_FEE * 2 * iterations;
+        assertThat(account.getBalance()).isEqualTo(balance - totalTransactionFee);
+    }
+
+    private void runConcurrently(Runnable... tasks) {
+        var start = new CountDownLatch(1);
+        try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+            Arrays.stream(tasks)
+                    .map(task -> addAwait(task, start))
+                    .forEach(executor::submit);
+            start.countDown();
+        }
+    }
+
+    Runnable addAwait(Runnable task, CountDownLatch start) {
+        Runnable awaited = () -> {
+            try {
+                start.await();
+                task.run();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        };
+        return awaited;
     }
 }

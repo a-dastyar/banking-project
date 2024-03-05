@@ -1,6 +1,7 @@
 package com.campus.banking.service;
 
 import java.util.List;
+import java.util.concurrent.Executors;
 
 import com.campus.banking.exception.InvalidTransactionException;
 import com.campus.banking.model.SavingAccount;
@@ -9,24 +10,37 @@ public class SavingAccountServiceImpl extends BankAccountServiceImpl<SavingAccou
 
     @Override
     public void withdraw(SavingAccount account, double amount) {
-
-        double maximum_withdraw = account.getBalance() - account.getMinimumBalance();
-        if (amount > maximum_withdraw) {
-            throw new InvalidTransactionException("Can not withdraw more than " + maximum_withdraw);
+        try (var lock = account.getLock().lock()) {
+            double maximum_withdraw = account.getBalance() - account.getMinimumBalance();
+            if (amount > maximum_withdraw) {
+                throw new InvalidTransactionException("Can not withdraw more than " + maximum_withdraw);
+            }
+            super.withdraw(account, amount);
         }
 
-        super.withdraw(account, amount);
     }
 
     @Override
     public void applyInterest(SavingAccount account) {
-        double interest = account.getBalance() * account.getInterestRate() / 100.0;
-
-        super.deposit(account, interest);
+        try (var lock = account.getLock().lock()) {
+            double interest = account.getBalance() * account.getInterestRate() / 100.0;
+            
+            super.deposit(account, interest);
+        }
     }
 
     @Override
     public void applyInterest(List<SavingAccount> accounts) {
         accounts.stream().forEach(this::applyInterest);
+    } 
+
+    @Override
+    public void applyInterestConcurrently(List<SavingAccount> accounts) {
+        try (var executors = Executors.newVirtualThreadPerTaskExecutor()) {
+            for (var account : accounts) {
+                executors.submit(() -> this.applyInterest(account));
+            }
+        }
     }
+
 }

@@ -15,8 +15,10 @@ public class CheckingAccountServiceImpl extends BankAccountServiceImpl<CheckingA
         if (amount <= CheckingAccount.TRANSACTION_FEE)
             throw new LessThanMinimumTransactionException();
 
-        doWithdraw(account, CheckingAccount.TRANSACTION_FEE);
-        doDeposit(account, amount);
+        try (var lock = account.getLock().lock()) {
+            doWithdraw(account, CheckingAccount.TRANSACTION_FEE);
+            doDeposit(account, amount);
+        }
     }
 
     private void doDeposit(CheckingAccount account, double amount) {
@@ -44,15 +46,17 @@ public class CheckingAccountServiceImpl extends BankAccountServiceImpl<CheckingA
 
         if (amount <= CheckingAccount.TRANSACTION_FEE)
             throw new LessThanMinimumTransactionException();
+            
+        try (var lock = account.getLock().lock()) {
+            var allowedWithdrawAmount = getAllowedWithdrawAmount(account);
 
-        var allowedWithdrawAmount = getAllowedWithdrawAmount(account);
+            if (amount + CheckingAccount.TRANSACTION_FEE > allowedWithdrawAmount) {
+                throw new InsufficientFundsException();
+            }
 
-        if (amount + CheckingAccount.TRANSACTION_FEE > allowedWithdrawAmount) {
-            throw new InsufficientFundsException();
+            doWithdraw(account, CheckingAccount.TRANSACTION_FEE);
+            doWithdraw(account, amount);
         }
-
-        doWithdraw(account, CheckingAccount.TRANSACTION_FEE);
-        doWithdraw(account, amount);
     }
 
     private void doWithdraw(CheckingAccount account, double amount) {
