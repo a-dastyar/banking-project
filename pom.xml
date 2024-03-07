@@ -29,7 +29,7 @@
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
-            
+            <version>3.25.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -38,12 +38,6 @@
             <version>1.18.30</version>
             <scope>provided</scope>
         </dependency>
-        <!-- <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-core</artifactId>
-            <version>6.4.4.Final</version>
-            <type>pom</type>
-        </dependency> -->
         <dependency>
             <groupId>org.hibernate.orm</groupId>
             <artifactId>hibernate-core</artifactId>
