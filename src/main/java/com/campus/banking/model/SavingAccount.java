@@ -14,7 +14,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class SavingAccount extends BankAccount {
-
+    
     private double interestRate;
 
     private InterestPeriod interestPeriod;
@@ -22,7 +22,7 @@ public class SavingAccount extends BankAccount {
     private double minimumBalance;
 
     public SavingAccount(String accountNumber, String accountHolderName, double balance, double interestRate, InterestPeriod interestPeriod, double minimumBalance) {
-        super(accountNumber, accountHolderName, balance);
+        super(0,accountNumber, accountHolderName, balance);
         this.interestRate = interestRate;
         this.interestPeriod = interestPeriod;
         this.minimumBalance = minimumBalance;

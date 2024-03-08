@@ -1,53 +1,159 @@
 package com.campus.banking.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-import java.util.List;
-import java.util.function.Predicate;
+import java.util.Optional;
+import java.sql.Connection;
+import java.util.function.Consumer;
 
-import java.util.Arrays;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
-import java.util.function.IntFunction;
-import java.util.stream.IntStream;
-
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.stubbing.Answer;
 
 import com.campus.banking.exception.InsufficientFundsException;
+import com.campus.banking.exception.InvalidAccountException;
 import com.campus.banking.exception.LessThanMinimumTransactionException;
-import com.campus.banking.model.BankAccount;
 import com.campus.banking.model.CheckingAccount;
+import com.campus.banking.persistence.BankAccountDAO;
+import com.campus.banking.persistence.TransactionDAO;
 
+@ExtendWith(MockitoExtension.class)
 public class CheckingAccountServiceTest {
 
-    CheckingAccountService service = new CheckingAccountServiceImpl();
+    @Mock
+    BankAccountDAO<CheckingAccount> dao;
+
+    @Mock
+    TransactionDAO trxDao;
+
+    CheckingAccountService service;
+
+    @BeforeEach
+    void setup() {
+        service = new CheckingAccountServiceImpl(dao, trxDao);
+    }
+
+    @SuppressWarnings("unchecked")
+    private Answer<Object> executeConsumer(InvocationOnMock invocation) {
+        var consumer = (Consumer<Connection>) invocation.getArgument(0);
+        consumer.accept(mock(Connection.class));
+        return null;
+    }
+
+    @Test
+    void add_withNull_shouldFail() {
+        assertThatThrownBy(() -> service.add(null)).isInstanceOf(InvalidAccountException.class);
+    }
+
+    @Test
+    void add_withAccountWithoutAccountNumber_shouldFail() {
+        var account = CheckingAccount.builder()
+                .accountHolderName("Tester")
+                .build();
+        assertThatThrownBy(() -> service.add(account)).isInstanceOf(InvalidAccountException.class);
+    }
+
+    @Test
+    void add_withAccountWithBlankAccountNumber_shouldFail() {
+        var account = CheckingAccount.builder()
+                .accountHolderName("Tester")
+                .accountNumber("")
+                .build();
+        assertThatThrownBy(() -> service.add(account))
+                .isInstanceOf(InvalidAccountException.class);
+    }
+
+    @Test
+    void add_withAccountWithoutAccountHolderName_shouldFail() {
+        var account = CheckingAccount.builder()
+                .accountNumber("3000")
+                .build();
+        assertThatThrownBy(() -> service.add(account))
+                .isInstanceOf(InvalidAccountException.class);
+    }
+
+    @Test
+    void add_withAccountWithBlankAccountHolderName_shouldFail() {
+        var account = CheckingAccount.builder()
+                .accountNumber("3000")
+                .accountHolderName("")
+                .build();
+        assertThatThrownBy(() -> service.add(account))
+                .isInstanceOf(InvalidAccountException.class);
+    }
+
+    @Test
+    void add_withNegativeBalance_shouldFail() {
+        var account = CheckingAccount.builder()
+                .accountNumber("3000")
+                .accountHolderName("Test")
+                .balance(-1.0)
+                .build();
+        assertThatThrownBy(() -> service.add(account))
+                .isInstanceOf(InvalidAccountException.class);
+    }
+
+    @Test
+    void add_withValidAccount_shouldAdd() {
+        var account = CheckingAccount.builder()
+                .accountHolderName("Tester")
+                .accountNumber("3000")
+                .build();
+        service.add(account);
+        assertThatNoException();
+    }
+
+    @Test
+    void getByAccountNumber_withNullAccountNumber_shouldFail() {
+        assertThatThrownBy(() -> service.getByAccountNumber(null))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void getByAccountNumber_withNullAccountNumber_shouldReturnAccount() {
+        var account = CheckingAccount.builder()
+                .accountHolderName("Tester")
+                .accountNumber("3000")
+                .build();
+        when(dao.findByAccountNumber(any())).thenReturn(Optional.of(account));
+        var found = service.getByAccountNumber(account.getAccountNumber());
+        assertThat(found.getAccountNumber()).isEqualTo(account.getAccountNumber());
+    }
 
     @Test
     void withdraw_withNegativeAmount_shouldFail() {
-        var account = CheckingAccount.builder()
-                .balance(10.0)
-                .build();
-        assertThatThrownBy(() -> service.withdraw(account, -2.0))
+        var accountNumber = "4000";
+        assertThatThrownBy(() -> service.withdraw(accountNumber, -2.0))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void withdraw_withAmountLessThanTransactionFee_shouldFail() {
-        var account = CheckingAccount.builder()
-                .balance(10.0)
-                .build();
-        assertThatThrownBy(() -> service.withdraw(account, CheckingAccount.TRANSACTION_FEE - 1.0))
+        var accountNumber = "4000";
+        assertThatThrownBy(() -> service.withdraw(accountNumber, CheckingAccount.TRANSACTION_FEE - 1.0))
                 .isInstanceOf(LessThanMinimumTransactionException.class);
     }
 
     @Test
     void withdraw_withZeroBalanceAndZeroOverdraftLimit_shouldFail() {
         var account = CheckingAccount.builder()
+                .accountNumber("4000")
                 .balance(0.0)
                 .overDraftLimit(0.0)
                 .build();
-        assertThatThrownBy(() -> service.withdraw(account, 200.0))
+        doAnswer(this::executeConsumer).when(dao).inTransaction(any());
+        when(dao.findByAccountNumberForUpdate(any(), any())).thenReturn(Optional.of(account));
+        assertThatThrownBy(() -> service.withdraw(account.getAccountNumber(), 200.0))
                 .isInstanceOf(InsufficientFundsException.class);
     }
 
@@ -57,7 +163,9 @@ public class CheckingAccountServiceTest {
                 .balance(1000.0)
                 .overDraftLimit(0.0)
                 .build();
-        assertThatThrownBy(() -> service.withdraw(account, 1000.0))
+        doAnswer(this::executeConsumer).when(dao).inTransaction(any());
+        when(dao.findByAccountNumberForUpdate(any(), any())).thenReturn(Optional.of(account));
+        assertThatThrownBy(() -> service.withdraw(account.getAccountNumber(), 1000.0))
                 .isInstanceOf(InsufficientFundsException.class);
     }
 
@@ -67,7 +175,9 @@ public class CheckingAccountServiceTest {
                 .balance(0.0)
                 .overDraftLimit(1000.0)
                 .build();
-        assertThatThrownBy(() -> service.withdraw(account, 1000.0))
+        doAnswer(this::executeConsumer).when(dao).inTransaction(any());
+        when(dao.findByAccountNumberForUpdate(any(), any())).thenReturn(Optional.of(account));
+        assertThatThrownBy(() -> service.withdraw(account.getAccountNumber(), 1000.0))
                 .isInstanceOf(InsufficientFundsException.class);
     }
 
@@ -77,7 +187,9 @@ public class CheckingAccountServiceTest {
                 .balance(500.0)
                 .overDraftLimit(500.0)
                 .build();
-        assertThatThrownBy(() -> service.withdraw(account, 2000.0))
+        doAnswer(this::executeConsumer).when(dao).inTransaction(any());
+        when(dao.findByAccountNumberForUpdate(any(), any())).thenReturn(Optional.of(account));
+        assertThatThrownBy(() -> service.withdraw(account.getAccountNumber(), 2000.0))
                 .isInstanceOf(InsufficientFundsException.class);
     }
 
@@ -87,7 +199,9 @@ public class CheckingAccountServiceTest {
                 .balance(500.0)
                 .overDraftLimit(500.0)
                 .build();
-        assertThatThrownBy(() -> service.withdraw(account, 1000.0))
+        doAnswer(this::executeConsumer).when(dao).inTransaction(any());
+        when(dao.findByAccountNumberForUpdate(any(), any())).thenReturn(Optional.of(account));
+        assertThatThrownBy(() -> service.withdraw(account.getAccountNumber(), 1000.0))
                 .isInstanceOf(InsufficientFundsException.class);
     }
 
@@ -97,7 +211,9 @@ public class CheckingAccountServiceTest {
                 .balance(500.0)
                 .overDraftLimit(0.0)
                 .build();
-        assertThatThrownBy(() -> service.withdraw(account, 400.0))
+        doAnswer(this::executeConsumer).when(dao).inTransaction(any());
+        when(dao.findByAccountNumberForUpdate(any(), any())).thenReturn(Optional.of(account));
+        assertThatThrownBy(() -> service.withdraw(account.getAccountNumber(), 400.0))
                 .isInstanceOf(InsufficientFundsException.class);
     }
 
@@ -107,8 +223,11 @@ public class CheckingAccountServiceTest {
                 .balance(0.0)
                 .overDraftLimit(1000.0)
                 .build();
-        service.withdraw(account, 200.0);
-        assertThat(account.getDebt()).isEqualTo(200.0 + CheckingAccount.TRANSACTION_FEE);
+        doAnswer(this::executeConsumer).when(dao).inTransaction(any());
+        when(dao.findByAccountNumberForUpdate(any(), any())).thenReturn(Optional.of(account));
+        service.withdraw(account.getAccountNumber(), 200.0);
+        assertThat(account.getDebt()).isEqualTo(200.0 +
+                CheckingAccount.TRANSACTION_FEE);
     }
 
     @Test
@@ -117,7 +236,9 @@ public class CheckingAccountServiceTest {
                 .balance(1000.0)
                 .overDraftLimit(1000.0)
                 .build();
-        service.withdraw(account, 1000.0);
+        doAnswer(this::executeConsumer).when(dao).inTransaction(any());
+        when(dao.findByAccountNumberForUpdate(any(), any())).thenReturn(Optional.of(account));
+        service.withdraw(account.getAccountNumber(), 1000.0);
         assertThat(account.getBalance()).isEqualTo(0.0d);
         assertThat(account.getDebt()).isEqualTo(CheckingAccount.TRANSACTION_FEE);
     }
@@ -128,8 +249,11 @@ public class CheckingAccountServiceTest {
                 .balance(1000.0)
                 .overDraftLimit(1000.0)
                 .build();
-        service.withdraw(account, 500.0);
-        assertThat(account.getBalance()).isEqualTo(500.0 - CheckingAccount.TRANSACTION_FEE);
+        doAnswer(this::executeConsumer).when(dao).inTransaction(any());
+        when(dao.findByAccountNumberForUpdate(any(), any())).thenReturn(Optional.of(account));
+        service.withdraw(account.getAccountNumber(), 500.0);
+        assertThat(account.getBalance()).isEqualTo(500.0 -
+                CheckingAccount.TRANSACTION_FEE);
         assertThat(account.getDebt()).isEqualTo(0.0d);
     }
 
@@ -138,7 +262,7 @@ public class CheckingAccountServiceTest {
         var account = CheckingAccount.builder()
                 .balance(10.0)
                 .build();
-        assertThatThrownBy(() -> service.withdraw(account, -2.0))
+        assertThatThrownBy(() -> service.withdraw(account.getAccountNumber(), -2.0))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
@@ -146,10 +270,13 @@ public class CheckingAccountServiceTest {
     void deposit_withLessThanDebt_shouldDeposit() {
         var account = CheckingAccount.builder()
                 .balance(0.0)
-                .debt(300)
+                .debt(300.0)
                 .build();
-        service.deposit(account, 200.0);
-        assertThat(account.getDebt()).isEqualTo(300.0 - (200.0 - CheckingAccount.TRANSACTION_FEE));
+        doAnswer(this::executeConsumer).when(dao).inTransaction(any());
+        when(dao.findByAccountNumberForUpdate(any(), any())).thenReturn(Optional.of(account));
+        service.deposit(account.getAccountNumber(), 200.0);
+        assertThat(account.getDebt()).isEqualTo(300.0 - (200.0 -
+                CheckingAccount.TRANSACTION_FEE));
     }
 
     @Test
@@ -158,7 +285,9 @@ public class CheckingAccountServiceTest {
                 .balance(0.0)
                 .debt(300)
                 .build();
-        service.deposit(account, 300.0 + CheckingAccount.TRANSACTION_FEE);
+        doAnswer(this::executeConsumer).when(dao).inTransaction(any());
+        when(dao.findByAccountNumberForUpdate(any(), any())).thenReturn(Optional.of(account));
+        service.deposit(account.getAccountNumber(), 300.0 + CheckingAccount.TRANSACTION_FEE);
         assertThat(account.getDebt()).isEqualTo(0.0);
     }
 
@@ -168,7 +297,9 @@ public class CheckingAccountServiceTest {
                 .balance(0.0)
                 .debt(300)
                 .build();
-        service.deposit(account, 500.0 + CheckingAccount.TRANSACTION_FEE);
+        doAnswer(this::executeConsumer).when(dao).inTransaction(any());
+        when(dao.findByAccountNumberForUpdate(any(), any())).thenReturn(Optional.of(account));
+        service.deposit(account.getAccountNumber(), 500.0 + CheckingAccount.TRANSACTION_FEE);
         assertThat(account.getDebt()).isEqualTo(0.0);
         assertThat(account.getBalance()).isEqualTo(200.0);
     }
@@ -179,149 +310,11 @@ public class CheckingAccountServiceTest {
                 .balance(0.0)
                 .debt(0.0)
                 .build();
-        service.deposit(account, 500.0 + CheckingAccount.TRANSACTION_FEE);
+        doAnswer(this::executeConsumer).when(dao).inTransaction(any());
+        when(dao.findByAccountNumberForUpdate(any(), any())).thenReturn(Optional.of(account));
+        service.deposit(account.getAccountNumber(), 500.0 + CheckingAccount.TRANSACTION_FEE);
         assertThat(account.getDebt()).isEqualTo(0.0);
         assertThat(account.getBalance()).isEqualTo(500.0);
     }
 
-    @Test
-    void sumBalance_withFalsePredicate_shouldReturnZero() {
-        var account = CheckingAccount.builder()
-                .balance(10.0).build();
-        var sum = service.sumBalance(List.of(account), acc -> false);
-        assertThat(sum).isEqualTo(0.0d);
-    }
-
-    @Test
-    void sumBalance_withAccountsAndTruePredicate_shouldReturnZero() {
-        var accounts = List.of(
-                CheckingAccount.builder().balance(10.0).build(),
-                CheckingAccount.builder().balance(12.0).build(),
-                CheckingAccount.builder().balance(15.0).build(),
-                CheckingAccount.builder().balance(25.0).build());
-        var sum = service.sumBalance(accounts, acc -> true);
-        var expected = accounts.stream().mapToDouble(BankAccount::getBalance).sum();
-        assertThat(sum).isEqualTo(expected);
-    }
-
-    @Test
-    void sumBalance_withAccountsAndPredicateOnBalance_shouldReturnZero() {
-        var accounts = List.of(
-                CheckingAccount.builder().balance(10.0).build(),
-                CheckingAccount.builder().balance(12.0).build(),
-                CheckingAccount.builder().balance(15.0).build(),
-                CheckingAccount.builder().balance(25.0).build());
-        var sum = service.sumBalance(accounts, acc -> acc.getBalance() > 13.0);
-        assertThat(sum).isEqualTo(40.0);
-    }
-
-    @Test
-    void sumBalance_withAccountsAndMultiPredicateOnBalance_shouldReturnZero() {
-        var accounts = List.of(
-                CheckingAccount.builder().balance(10.0).build(),
-                CheckingAccount.builder().balance(12.0).build(),
-                CheckingAccount.builder().balance(15.0).build(),
-                CheckingAccount.builder().balance(25.0).build());
-        Predicate<CheckingAccount> predicate = acc -> acc.getBalance() > 12;
-        predicate = predicate.and(acc -> acc.getBalance() < 25);
-        var sum = service.sumBalance(accounts, predicate);
-        assertThat(sum).isEqualTo(15.0);
-    }
-
-    @Test
-    void deposit_withConcurrentModification_shouldBeSafe() {
-        var balance = 0.0d;
-        var account = CheckingAccount.builder()
-                .balance(balance)
-                .overDraftLimit(0.0d)
-                .debt(0.0d)
-                .build();
-
-        var amount = 200.0d;
-        IntFunction<Runnable> toDeposit = i -> (Runnable) () -> service.deposit(account, amount);
-
-        var concurrentDeposits = 100;
-        var deposits = IntStream.range(0, concurrentDeposits)
-                .mapToObj(toDeposit)
-                .toArray(Runnable[]::new);
-
-        var iterations = 100;
-        IntStream.range(0, iterations)
-                .forEach(r -> runConcurrently(deposits));
-
-        var totalDeposit = amount * concurrentDeposits * iterations;
-        var totalTransactionFee = CheckingAccount.TRANSACTION_FEE * concurrentDeposits * iterations;
-        assertThat(account.getBalance())
-                .isEqualTo(totalDeposit - totalTransactionFee);
-    }
-
-    @Test
-    void withdraw_withConcurrentModification_shouldBeSafe() {
-        var balance = 900000000000000.0d;
-        var account = CheckingAccount.builder()
-                .balance(balance)
-                .overDraftLimit(0.0d)
-                .debt(0.0d)
-                .build();
-
-        var amount = 200.0d;
-        IntFunction<Runnable> toWithdraw = i -> (Runnable) () -> service.withdraw(account, amount);
-
-        var concurrentWithdraws = 100;
-        var withdraws = IntStream.range(0, concurrentWithdraws)
-                .mapToObj(toWithdraw)
-                .toArray(Runnable[]::new);
-
-        var iterations = 100;
-        IntStream.range(0, iterations)
-                .forEach(r -> runConcurrently(withdraws));
-
-        var totalWithdraw = amount * concurrentWithdraws * iterations;
-        var totalTransactionFee = CheckingAccount.TRANSACTION_FEE * concurrentWithdraws * iterations;
-        assertThat(account.getBalance()).isEqualTo(balance - totalWithdraw - totalTransactionFee);
-
-    }
-
-    @Test
-    void depositAndWithdraw_withConcurrentModification_shouldBeSafe() {
-        var balance = 1000000000.0d;
-        var account = CheckingAccount.builder()
-                .balance(balance)
-                .overDraftLimit(0.0d)
-                .debt(0.0d)
-                .build();
-
-        var amount = 200.0d;
-        Runnable withdraw = () -> service.withdraw(account, amount);
-        Runnable deposit = () -> service.deposit(account, amount);
-
-        var iterations = 1000;
-        IntStream.range(0, iterations)
-                .forEach(r -> runConcurrently(deposit, withdraw));
-
-        var totalTransactionFee = CheckingAccount.TRANSACTION_FEE * 2 * iterations;
-        assertThat(account.getBalance()).isEqualTo(balance - totalTransactionFee);
-    }
-
-    private void runConcurrently(Runnable... tasks) {
-        var start = new CountDownLatch(1);
-        try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
-            Arrays.stream(tasks)
-                    .map(task -> addAwait(task, start))
-                    .forEach(executor::submit);
-            start.countDown();
-        }
-    }
-
-    Runnable addAwait(Runnable task, CountDownLatch start) {
-        Runnable awaited = () -> {
-            try {
-                start.await();
-                task.run();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        };
-        return awaited;
-    }
 }

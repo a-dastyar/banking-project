@@ -14,7 +14,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class CheckingAccount extends BankAccount {
-
+    
     public static final int TRANSACTION_FEE = 100;
 
     private double overDraftLimit;
@@ -23,7 +23,7 @@ public class CheckingAccount extends BankAccount {
 
     public CheckingAccount(String accountNumber, String accountHolderName, double balance, double overDraftLimit,
             double debt) {
-        super(accountNumber, accountHolderName, balance);
+        super(0, accountNumber, accountHolderName, balance);
         this.overDraftLimit = overDraftLimit;
         this.debt = debt;
     }
