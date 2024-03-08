@@ -1,0 +1,8 @@
+name: webapp
+datasource:
+    host: localhost
+    port: 3306
+    user: user
+    password: password
+    database: bank-systems
+    url: jdbc:mysql://${datasource.host}:${datasource.port}/${datasource.database}
