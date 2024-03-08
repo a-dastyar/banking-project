@@ -1,24 +1,29 @@
 package com.campus.banking.persistence;
 
-import java.util.List;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.function.Consumer;
 
-import com.campus.banking.exception.LoadFailureException;
-import com.campus.banking.exception.SaveFailureException;
-import com.campus.banking.model.BankAccount;
+
 
 public interface Database {
 
-    <T extends BankAccount> void add(T account);
+    void createTables() throws SQLException;
 
-    <T extends BankAccount> T get(String accountNumber,Class<T> clazz);
+    void dropTables() throws SQLException;
 
-    void remove(String accountNumber);
+    Connection getConnection();
 
-    <T extends BankAccount> List<T> list(Class<T> clazz);
+    void runInTransaction(Consumer<Connection> dbTask);
 
-    void persist() throws SaveFailureException;
+    void clear();
 
-    void load() throws LoadFailureException;
+    <T> T runStatement(Connection conn, String query, SQLExceptionFunction<PreparedStatement, T> func);
 
-    void clear() throws SaveFailureException;
+    <T> T runStatementWithConnection(String query, SQLExceptionFunction<PreparedStatement, T> func);
+}
+
+interface SQLExceptionFunction<T, U> {
+    U apply(T t) throws SQLException;
 }
