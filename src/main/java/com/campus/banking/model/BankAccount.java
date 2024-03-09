@@ -1,28 +1,21 @@
 package com.campus.banking.model;
 
-import java.util.concurrent.locks.ReentrantLock;
-
-import com.campus.banking.utils.AutoCloseableLock;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
-
 import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorColumn;
+import jakarta.persistence.DiscriminatorType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
 import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
-
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.annotation.JsonTypeName;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 import lombok.With;
 import lombok.experimental.SuperBuilder;
 
@@ -32,40 +25,26 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
-@JsonSubTypes({
-        @Type(value = SavingAccount.class, name = "saving"),
-        @Type(value = CheckingAccount.class, name = "checking")
-})
-@JsonTypeName("normal")
 @Entity
-@Table(name = "bank_accounts")
-public class BankAccount {
+@Table(name = "bank_accounts",indexes = { 
+    @Index(name = "bnk_acc_num_idx", columnList = "account_number", unique = true)})
+@Inheritance(strategy = InheritanceType.JOINED)
+@DiscriminatorColumn(name = BankAccount.TYPE_COLUMN, discriminatorType = DiscriminatorType.STRING, length = 50)
+public class BankAccount implements BaseModel<Long> {
+    public static final String TYPE_COLUMN = "type";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @JsonIgnore
-    @ToString.Exclude
-    @Transient
-    private final AutoCloseableLock lock = new AutoCloseableLock(new ReentrantLock());
-
     @EqualsAndHashCode.Include
-    @Column(name = "account_number")
+    @Column(name = "account_number", nullable = false)
     private String accountNumber;
 
-    @Column(name = "account_holder_name")
+    @Column(name = "account_holder_name", nullable = false)
     private String accountHolderName;
 
+    @Column(name = "balance")
     private double balance;
 
-    public BankAccount(String accountNumber, String accountHolderName, double balance) {
-        // TODO: another work around could be using @RequiredArgsConstructor and @NonNull
-        this(null, accountNumber, accountHolderName, balance);
-    }
-
-    public BankAccount(String accountNumber, String accountHolderName) {
-        this(accountNumber, accountHolderName, 0.0d);
-    }
 }
