@@ -1,98 +1,52 @@
 package com.campus.banking.persistence;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.locks.ReentrantLock;
 
-import com.campus.banking.exception.LoadFailureException;
-import com.campus.banking.exception.SaveFailureException;
-import com.campus.banking.model.BankAccount;
-import com.campus.banking.utils.AutoCloseableLock;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
+
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.Persistence;
 
 public enum DatabaseImpl implements Database {
     INSTANCE;
 
-    private Map<String, BankAccount> map = new HashMap<>();
-    private ObjectMapper mapper = new ObjectMapper();
-    private AutoCloseableLock lock = new AutoCloseableLock(new ReentrantLock());
-    private String filePath = "database.json";
+    private Config config = ConfigProvider.getConfig();
+    private EntityManagerFactory factory = createEntityManagerFactory();
 
-    @Override
-    public <T extends BankAccount> void add(T account) {
-        if (account == null || account.getAccountNumber() == null || account.getAccountNumber().isBlank()) {
-            throw new IllegalArgumentException("Account and account number can not be null or blank");
-        }
-        try (var l = lock.lock()) {
-            map.put(account.getAccountNumber(), account);
-        }
+    private EntityManagerFactory createEntityManagerFactory() {
+        String url = config.getValue("datasource.url", String.class);
+        String username = config.getValue("datasource.user", String.class);
+        String password = config.getValue("datasource.password", String.class);
+        String schema = config.getValue("datasource.schema.generation.strategy", String.class);
+        String showSQL = config.getValue("datasource.show_sql", String.class);
+
+        var properties = Map.of(
+                "hibernate.hikari.jdbcUrl", url,
+                "hibernate.hikari.dataSource.user", username,
+                "hibernate.hikari.dataSource.password", password,
+                "hibernate.show_sql", showSQL,
+                "hibernate.format_sql", showSQL,
+                "hibernate.highlight_sql", showSQL,
+                "jakarta.persistence.schema-generation.database.action", schema);
+
+        return Persistence.createEntityManagerFactory("App", properties);
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public <T extends BankAccount> T get(String accountNumber, Class<T> clazz) {
-        if (accountNumber == null || accountNumber.isEmpty()) {
-            throw new IllegalArgumentException("Account number can not be null or blank");
-        }
-        var account = map.get(accountNumber);
-        if (clazz.isInstance(account)) {
-            return (T) account;
-        }
-        return null;
+    public EntityManager getEntityManager() {
+        return factory.createEntityManager();
     }
 
     @Override
-    public void remove(String accountNumber) {
-        if (accountNumber == null || accountNumber.isEmpty()) {
-            throw new IllegalArgumentException("Account number can not be null or blank");
-        }
-        try (var l = lock.lock()) {
-            map.remove(accountNumber);
-        }
+    public EntityManagerFactory getEntityManagerFactory() {
+        return factory;
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public <T extends BankAccount> List<T> list(Class<T> clazz) {
-        try (var l = lock.lock()) {
-            return (List<T>) map.values().stream()
-                    .filter(account -> clazz.isInstance(account))
-                    .toList();
-        }
-    }
-
-    @Override
-    public void persist() throws SaveFailureException {
-        try (var l = lock.lock()) {
-            mapper.writerFor(new TypeReference<Map<String, BankAccount>>() {
-            })
-                    .withDefaultPrettyPrinter()
-                    .writeValue(new File(this.filePath), map);
-        } catch (IOException e) {
-            throw new SaveFailureException(e);
-        }
-    }
-
-    @Override
-    public void load() throws LoadFailureException {
-        try (var l = lock.lock()) {
-            map = mapper.readValue(new File(this.filePath), new TypeReference<Map<String, BankAccount>>() {
-            });
-        } catch (IOException e) {
-            throw new LoadFailureException(e);
-        }
-    }
-
-    @Override
-    public void clear() throws SaveFailureException {
-        try (var l = lock.lock()) {
-            map = new HashMap<>();
-            persist();
-        }
+    public void closeEntityManagerFactory() {
+        factory.close();
     }
 
 }
