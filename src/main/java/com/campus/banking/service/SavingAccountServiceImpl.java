@@ -1,46 +1,127 @@
 package com.campus.banking.service;
 
-import java.util.List;
-import java.util.concurrent.Executors;
+import java.time.LocalDateTime;
 
+import com.campus.banking.exception.InvalidAccountException;
 import com.campus.banking.exception.InvalidTransactionException;
+import com.campus.banking.exception.NotFoundException;
 import com.campus.banking.model.SavingAccount;
+import com.campus.banking.model.Transaction;
+import com.campus.banking.model.TransactionType;
+import com.campus.banking.persistence.SavingAccountDAO;
+import com.campus.banking.persistence.TransactionDAO;
 
-public class SavingAccountServiceImpl extends BankAccountServiceImpl<SavingAccount> implements SavingAccountService {
+import jakarta.persistence.EntityManager;
+import lombok.AllArgsConstructor;
+
+@AllArgsConstructor
+public class SavingAccountServiceImpl implements SavingAccountService {
+
+    protected SavingAccountDAO dao;
+    protected TransactionDAO trxDao;
 
     @Override
-    public void withdraw(SavingAccount account, double amount) {
-        try (var lock = account.getLock().lock()) {
-            double maximum_withdraw = account.getBalance() - account.getMinimumBalance();
-            if (amount > maximum_withdraw) {
-                throw new InvalidTransactionException("Can not withdraw more than " + maximum_withdraw);
-            }
-            super.withdraw(account, amount);
-        }
+    public void add(SavingAccount account) {
+        validate(account);
+        dao.persist(account);
+    }
 
+    private void validate(SavingAccount account) {
+        if (account == null
+                || account.getAccountNumber() == null
+                || account.getAccountNumber().isBlank()
+                || account.getAccountHolderName() == null
+                || account.getAccountHolderName().isBlank()
+                || account.getBalance() < 0) {
+            throw new InvalidAccountException();
+        }
     }
 
     @Override
-    public void applyInterest(SavingAccount account) {
-        try (var lock = account.getLock().lock()) {
-            double interest = account.getBalance() * account.getInterestRate() / 100.0;
+    public SavingAccount getByAccountNumber(String accountNumber) {
+        validateAccountNumber(accountNumber);
+        return dao.findByAccountNumber(accountNumber)
+                .orElseThrow(() -> new NotFoundException());
+    }
+
+    private void validateAccountNumber(String accountNumber) {
+        if (accountNumber == null || accountNumber.isBlank()) {
+            throw new IllegalArgumentException();
+        }
+    }
+
+    @Override
+    public void deposit(String accountNumber, double amount) {
+        if (amount < 0) {
+            throw new IllegalArgumentException("Can not withdraw negative amount");
+        }
+        dao.inTransaction(em -> {
+            var account = dao.findByAccountNumberForUpdate(em, accountNumber)
+                    .orElseThrow(() -> new NotFoundException());
+            doDeposit(em, account, amount);
+            insertTransaction(em, account, amount, TransactionType.DEPOSIT);
+        });
+    }
+
+    private void doDeposit(EntityManager em, SavingAccount account, double amount) {
+        account.setBalance(account.getBalance() + amount);
+        dao.transactionalUpdate(em, account);
+    }
+
+    @Override
+    public void withdraw(String accountNumber, double amount) {
+        if (amount < 0) {
+            throw new IllegalArgumentException("Can not withdraw negative amount");
+        }
+        dao.inTransaction(em -> {
+            var account = dao.findByAccountNumberForUpdate(em, accountNumber)
+                    .orElseThrow(() -> new NotFoundException());
+            doWithdraw(em, account, amount);
+            insertTransaction(em, account, amount, TransactionType.WITHDRAW);
+        });
+
+    }
+
+    private void doWithdraw(EntityManager em, SavingAccount account, double amount) {
+        double maximum_withdraw = account.getBalance() - account.getMinimumBalance();
+        if (amount > maximum_withdraw) {
+            throw new InvalidTransactionException("Can not withdraw more than " + maximum_withdraw);
+        }
+        account.setBalance(account.getBalance() - amount);
+        dao.transactionalUpdate(em, account);
+    }
+
+    @Override
+    public void applyInterest(String accountNumber) {
+        dao.inTransaction(em -> {
+            var account = dao.findByAccountNumberForUpdate(em, accountNumber)
+                    .orElseThrow(() -> new NotFoundException());
+
+            var interest = account.getBalance() * account.getInterestRate() / 100.0;
+            account.setBalance(account.getBalance() + interest);
             
-            super.deposit(account, interest);
-        }
+            dao.transactionalUpdate(em, account);
+            insertTransaction(em, account, interest, TransactionType.INTEREST);
+        });
+
     }
 
     @Override
-    public void applyInterest(List<SavingAccount> accounts) {
-        accounts.stream().forEach(this::applyInterest);
-    } 
-
-    @Override
-    public void applyInterestConcurrently(List<SavingAccount> accounts) {
-        try (var executors = Executors.newVirtualThreadPerTaskExecutor()) {
-            for (var account : accounts) {
-                executors.submit(() -> this.applyInterest(account));
-            }
-        }
+    public void applyInterest() {
+        dao.applyInterest();
     }
 
+    @Override
+    public double sumBalanceHigherThan(double min) {
+        return dao.sumBalanceHigherThan(min);
+    }
+
+    private void insertTransaction(EntityManager em, SavingAccount account, double amount, TransactionType type) {
+        var trx = Transaction.builder()
+                .account(account)
+                .amount(amount)
+                .date(LocalDateTime.now())
+                .type(type).build();
+        trxDao.transactionalPersist(em, trx);
+    }
 }
