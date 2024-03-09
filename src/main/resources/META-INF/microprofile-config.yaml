@@ -1,0 +1,11 @@
+datasource:
+    host: localhost
+    port: 3306
+    user: user
+    password: password
+    database: bank-systems
+    url: jdbc:mysql://${datasource.host}:${datasource.port}/${datasource.database}
+    schema:
+        generation:
+            strategy: create-drop
+    show_sql: true
