@@ -1,6 +1,7 @@
 package com.campus.banking;
 
 import java.util.Map;
+import java.util.function.Function;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,22 +15,20 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Testcontainers
 public abstract class AbstractIT {
 
     @AllArgsConstructor
     static class DatabaseWrapper implements Database {
         private EntityManagerFactory emf;
-
         @Override
-        public EntityManager getEntityManager() {
-            return emf.createEntityManager();
-        }
-
-        @Override
-        public EntityManagerFactory getEntityManagerFactory() {
-            return emf;
+        public <U> U withEntityManager(Function<EntityManager, U> action) {
+            try (var em = emf.createEntityManager()) {
+                return action.apply(em);
+            }
         }
 
         @Override
@@ -48,6 +47,7 @@ public abstract class AbstractIT {
 
     @BeforeEach
     public void beforeEach() {
+        log.debug("Creating EntityManagerFactory");
         var properties = Map.of(
                 "hibernate.hikari.jdbcUrl", mysql.getJdbcUrl(),
                 "hibernate.hikari.dataSource.user", mysql.getUsername(),
@@ -58,9 +58,10 @@ public abstract class AbstractIT {
         var emf = Persistence.createEntityManagerFactory("App", properties);
         db = new DatabaseWrapper(emf);
     }
-    
+
     @AfterEach
     public void afterEach() {
+        log.debug("Closing EntityManagerFactory");
         db.closeEntityManagerFactory();
     }
 }
