@@ -20,7 +20,9 @@ public abstract class AbstractDAO<T extends BaseModel<S>, S> implements DAO<T, S
 
     @Override
     public Optional<T> find(S id) {
-        return Optional.ofNullable((T) getEntityManager().find(getType(), id));
+        try (var em = getEntityManager()) {
+            return Optional.ofNullable((T) em.find(getType(), id));
+        }
     }
 
     @Override
@@ -47,7 +49,9 @@ public abstract class AbstractDAO<T extends BaseModel<S>, S> implements DAO<T, S
 
     @Override
     public void remove(T entity) {
-        getEntityManager().remove(entity);
+        try (EntityManager em = getEntityManager()) {
+            em.remove(entity);
+        }
     }
 
     @Override
