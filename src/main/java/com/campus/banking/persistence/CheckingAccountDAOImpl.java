@@ -106,8 +106,8 @@ public class CheckingAccountDAOImpl implements BankAccountDAO<CheckingAccount> {
                 DELETE
                   FROM checking_accounts checking
                   JOIN bank_accounts account
-                 WHERE checking.id = account.id
-                   AND account.account_number = ?
+                    ON checking.id = account.id
+                 WHERE account.account_number = ?
                 """;
         db.runStatement(conn, delete, statement -> {
             statement.setString(1, accountNumber);

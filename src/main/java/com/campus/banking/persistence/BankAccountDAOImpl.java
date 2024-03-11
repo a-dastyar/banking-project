@@ -43,7 +43,7 @@ public class BankAccountDAOImpl implements BankAccountDAO<BankAccount> {
             statement.setString(1, account.getAccountNumber());
             statement.setString(2, account.getAccountHolderName());
             statement.setDouble(3, account.getBalance());
-            statement.setDouble(4, subclass);
+            statement.setInt(4, subclass);
             statement.execute();
             extractId(account, statement);
             return account;
@@ -100,7 +100,7 @@ public class BankAccountDAOImpl implements BankAccountDAO<BankAccount> {
     private BankAccount toAccount(ResultSet result) throws SQLException {
         return BankAccount.builder()
                 .id(result.getLong("id"))
-                .accountNumber(result.getNString("account_number"))
+                .accountNumber(result.getString("account_number"))
                 .accountHolderName(result.getString("account_holder_name"))
                 .balance(result.getDouble("balance"))
                 .build();

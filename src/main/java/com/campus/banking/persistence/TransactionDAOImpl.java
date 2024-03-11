@@ -11,8 +11,8 @@ import com.campus.banking.model.Transaction;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
-public class TransactionDAOImpl implements TransactionDAO{
-    
+public class TransactionDAOImpl implements TransactionDAO {
+
     private Database db;
 
     @Override
@@ -25,14 +25,14 @@ public class TransactionDAOImpl implements TransactionDAO{
                     date
                 ) VALUES (?,?,?,?)
                 """;
-        try(var statement = conn.prepareStatement(insert, Statement.RETURN_GENERATED_KEYS)){
+        try (var statement = conn.prepareStatement(insert, Statement.RETURN_GENERATED_KEYS)) {
             statement.setString(1, transaction.getType().toString());
             statement.setDouble(2, transaction.getAmount());
             statement.setLong(3, transaction.getAccount().getId());
             statement.setObject(4, transaction.getDate());
             statement.execute();
             extractId(transaction, statement);
-        }catch(SQLException ex){
+        } catch (SQLException ex) {
             throw new RuntimeException(ex);
         }
     }

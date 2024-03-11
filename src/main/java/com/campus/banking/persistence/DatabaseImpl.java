@@ -32,7 +32,7 @@ public class DatabaseImpl implements Database {
 
     private void runScript(String filePath) throws SQLException {
         var file = ClassLoader.getSystemClassLoader().getResource(filePath).getFile();
-        try (var conn = datasource.getConnection()){
+        try (var conn = getConnection()){
             ScriptRunner scriptRunner = new ScriptRunner(conn);
             scriptRunner.setSendFullScript(false);
             scriptRunner.setStopOnError(true);
@@ -90,11 +90,7 @@ public class DatabaseImpl implements Database {
 
     public <T> T runStatementWithConnection(String query, SQLExceptionFunction<PreparedStatement, T> func) {
         try (var conn = getConnection()) {
-            try (var statement = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
-                return func.apply(statement);
-            } catch (SQLException ex) {
-                throw new RuntimeException(ex);
-            }
+            return runStatement(conn, query, func);
         } catch (SQLException ex) {
             throw new RuntimeException(ex);
         }
