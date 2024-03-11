@@ -1,7 +1,7 @@
 package com.campus.banking.persistence;
 
-
 import java.util.Optional;
+import java.util.function.Function;
 
 import com.campus.banking.model.SavingAccount;
 
@@ -26,21 +26,21 @@ public class SavingAccountDAOImpl extends AbstractDAO<SavingAccount, Long> imple
     @Override
     public Optional<SavingAccount> findByAccountNumberForUpdate(EntityManager em, String accountNumber) {
         return findByForUpdate(em, "accountNumber", accountNumber).stream()
-                .findFirst();
+                 .findFirst();
     }
 
     @Override
     public boolean exists(SavingAccount entity) {
-        try (var em = getEntityManager()) {
+        return withEntityManager(em -> {
             CriteriaBuilder builder = em.getCriteriaBuilder();
             CriteriaQuery<Long> query = builder.createQuery(Long.class);
             Root<SavingAccount> root = query.from(getType());
             query.select(builder.count(root));
             query.where(builder.or(
                     builder.equal(root.get("id"), entity.getId()),
-                    builder.equal(root.get("account_number"), entity.getAccountNumber())));
+                    builder.equal(root.get("accountNumber"), entity.getAccountNumber())));
             return em.createQuery(query).getSingleResult() > 0;
-        }
+        });
     }
 
     @Override
@@ -65,7 +65,7 @@ public class SavingAccountDAOImpl extends AbstractDAO<SavingAccount, Long> imple
                   JOIN bank_accounts account
                     ON saving.id = account.id
                     """;
-        try (var em = getEntityManager()) {
+        withEntityManager(em -> {
             var trx = em.getTransaction();
             try {
                 trx.begin();
@@ -79,19 +79,21 @@ public class SavingAccountDAOImpl extends AbstractDAO<SavingAccount, Long> imple
                 trx.rollback();
                 throw ex;
             }
-        }
+            return null;
+        });
     }
 
     @Override
     public double sumBalanceHigherThan(double min) {
-        try (var em = getEntityManager()) {
+        return withEntityManager(em -> {
             CriteriaBuilder builder = em.getCriteriaBuilder();
             CriteriaQuery<Double> query = builder.createQuery(Double.class);
             Root<SavingAccount> root = query.from(getType());
             query.select(builder.sum(root.get("balance")));
             query.where(builder.gt(root.get("balance"), min));
-            return em.createQuery(query).getSingleResult();
-        }
+            var result = em.createQuery(query).getSingleResult();
+            return result == null ? 0 : result;
+        });
     }
 
     @Override
@@ -100,8 +102,7 @@ public class SavingAccountDAOImpl extends AbstractDAO<SavingAccount, Long> imple
     }
 
     @Override
-    protected EntityManager getEntityManager() {
-        return db.getEntityManager();
+    public <U> U withEntityManager(Function<EntityManager, U> action) {
+        return db.withEntityManager(action);
     }
-
 }

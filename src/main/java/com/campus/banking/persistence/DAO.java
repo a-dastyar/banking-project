@@ -3,6 +3,7 @@ package com.campus.banking.persistence;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import com.campus.banking.model.BaseModel;
 
@@ -20,15 +21,11 @@ public interface DAO<T extends BaseModel<S>, S> {
 
     void transactionalUpdate(EntityManager em, T entity);
 
-    void remove(T entity);
-
-    List<T> find(List<S> ids);
+    void transactionalRemove(EntityManager em,T entity);
 
     void persist(List<T> entity);
 
     void update(List<T> entity);
-
-    int remove(List<S> ids);
 
     List<T> getAll();
 
@@ -40,9 +37,13 @@ public interface DAO<T extends BaseModel<S>, S> {
 
     <U> List<T> findByForUpdate(EntityManager em, String fieldName, U fieldValue);
 
-    <U> void removeBy(String fieldName, U fieldValue);
+    <U> int removeBy(String fieldName, U fieldValue);
 
     boolean exists(T entity);
 
+    <U> U withEntityManager(Function<EntityManager,U> action);
+
     void inTransaction(Consumer<EntityManager> action);
+
+    <U> U inTransactionReturn(Function<EntityManager, U> action);
 }

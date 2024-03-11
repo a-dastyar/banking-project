@@ -1,14 +1,12 @@
 package com.campus.banking.persistence;
 
+import java.util.function.Function;
 
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
 
 public interface Database {
 
-    EntityManager getEntityManager();
-
-    EntityManagerFactory getEntityManagerFactory();
+    <U> U withEntityManager(Function<EntityManager, U> action);
 
     void closeEntityManagerFactory();
 }

@@ -1,6 +1,7 @@
 package com.campus.banking.persistence;
 
 import java.util.Optional;
+import java.util.function.Function;
 
 import com.campus.banking.model.BankAccount;
 
@@ -28,28 +29,29 @@ public class BankAccountDAOImpl extends AbstractDAO<BankAccount, Long> implement
 
     @Override
     public boolean exists(BankAccount entity) {
-        try (var em = getEntityManager()) {
+        return withEntityManager(em -> {
             CriteriaBuilder builder = em.getCriteriaBuilder();
             CriteriaQuery<Long> query = builder.createQuery(Long.class);
             Root<BankAccount> root = query.from(getType());
             query.select(builder.count(root));
             query.where(builder.or(
                     builder.equal(root.get("id"), entity.getId()),
-                    builder.equal(root.get("account_number"), entity.getAccountNumber())));
+                    builder.equal(root.get("accountNumber"), entity.getAccountNumber())));
             return em.createQuery(query).getSingleResult() > 0;
-        }
+        });
     }
 
     @Override
     public double sumBalanceHigherThan(double min) {
-        try (var em = getEntityManager()) {
+        return withEntityManager(em -> {
             CriteriaBuilder builder = em.getCriteriaBuilder();
             CriteriaQuery<Double> query = builder.createQuery(Double.class);
             Root<BankAccount> root = query.from(getType());
-            query.select(builder.sum(root.get("balance")));
+            query.select(builder.sumAsDouble(root.get("balance")));
             query.where(builder.gt(root.get("balance"), min));
-            return em.createQuery(query).getSingleResult();
-        }
+            var result = em.createQuery(query).getSingleResult();
+            return result == null ? 0 : result;
+        });
     }
 
     @Override
@@ -58,7 +60,8 @@ public class BankAccountDAOImpl extends AbstractDAO<BankAccount, Long> implement
     }
 
     @Override
-    protected EntityManager getEntityManager() {
-        return db.getEntityManager();
+    public <U> U withEntityManager(Function<EntityManager, U> action) {
+        return db.withEntityManager(action);
     }
+
 }

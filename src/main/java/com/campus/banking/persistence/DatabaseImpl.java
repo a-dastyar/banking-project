@@ -1,6 +1,7 @@
 package com.campus.banking.persistence;
 
 import java.util.Map;
+import java.util.function.Function;
 
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
@@ -35,13 +36,10 @@ public enum DatabaseImpl implements Database {
     }
 
     @Override
-    public EntityManager getEntityManager() {
-        return factory.createEntityManager();
-    }
-
-    @Override
-    public EntityManagerFactory getEntityManagerFactory() {
-        return factory;
+    public <U> U withEntityManager(Function<EntityManager, U> action) {
+        try (var em = factory.createEntityManager()) {
+            return action.apply(em);
+        }
     }
 
     @Override

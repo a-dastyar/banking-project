@@ -1,5 +1,7 @@
 package com.campus.banking.persistence;
 
+import java.util.function.Function;
+
 import com.campus.banking.model.Transaction;
 
 import jakarta.persistence.EntityManager;
@@ -15,14 +17,14 @@ public class TransactionDAOImpl extends AbstractDAO<Transaction, Long> implement
 
     @Override
     public boolean exists(Transaction entity) {
-        try (var em = getEntityManager()) {
+        return withEntityManager(em -> {
             CriteriaBuilder builder = em.getCriteriaBuilder();
             CriteriaQuery<Long> query = builder.createQuery(Long.class);
             Root<Transaction> root = query.from(getType());
             query.select(builder.count(root));
             query.where(builder.equal(root.get("id"), entity.getId()));
             return em.createQuery(query).getSingleResult() > 0;
-        }
+        });
     }
 
     @Override
@@ -31,8 +33,7 @@ public class TransactionDAOImpl extends AbstractDAO<Transaction, Long> implement
     }
 
     @Override
-    protected EntityManager getEntityManager() {
-        return db.getEntityManager();
+    public <U> U withEntityManager(Function<EntityManager, U> action) {
+        return db.withEntityManager(action);
     }
-
 }
