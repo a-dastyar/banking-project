@@ -1,5 +1,9 @@
 package com.campus.banking.model;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.PrimaryKeyJoinColumn;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -13,18 +17,18 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
+@Entity
+@Table(name = "saving_accounts")
+@PrimaryKeyJoinColumn(name = "id")
 public class SavingAccount extends BankAccount {
 
+    @Column(name = "interest_rate")
     private double interestRate;
-
+    
+    @Column(name = "interest_period")
     private InterestPeriod interestPeriod;
     
+    @Column(name = "minimum_balance")
     private double minimumBalance;
 
-    public SavingAccount(String accountNumber, String accountHolderName, double balance, double interestRate, InterestPeriod interestPeriod, double minimumBalance) {
-        super(accountNumber, accountHolderName, balance);
-        this.interestRate = interestRate;
-        this.interestPeriod = interestPeriod;
-        this.minimumBalance = minimumBalance;
-    }
 }

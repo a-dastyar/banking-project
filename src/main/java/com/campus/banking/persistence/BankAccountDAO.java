@@ -1,17 +1,16 @@
 package com.campus.banking.persistence;
 
-import java.util.List;
 import java.util.Optional;
 
 import com.campus.banking.model.BankAccount;
 
-public interface BankAccountDAO<T extends BankAccount> {
+import jakarta.persistence.EntityManager;
 
-    void add(T account);
+public interface BankAccountDAO<T extends BankAccount> extends DAO<T, Long> {
 
     Optional<T> findByAccountNumber(String accountNumber);
 
-    void removeByAccountNumber(String accountNumber);
+    Optional<T>  findByAccountNumberForUpdate(EntityManager em, String accountNumber);
 
-    List<T> list();
+    double sumBalanceHigherThan(double min);
 }
