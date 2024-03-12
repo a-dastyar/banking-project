@@ -48,10 +48,10 @@ public class CheckingAccountDAOImpl extends AbstractDAO<CheckingAccount, Long>
             CriteriaBuilder builder = em.getCriteriaBuilder();
             CriteriaQuery<Double> query = builder.createQuery(Double.class);
             Root<CheckingAccount> root = query.from(getType());
-            query.select(builder.sum(root.get("balance")));
+            query.select(builder.sumAsDouble(root.get("balance")));
             query.where(builder.gt(root.get("balance"), min));
             var result = em.createQuery(query).getSingleResult();
-            return result == null ? 0 : result;
+            return result == null ? 0.0d : result;
         });
     }
 

@@ -50,7 +50,7 @@ public class BankAccountDAOImpl extends AbstractDAO<BankAccount, Long> implement
             query.select(builder.sumAsDouble(root.get("balance")));
             query.where(builder.gt(root.get("balance"), min));
             var result = em.createQuery(query).getSingleResult();
-            return result == null ? 0 : result;
+            return result == null ? 0.0d : result;
         });
     }
 
