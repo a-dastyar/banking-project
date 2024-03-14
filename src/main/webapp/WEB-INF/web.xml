@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app
+  xmlns="https://jakarta.ee/xml/ns/jakartaee"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+  version="6.0">
+
+
+  <display-name>Archetype Created Web Application</display-name>
+  <listener>
+    <listener-class>org.jboss.weld.environment.servlet.Listener</listener-class>
+  </listener>
+
+  <resource-env-ref>
+    <resource-env-ref-name>BeanManager</resource-env-ref-name>
+    <resource-env-ref-type>
+      jakarta.enterprise.inject.spi.BeanManager
+    </resource-env-ref-type>
+  </resource-env-ref>
+
+  <error-page>
+    <exception-type>java.lang.Exception</exception-type>
+    <location>/errors</location>
+  </error-page>
+
+  <security-constraint>
+    <web-resource-collection>
+      <web-resource-name>JSP Files</web-resource-name>
+      <description>No direct access to JSP files</description>
+      <url-pattern>/views/*</url-pattern>
+      <http-method>POST</http-method>
+      <http-method>GET</http-method>
+    </web-resource-collection>
+    <auth-constraint>
+      <description>No direct browser access to JSP files</description>
+      <role-name>NoRoleAllowed</role-name>
+    </auth-constraint>
+  </security-constraint>
+
+</web-app>
