@@ -9,3 +9,11 @@ datasource:
         generation:
             strategy: create-drop
     show_sql: true
+app:
+    pagination:
+        max_size: 50
+    path: /banking
+server:
+    host: localhost
+    port: 8080
+    virtual_threads: true
