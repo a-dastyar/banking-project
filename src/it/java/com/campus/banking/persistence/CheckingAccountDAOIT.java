@@ -12,22 +12,26 @@ import org.junit.jupiter.api.Test;
 import com.campus.banking.AbstractIT;
 import com.campus.banking.model.CheckingAccount;
 
+import jakarta.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class CheckingAccountDAOIT extends AbstractIT {
 
     BankAccountDAO<CheckingAccount> dao;
+    EntityManager em;
 
     @BeforeEach
     void setup() {
         log.debug("setup");
-        dao = new CheckingAccountDAOImpl(super.db);
+        em = super.emf.createEntityManager();
+        dao = new CheckingAccountDAOImpl(em);
     }
 
     @AfterEach
     void teardown() {
         log.debug("teardown");
+        em.close();
     }
 
     @Test

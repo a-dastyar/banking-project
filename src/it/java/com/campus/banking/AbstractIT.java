@@ -1,46 +1,23 @@
 package com.campus.banking;
 
 import java.util.Map;
-import java.util.function.Function;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import com.campus.banking.persistence.Database;
-
-import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Testcontainers
 public abstract class AbstractIT {
 
-    @AllArgsConstructor
-    static class DatabaseWrapper implements Database {
-        private EntityManagerFactory emf;
-        @Override
-        public <U> U withEntityManager(Function<EntityManager, U> action) {
-            try (var em = emf.createEntityManager()) {
-                return action.apply(em);
-            }
-        }
-
-        @Override
-        public void closeEntityManagerFactory() {
-            emf.close();
-        }
-
-    }
-
     static String DB_IMAGE = "mysql:8.0.36-bookworm";
 
-    protected DatabaseWrapper db;
+    protected EntityManagerFactory emf;
 
     @Container
     static MySQLContainer<?> mysql = new MySQLContainer<>(DB_IMAGE);
@@ -55,13 +32,12 @@ public abstract class AbstractIT {
                 "hibernate.show_sql", "false",
                 "jakarta.persistence.schema-generation.database.action", "create-drop");
 
-        var emf = Persistence.createEntityManagerFactory("App", properties);
-        db = new DatabaseWrapper(emf);
+        emf = Persistence.createEntityManagerFactory("App", properties);
     }
 
     @AfterEach
     public void afterEach() {
         log.debug("Closing EntityManagerFactory");
-        db.closeEntityManagerFactory();
+        emf.close();
     }
 }
