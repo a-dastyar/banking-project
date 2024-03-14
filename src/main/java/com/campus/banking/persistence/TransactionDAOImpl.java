@@ -4,16 +4,22 @@ import java.util.function.Function;
 
 import com.campus.banking.model.Transaction;
 
+import jakarta.enterprise.context.Dependent;
+import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
-import lombok.AllArgsConstructor;
 
-@AllArgsConstructor
-public class TransactionDAOImpl extends AbstractDAO<Transaction, Long> implements TransactionDAO {
+@Dependent
+class TransactionDAOImpl extends AbstractDAO<Transaction, Long> implements TransactionDAO {
 
-    private Database db;
+    private EntityManager entityManager;
+
+    @Inject
+    public TransactionDAOImpl(EntityManager entityManager) {
+        this.entityManager = entityManager;
+    }
 
     @Override
     public boolean exists(Transaction entity) {
@@ -34,6 +40,6 @@ public class TransactionDAOImpl extends AbstractDAO<Transaction, Long> implement
 
     @Override
     public <U> U withEntityManager(Function<EntityManager, U> action) {
-        return db.withEntityManager(action);
+        return action.apply(entityManager);
     }
 }

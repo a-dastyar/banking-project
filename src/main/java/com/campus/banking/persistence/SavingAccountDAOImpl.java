@@ -5,17 +5,24 @@ import java.util.function.Function;
 
 import com.campus.banking.model.SavingAccount;
 
+import jakarta.enterprise.context.Dependent;
+import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.Query;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
-import lombok.AllArgsConstructor;
 
-@AllArgsConstructor
-public class SavingAccountDAOImpl extends AbstractDAO<SavingAccount, Long> implements SavingAccountDAO {
-    private Database db;
+@Dependent
+class SavingAccountDAOImpl extends AbstractDAO<SavingAccount, Long> implements SavingAccountDAO {
+
+    private EntityManager entityManager;
+    
+    @Inject
+    public SavingAccountDAOImpl(EntityManager entityManager) {
+        this.entityManager = entityManager;
+    }
 
     @Override
     public Optional<SavingAccount> findByAccountNumber(String accountNumber) {
@@ -103,6 +110,6 @@ public class SavingAccountDAOImpl extends AbstractDAO<SavingAccount, Long> imple
 
     @Override
     public <U> U withEntityManager(Function<EntityManager, U> action) {
-        return db.withEntityManager(action);
+        return action.apply(entityManager);
     }
 }

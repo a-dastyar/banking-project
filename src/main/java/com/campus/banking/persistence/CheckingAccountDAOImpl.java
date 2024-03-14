@@ -5,16 +5,23 @@ import java.util.function.Function;
 
 import com.campus.banking.model.CheckingAccount;
 
+import jakarta.enterprise.context.Dependent;
+import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
-import lombok.AllArgsConstructor;
 
-@AllArgsConstructor
-public class CheckingAccountDAOImpl extends AbstractDAO<CheckingAccount, Long>
+@Dependent
+class CheckingAccountDAOImpl extends AbstractDAO<CheckingAccount, Long>
         implements BankAccountDAO<CheckingAccount> {
-    private Database db;
+            
+    private EntityManager entityManager;
+    
+    @Inject
+    public CheckingAccountDAOImpl(EntityManager entityManager) {
+        this.entityManager = entityManager;
+    }
 
     @Override
     public Optional<CheckingAccount> findByAccountNumber(String accountNumber) {
@@ -62,6 +69,6 @@ public class CheckingAccountDAOImpl extends AbstractDAO<CheckingAccount, Long>
 
     @Override
     public <U> U withEntityManager(Function<EntityManager, U> action) {
-        return db.withEntityManager(action);
+        return action.apply(entityManager);
     }
 }
