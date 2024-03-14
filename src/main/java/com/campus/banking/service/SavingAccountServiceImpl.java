@@ -11,14 +11,21 @@ import com.campus.banking.model.TransactionType;
 import com.campus.banking.persistence.SavingAccountDAO;
 import com.campus.banking.persistence.TransactionDAO;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
-import lombok.AllArgsConstructor;
 
-@AllArgsConstructor
-public class SavingAccountServiceImpl implements SavingAccountService {
+@ApplicationScoped
+class SavingAccountServiceImpl implements SavingAccountService {
 
-    protected SavingAccountDAO dao;
-    protected TransactionDAO trxDao;
+    private SavingAccountDAO dao;
+    private TransactionDAO trxDao;
+
+    @Inject
+    public SavingAccountServiceImpl(SavingAccountDAO dao, TransactionDAO trxDao) {
+        this.dao = dao;
+        this.trxDao = trxDao;
+    }
 
     @Override
     public void add(SavingAccount account) {
@@ -99,7 +106,7 @@ public class SavingAccountServiceImpl implements SavingAccountService {
 
             var interest = account.getBalance() * account.getInterestRate() / 100.0;
             account.setBalance(account.getBalance() + interest);
-            
+
             dao.transactionalUpdate(em, account);
             insertTransaction(em, account, interest, TransactionType.INTEREST);
         });

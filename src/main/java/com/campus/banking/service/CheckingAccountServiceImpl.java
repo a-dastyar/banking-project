@@ -12,14 +12,21 @@ import com.campus.banking.persistence.TransactionDAO;
 
 import java.time.LocalDateTime;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
-import lombok.AllArgsConstructor;
 
-@AllArgsConstructor
-public class CheckingAccountServiceImpl implements CheckingAccountService {
+@ApplicationScoped
+class CheckingAccountServiceImpl implements CheckingAccountService {
 
     protected BankAccountDAO<CheckingAccount> dao;
     protected TransactionDAO trxDao;
+
+    @Inject
+    public CheckingAccountServiceImpl(BankAccountDAO<CheckingAccount> dao, TransactionDAO trxDao) {
+        this.dao = dao;
+        this.trxDao = trxDao;
+    }
 
     @Override
     public void add(CheckingAccount account) {

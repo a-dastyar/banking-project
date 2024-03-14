@@ -11,14 +11,21 @@ import com.campus.banking.model.TransactionType;
 import com.campus.banking.persistence.BankAccountDAO;
 import com.campus.banking.persistence.TransactionDAO;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
-import lombok.AllArgsConstructor;
 
-@AllArgsConstructor
-public class BankAccountServiceImpl implements BankAccountService<BankAccount> {
+@ApplicationScoped
+class BankAccountServiceImpl implements BankAccountService<BankAccount> {
 
     protected BankAccountDAO<BankAccount> dao;
     protected TransactionDAO trxDao;
+
+    @Inject
+    public BankAccountServiceImpl(BankAccountDAO<BankAccount> dao, TransactionDAO trxDao) {
+        this.dao = dao;
+        this.trxDao = trxDao;
+    }
 
     @Override
     public void add(BankAccount account) {
