@@ -10,6 +10,8 @@
     <div class="container-sm">
         <h1>Hi from home.jsp!!!</h1>
         <div><a class="btn btn-primary" href="users">users</a></div>
+        <br>
+        <div><a class="btn btn-primary" href="bank_account">Bank Account</a></div>
         <%@ include file="footer.jsp" %>  
     </div>
 </body>

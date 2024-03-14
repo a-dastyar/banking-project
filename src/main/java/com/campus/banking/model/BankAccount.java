@@ -11,7 +11,9 @@ import jakarta.persistence.Index;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.Table;
-
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -37,13 +39,16 @@ public class BankAccount implements BaseModel<Long> {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotNull @NotBlank
     @EqualsAndHashCode.Include
     @Column(name = "account_number", nullable = false)
     private String accountNumber;
 
+    @NotNull @NotBlank
     @Column(name = "account_holder_name", nullable = false)
     private String accountHolderName;
 
+    @PositiveOrZero
     @Column(name = "balance")
     private double balance;
 

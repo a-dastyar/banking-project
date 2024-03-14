@@ -3,7 +3,6 @@ package com.campus.banking.service;
 import java.time.LocalDateTime;
 
 import com.campus.banking.exception.InsufficientFundsException;
-import com.campus.banking.exception.InvalidAccountException;
 import com.campus.banking.exception.NotFoundException;
 import com.campus.banking.model.BankAccount;
 import com.campus.banking.model.Transaction;
@@ -14,6 +13,11 @@ import com.campus.banking.persistence.TransactionDAO;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 
 @ApplicationScoped
 class BankAccountServiceImpl implements BankAccountService<BankAccount> {
@@ -28,40 +32,18 @@ class BankAccountServiceImpl implements BankAccountService<BankAccount> {
     }
 
     @Override
-    public void add(BankAccount account) {
-        validate(account);
+    public void add(@NotNull @Valid BankAccount account) {
         dao.persist(account);
     }
 
-    private void validate(BankAccount account) {
-        if (account == null
-                || account.getAccountNumber() == null
-                || account.getAccountNumber().isBlank()
-                || account.getAccountHolderName() == null
-                || account.getAccountHolderName().isBlank()
-                || account.getBalance() < 0) {
-            throw new InvalidAccountException();
-        }
-    }
-
     @Override
-    public BankAccount getByAccountNumber(String accountNumber) {
-        validateAccountNumber(accountNumber);
+    public @NotNull @Valid BankAccount getByAccountNumber(@NotNull @NotBlank String accountNumber) {
         return dao.findByAccountNumber(accountNumber)
                 .orElseThrow(() -> new NotFoundException());
     }
 
-    private void validateAccountNumber(String accountNumber) {
-        if (accountNumber == null || accountNumber.isBlank()) {
-            throw new IllegalArgumentException();
-        }
-    }
-
     @Override
-    public void deposit(String accountNumber, double amount) {
-        if (amount < 0) {
-            throw new IllegalArgumentException("Can not deposit negative amount");
-        }
+    public void deposit(@NotNull @NotBlank String accountNumber, @Positive double amount) {
         dao.inTransaction(em -> {
             var account = dao.findByAccountNumberForUpdate(em, accountNumber)
                     .orElseThrow(() -> new NotFoundException());
@@ -76,10 +58,7 @@ class BankAccountServiceImpl implements BankAccountService<BankAccount> {
     }
 
     @Override
-    public void withdraw(String accountNumber, double amount) {
-        if (amount < 0) {
-            throw new IllegalArgumentException("Can not withdraw negative amount");
-        }
+    public void withdraw(@NotNull @NotBlank String accountNumber, @Positive double amount) {
         dao.inTransaction(em -> {
             var account = dao.findByAccountNumberForUpdate(em, accountNumber)
                     .orElseThrow(() -> new NotFoundException());
@@ -97,7 +76,7 @@ class BankAccountServiceImpl implements BankAccountService<BankAccount> {
     }
 
     @Override
-    public double sumBalanceHigherThan(double min) {
+    public @PositiveOrZero double sumBalanceHigherThan(@PositiveOrZero double min) {
         return dao.sumBalanceHigherThan(min);
     }
 
