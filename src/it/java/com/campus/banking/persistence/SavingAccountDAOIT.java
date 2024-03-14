@@ -13,22 +13,26 @@ import com.campus.banking.AbstractIT;
 import com.campus.banking.model.InterestPeriod;
 import com.campus.banking.model.SavingAccount;
 
+import jakarta.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class SavingAccountDAOIT extends AbstractIT {
 
     SavingAccountDAO dao;
+    EntityManager em;
 
     @BeforeEach
     void setup() {
         log.debug("setup");
-        dao = new SavingAccountDAOImpl(super.db);
+        em = super.emf.createEntityManager();
+        dao = new SavingAccountDAOImpl(em);
     }
 
     @AfterEach
     void teardown() {
         log.debug("teardown");
+        em.close();
     }
 
     @Test

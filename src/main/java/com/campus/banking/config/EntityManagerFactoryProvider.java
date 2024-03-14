@@ -1,22 +1,31 @@
-package com.campus.banking.persistence;
+package com.campus.banking.config;
 
 import java.util.Map;
-import java.util.function.Function;
-
 import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.config.ConfigProvider;
 
-import jakarta.persistence.EntityManager;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Disposes;
+import jakarta.enterprise.inject.Produces;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.inject.Inject;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
+import lombok.extern.slf4j.Slf4j;
 
-public enum DatabaseImpl implements Database {
-    INSTANCE;
+@Slf4j
+class EntityManagerFactoryProvider {
 
-    private Config config = ConfigProvider.getConfig();
-    private EntityManagerFactory factory = createEntityManagerFactory();
+    @Inject
+    Config config;
 
-    private EntityManagerFactory createEntityManagerFactory() {
+    @Inject
+    BeanManager beanManager;
+
+    @Produces
+    @ApplicationScoped
+    public EntityManagerFactory createEntityManagerFactory() {
+        log.debug("Creating EntityManagerFactory");
+
         String url = config.getValue("datasource.url", String.class);
         String username = config.getValue("datasource.user", String.class);
         String password = config.getValue("datasource.password", String.class);
@@ -30,21 +39,16 @@ public enum DatabaseImpl implements Database {
                 "hibernate.show_sql", showSQL,
                 "hibernate.format_sql", showSQL,
                 "hibernate.highlight_sql", showSQL,
-                "jakarta.persistence.schema-generation.database.action", schema);
-
+                "jakarta.persistence.schema-generation.database.action", schema,
+                "jakarta.persistence.bean.manager", beanManager);
+                
         return Persistence.createEntityManagerFactory("App", properties);
     }
 
-    @Override
-    public <U> U withEntityManager(Function<EntityManager, U> action) {
-        try (var em = factory.createEntityManager()) {
-            return action.apply(em);
+    public void close(@Disposes EntityManagerFactory emf) {
+        log.debug("Closing EntityManagerFactory");
+        if (emf.isOpen()) {
+            emf.close();
         }
     }
-
-    @Override
-    public void closeEntityManagerFactory() {
-        factory.close();
-    }
-
 }

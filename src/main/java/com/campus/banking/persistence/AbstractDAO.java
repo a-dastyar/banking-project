@@ -129,7 +129,10 @@ public abstract class AbstractDAO<T extends BaseModel<S>, S> implements DAO<T, S
             Root<T> select = delete.from(getType());
             delete.where(builder.equal(select.get(fieldName), fieldValue));
             Query deleteQuery = em.createQuery(delete);
-            return deleteQuery.executeUpdate();
+            var result =  deleteQuery.executeUpdate();
+            em.flush();
+            em.clear();
+            return result;
         });
     }
 
