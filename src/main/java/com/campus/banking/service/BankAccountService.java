@@ -24,7 +24,7 @@ public interface BankAccountService<T extends BankAccount> {
 
     void add(@NotNull @Valid T account);
 
-    @NotNull @Valid T getByAccountNumber(@NotNull @NotBlank String accountNumber);
+    @NotNull T getByAccountNumber(@NotNull @NotBlank String accountNumber);
 
     void deposit(@NotNull @NotBlank String accountNumber, @Positive double amount);
 
