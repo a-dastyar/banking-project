@@ -1,7 +1,6 @@
 package com.campus.banking.controller;
 
 import java.io.IOException;
-import java.util.Optional;
 
 import com.campus.banking.model.BankAccount;
 import com.campus.banking.service.BankAccountService;
@@ -34,13 +33,9 @@ public class BankAccountReadServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         log.debug("POST");
-        var accountNumber = Optional.ofNullable(req.getParameter("accountNumber"));
-        if (accountNumber.isPresent()) {
-            var account = service.getByAccountNumber(accountNumber.get());
-            req.setAttribute("account", account);
-        } else {
-            req.setAttribute("account", null);
-        }
+        var accountNumber = req.getParameter("account_number");
+        var account = service.getByAccountNumber(accountNumber);
+        req.setAttribute("account", account);
         req.getRequestDispatcher("/views/bank_account.jsp").forward(req, resp);
     }
 }

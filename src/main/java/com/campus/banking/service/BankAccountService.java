@@ -16,8 +16,8 @@ public interface BankAccountService<T extends BankAccount> {
 
     public static BankAccount toBankAccount(Map<String, String[]> properties) {
         return BankAccount.builder()
-                .accountNumber(Arrays.stream(properties.get("accountNumber")).findFirst().orElse(null))
-                .accountHolderName(Arrays.stream(properties.get("accountHolderName")).findFirst().orElse(null))
+                .accountNumber(Arrays.stream(properties.get("account_number")).findFirst().orElse(null))
+                .accountHolderName(Arrays.stream(properties.get("account_holder_name")).findFirst().orElse(null))
                 .balance(Arrays.stream(properties.get("balance")).findFirst().map(Double::valueOf).orElse(0.0d))
                 .build();
     }
