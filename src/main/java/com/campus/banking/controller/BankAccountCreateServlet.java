@@ -27,9 +27,13 @@ public class BankAccountCreateServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         log.debug("POST");
+
         BankAccount account = BankAccountService.toBankAccount(req.getParameterMap());
         this.service.add(account);
-        req.setAttribute("account", account);
-        req.getRequestDispatcher("/views/bank_account.jsp").forward(req, resp);
+
+        var session = req.getSession();
+        session.setAttribute("account_number", account.getAccountNumber());
+
+        resp.sendRedirect(req.getContextPath() + "/bank_account");
     }
 }

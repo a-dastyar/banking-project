@@ -27,6 +27,14 @@ public class BankAccountReadServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         log.debug("GET");
+        // req.getSession() is only called in BankAccountCreateServlet
+        // so if session is not null, then account_number is not null
+        var session = req.getSession(false);
+        if (session != null) {
+            var accountNumber = (String) session.getAttribute("account_number");
+            var account = service.getByAccountNumber(accountNumber);
+            req.setAttribute("account", account);
+        }
         req.getRequestDispatcher("/views/bank_account.jsp").forward(req, resp);
     }
 
@@ -34,8 +42,11 @@ public class BankAccountReadServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         log.debug("POST");
         var accountNumber = req.getParameter("account_number");
-        var account = service.getByAccountNumber(accountNumber);
-        req.setAttribute("account", account);
-        req.getRequestDispatcher("/views/bank_account.jsp").forward(req, resp);
+
+        var session = req.getSession(false);
+        if (session != null) {
+            session.setAttribute("account_number", accountNumber);
+        }
+        resp.sendRedirect(req.getContextPath() + "/bank_account");
     }
 }

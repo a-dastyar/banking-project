@@ -36,9 +36,7 @@ public class BankAccountWithdrawServlet extends HttpServlet {
                 .orElse(0.0d);
         this.service.withdraw(accountNumber, amount);
 
-        BankAccount account = this.service.getByAccountNumber(accountNumber);
-        req.setAttribute("account", account);
-        req.getRequestDispatcher("/views/bank_account.jsp").forward(req, resp);
+        resp.sendRedirect(req.getContextPath() + "/bank_account");
     }
 
     private boolean isNum(int codePonit) {
