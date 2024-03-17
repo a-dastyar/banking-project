@@ -4,6 +4,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import com.campus.banking.exception.DuplicatedException;
 import com.campus.banking.exception.NotFoundException;
+import com.campus.banking.model.Role;
 import com.campus.banking.model.User;
 import com.campus.banking.persistence.Page;
 import com.campus.banking.persistence.UserDAO;
@@ -51,6 +52,7 @@ class UserServiceImpl implements UserService {
             throw new DuplicatedException();
         }
         log.debug("Adding user");
+        user.getRoles().add(Role.MEMBER);
         user.setPassword(hashService.hashOf(user.getPassword()));
         dao.inTransaction(em -> dao.transactionalPersist(em, user));
     }
