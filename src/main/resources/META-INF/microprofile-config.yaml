@@ -8,7 +8,7 @@ datasource:
     url: jdbc:mysql://${datasource.host}:${datasource.port}/${datasource.database}
     schema:
         generation:
-            strategy: create-drop
+            strategy: drop-and-create
     show_sql: true
 app:
     pagination:
