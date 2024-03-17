@@ -2,8 +2,7 @@ package com.campus.banking.controller;
 
 import java.io.IOException;
 
-import com.campus.banking.model.BankAccount;
-import com.campus.banking.service.BankAccountService;
+import com.campus.banking.service.CheckingAccountService;
 
 import jakarta.inject.Inject;
 import jakarta.servlet.ServletException;
@@ -14,13 +13,13 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@WebServlet("/bank_account_create")
-public class BankAccountCreateServlet extends HttpServlet {
+@WebServlet("/checking_account_create")
+public class CheckingAccountCreateServlet extends HttpServlet {
 
-    private BankAccountService<BankAccount> service;
+    private CheckingAccountService service;
 
     @Inject
-    public void initialize(BankAccountService<BankAccount> service) {
+    public void initialize(CheckingAccountService service) {
         this.service = service;
     }
 
@@ -28,12 +27,12 @@ public class BankAccountCreateServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         log.debug("POST");
 
-        var account = BankAccountService.toBankAccount(req.getParameterMap());
+        var account = CheckingAccountService.toCheckingAccount(req.getParameterMap());
         this.service.add(account);
 
         var session = req.getSession();
-        session.setAttribute("account_number", account.getAccountNumber());
+        session.setAttribute("checking_account_number", account.getAccountNumber());
 
-        resp.sendRedirect(req.getContextPath() + "/bank_account");
+        resp.sendRedirect(req.getContextPath() + "/checking_account");
     }
 }
