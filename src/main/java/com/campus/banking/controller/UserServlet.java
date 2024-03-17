@@ -3,10 +3,13 @@ package com.campus.banking.controller;
 import java.io.IOException;
 import java.util.Optional;
 
+import com.campus.banking.model.Role;
 import com.campus.banking.service.UserService;
 
 import jakarta.inject.Inject;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.HttpMethodConstraint;
+import jakarta.servlet.annotation.ServletSecurity;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,6 +18,9 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @WebServlet("/users")
+@ServletSecurity(httpMethodConstraints = {
+        @HttpMethodConstraint(value = "GET", rolesAllowed = {Role.CONST.MANAGER, Role.CONST.ADMIN })
+})
 public class UserServlet extends HttpServlet {
 
     private UserService service;
@@ -34,13 +40,12 @@ public class UserServlet extends HttpServlet {
                 .orElse(1);
         var userList = service.getAll(page);
         req.setAttribute("users", userList);
-        req.getRequestDispatcher("/views/users.jsp").forward(req, resp);
+        req.getRequestDispatcher("/views/pages/users.jsp").forward(req, resp);
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        log.debug("POST");
         this.service.addUser(UserService.toUser(req.getParameterMap()));
-        resp.sendRedirect(req.getContextPath() + "/users");
+        resp.sendRedirect(req.getContextPath() + "/login");
     }
 }
