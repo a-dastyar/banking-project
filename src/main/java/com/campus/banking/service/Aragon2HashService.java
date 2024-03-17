@@ -2,9 +2,9 @@ package com.campus.banking.service;
 
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 
-import jakarta.enterprise.context.Dependent;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Dependent
+@ApplicationScoped
 public class Aragon2HashService implements HashService {
 
     Argon2PasswordEncoder argon2 = new Argon2PasswordEncoder(16, 32, 1, 60000, 10);
