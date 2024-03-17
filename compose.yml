@@ -1,12 +1,28 @@
-version: '3.1'
+version: "3.1"
 
 services:
-  database:
-    image: mysql:8.0.36-bookworm
-    ports:
-      - '3306:3306'
-    environment:
-      MYSQL_USER: user
-      MYSQL_PASSWORD: password
-      MYSQL_DATABASE: bank-systems
-      MYSQL_ROOT_PASSWORD: secure
+    app:
+        build:
+            context: .
+            target: dev
+        ports:
+            - "8080:8080"
+        env_file:
+            - dev.env
+        depends_on:
+            database:
+                condition: service_healthy
+        develop:
+            watch:
+                - action: rebuild
+                  path: ./src
+    database:
+        image: mysql:8.0.36-bookworm
+        ports:
+            - "3306:3306"
+        env_file:
+            - dev.env
+        healthcheck:
+            test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+            timeout: 20s
+            retries: 10
