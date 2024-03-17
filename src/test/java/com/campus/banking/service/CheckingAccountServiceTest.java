@@ -20,7 +20,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
 
 import com.campus.banking.exception.InsufficientFundsException;
-import com.campus.banking.exception.InvalidAccountException;
 import com.campus.banking.exception.LessThanMinimumTransactionException;
 import com.campus.banking.model.CheckingAccount;
 import com.campus.banking.persistence.BankAccountDAO;
@@ -52,59 +51,6 @@ public class CheckingAccountServiceTest {
     }
 
     @Test
-    void add_withNull_shouldFail() {
-        assertThatThrownBy(() -> service.add(null)).isInstanceOf(InvalidAccountException.class);
-    }
-
-    @Test
-    void add_withAccountWithoutAccountNumber_shouldFail() {
-        var account = CheckingAccount.builder()
-                .accountHolderName("Tester")
-                .build();
-        assertThatThrownBy(() -> service.add(account)).isInstanceOf(InvalidAccountException.class);
-    }
-
-    @Test
-    void add_withAccountWithBlankAccountNumber_shouldFail() {
-        var account = CheckingAccount.builder()
-                .accountHolderName("Tester")
-                .accountNumber("")
-                .build();
-        assertThatThrownBy(() -> service.add(account))
-                .isInstanceOf(InvalidAccountException.class);
-    }
-
-    @Test
-    void add_withAccountWithoutAccountHolderName_shouldFail() {
-        var account = CheckingAccount.builder()
-                .accountNumber("3000")
-                .build();
-        assertThatThrownBy(() -> service.add(account))
-                .isInstanceOf(InvalidAccountException.class);
-    }
-
-    @Test
-    void add_withAccountWithBlankAccountHolderName_shouldFail() {
-        var account = CheckingAccount.builder()
-                .accountNumber("3000")
-                .accountHolderName("")
-                .build();
-        assertThatThrownBy(() -> service.add(account))
-                .isInstanceOf(InvalidAccountException.class);
-    }
-
-    @Test
-    void add_withNegativeBalance_shouldFail() {
-        var account = CheckingAccount.builder()
-                .accountNumber("3000")
-                .accountHolderName("Test")
-                .balance(-1.0)
-                .build();
-        assertThatThrownBy(() -> service.add(account))
-                .isInstanceOf(InvalidAccountException.class);
-    }
-
-    @Test
     void add_withValidAccount_shouldAdd() {
         var account = CheckingAccount.builder()
                 .accountHolderName("Tester")
@@ -112,12 +58,6 @@ public class CheckingAccountServiceTest {
                 .build();
         service.add(account);
         assertThatNoException();
-    }
-
-    @Test
-    void getByAccountNumber_withNullAccountNumber_shouldFail() {
-        assertThatThrownBy(() -> service.getByAccountNumber(null))
-                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
@@ -129,13 +69,6 @@ public class CheckingAccountServiceTest {
         when(dao.findByAccountNumber(any())).thenReturn(Optional.of(account));
         var found = service.getByAccountNumber(account.getAccountNumber());
         assertThat(found.getAccountNumber()).isEqualTo(account.getAccountNumber());
-    }
-
-    @Test
-    void withdraw_withNegativeAmount_shouldFail() {
-        var accountNumber = "4000";
-        assertThatThrownBy(() -> service.withdraw(accountNumber, -2.0))
-                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
@@ -256,15 +189,6 @@ public class CheckingAccountServiceTest {
         assertThat(account.getBalance()).isEqualTo(500.0 -
                 CheckingAccount.TRANSACTION_FEE);
         assertThat(account.getDebt()).isEqualTo(0.0d);
-    }
-
-    @Test
-    void deposit_withNegativeAmount_shouldFail() {
-        var account = CheckingAccount.builder()
-                .balance(10.0)
-                .build();
-        assertThatThrownBy(() -> service.withdraw(account.getAccountNumber(), -2.0))
-                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test

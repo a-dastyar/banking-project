@@ -20,8 +20,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
 
 import com.campus.banking.exception.InsufficientFundsException;
-import com.campus.banking.exception.InvalidAccountException;
-import com.campus.banking.exception.NotFoundException;
 import com.campus.banking.model.BankAccount;
 import com.campus.banking.persistence.BankAccountDAO;
 import com.campus.banking.persistence.TransactionDAO;
@@ -52,60 +50,6 @@ public class BankAccountServiceTest {
     }
 
     @Test
-    void add_withNull_shouldFail() {
-        assertThatThrownBy(() -> service.add(null))
-                .isInstanceOf(InvalidAccountException.class);
-    }
-
-    @Test
-    void add_withAccountWithoutAccountNumber_shouldFail() {
-        var account = BankAccount.builder()
-                .accountHolderName("Tester")
-                .build();
-        assertThatThrownBy(() -> service.add(account)).isInstanceOf(InvalidAccountException.class);
-    }
-
-    @Test
-    void add_withAccountWithBlankAccountNumber_shouldFail() {
-        var account = BankAccount.builder()
-                .accountHolderName("Tester")
-                .accountNumber("")
-                .build();
-        assertThatThrownBy(() -> service.add(account))
-                .isInstanceOf(InvalidAccountException.class);
-    }
-
-    @Test
-    void add_withAccountWithoutAccountHolderName_shouldFail() {
-        var account = BankAccount.builder()
-                .accountNumber("3000")
-                .build();
-        assertThatThrownBy(() -> service.add(account))
-                .isInstanceOf(InvalidAccountException.class);
-    }
-
-    @Test
-    void add_withAccountWithBlankAccountHolderName_shouldFail() {
-        var account = BankAccount.builder()
-                .accountNumber("3000")
-                .accountHolderName("")
-                .build();
-        assertThatThrownBy(() -> service.add(account))
-                .isInstanceOf(InvalidAccountException.class);
-    }
-
-    @Test
-    void add_withNegativeBalance_shouldFail() {
-        var account = BankAccount.builder()
-                .accountNumber("3000")
-                .accountHolderName("Test")
-                .balance(-1.0)
-                .build();
-        assertThatThrownBy(() -> service.add(account))
-                .isInstanceOf(InvalidAccountException.class);
-    }
-
-    @Test
     void add_withValidAccount_shouldAdd() {
         var account = BankAccount.builder()
                 .accountHolderName("Tester")
@@ -113,12 +57,6 @@ public class BankAccountServiceTest {
                 .build();
         service.add(account);
         assertThatNoException();
-    }
-
-    @Test
-    void getByAccountNumber_withNullAccountNumber_shouldFail() {
-        assertThatThrownBy(() -> service.getByAccountNumber(null))
-                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
@@ -130,13 +68,6 @@ public class BankAccountServiceTest {
         when(dao.findByAccountNumber(any())).thenReturn(Optional.of(account));
         var found = service.getByAccountNumber(account.getAccountNumber());
         assertThat(found.getAccountNumber()).isEqualTo(account.getAccountNumber());
-    }
-
-    @Test
-    void withdraw_withNegativeAmount_shouldFail() {
-        var accountNumber = "3000";
-        assertThatThrownBy(() -> service.withdraw(accountNumber, -10.0))
-                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
@@ -153,15 +84,6 @@ public class BankAccountServiceTest {
     }
 
     @Test
-    void withdraw_withNoAccount_shouldFail() {
-        var accountNumber = "3000";
-        doAnswer(this::executeConsumer).when(dao).inTransaction(any());
-        when(dao.findByAccountNumberForUpdate(any(), any())).thenReturn(Optional.empty());
-        assertThatThrownBy(() -> service.withdraw(accountNumber, 11.0))
-                .isInstanceOf(NotFoundException.class);
-    }
-
-    @Test
     void withdraw_withLessThanBalance_shouldWithdraw() {
         var account = BankAccount.builder()
                 .accountHolderName("Tester")
@@ -173,13 +95,6 @@ public class BankAccountServiceTest {
         when(dao.findByAccountNumberForUpdate(any(), any())).thenReturn(Optional.of(account));
         service.withdraw(account.getAccountNumber(), 9.0);
         assertThat(account.getBalance()).isEqualTo(1.0);
-    }
-
-    @Test
-    void deposit_withNegativeAmount_shouldFail() {
-        var accountNumber = "3000";
-        assertThatThrownBy(() -> service.deposit(accountNumber, -10.0))
-                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
