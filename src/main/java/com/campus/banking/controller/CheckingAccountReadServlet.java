@@ -28,7 +28,7 @@ public class CheckingAccountReadServlet extends HttpServlet {
         log.debug("GET");
         var session = req.getSession(false);
         if (session != null) {
-            var accountNumber = (String) session.getAttribute("chcking_account_number");
+            var accountNumber = (String) session.getAttribute("checking_account_number");
             if (accountNumber != null) {
                 var account = service.getByAccountNumber(accountNumber);
                 req.setAttribute("checking_account", account);
@@ -40,7 +40,7 @@ public class CheckingAccountReadServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         log.debug("POST");
-        var accountNumber = req.getParameter("cheking_account_number_r");
+        var accountNumber = req.getParameter("checking_account_number_r");
 
         var session = req.getSession(false);
         if (session != null) {

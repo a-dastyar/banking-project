@@ -41,7 +41,7 @@ public class BankAccountReadServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         log.debug("POST");
-        var accountNumber = req.getParameter("account_number");
+        var accountNumber = req.getParameter("account_number_r");
 
         var session = req.getSession(false);
         if (session != null) {

@@ -29,7 +29,7 @@ public class CheckingAccountWithdrawServlet extends HttpServlet {
         log.debug("POST");
         var session = req.getSession(false);
         if (session != null) {
-            var accountNumber = (String) session.getAttribute("account_number");
+            var accountNumber = (String) session.getAttribute("checking_account_number");
             var amount = Optional.ofNullable(req.getParameter("withdraw_amount"))
                     .filter(str -> str.chars().allMatch(this::isNum))
                     .map(Double::valueOf)

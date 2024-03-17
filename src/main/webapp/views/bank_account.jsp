@@ -16,7 +16,7 @@
 
             <a class="btn btn-primary" href="/banking">Go Home</a>
             <a class="btn btn-primary" href="checking_account">Go To Checking Account</a>
-            <a class="btn btn-primary" href="savking_account">Go To Saving Account</a>
+            <a class="btn btn-primary" href="saving_account">Go To Saving Account</a>
 
             <c:if test="${sumExists && limitExists}">
                 <table class="table">

@@ -28,13 +28,16 @@ public class BankAccountWithdrawServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         log.debug("POST");
-        String accountNumber = req.getParameter("account_number");
-        var amount = Optional.ofNullable(req.getParameter("withdraw_amount"))
-                .filter(str -> str.chars().allMatch(this::isNum))
-                .map(Double::valueOf)
-                .filter(i -> i >= 0.0d)
-                .orElse(0.0d);
-        this.service.withdraw(accountNumber, amount);
+        var session = req.getSession(false);
+        if (session != null) {
+            var accountNumber = (String) session.getAttribute("account_number");
+            var amount = Optional.ofNullable(req.getParameter("withdraw_amount"))
+                    .filter(str -> str.chars().allMatch(this::isNum))
+                    .map(Double::valueOf)
+                    .filter(i -> i >= 0.0d)
+                    .orElse(0.0d);
+            this.service.withdraw(accountNumber, amount);
+        }
 
         resp.sendRedirect(req.getContextPath() + "/bank_account");
     }
