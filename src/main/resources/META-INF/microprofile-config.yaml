@@ -4,6 +4,7 @@ datasource:
     user: user
     password: password
     database: bank-systems
+    driver: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://${datasource.host}:${datasource.port}/${datasource.database}
     schema:
         generation:
