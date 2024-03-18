@@ -16,8 +16,11 @@
         position: absolute;
         width: 100%;
         height: 100vh;
-        background-image: url('assets/bank.jpg');
+        background-image: url('${pageContext.request.contextPath}/assets/bank.jpg');
         background-size: cover;
         z-index: -1;
+    }
+    .mid-container{
+        height: calc(100vh - 120px);background: #7d828447;
     }
 </style>
