@@ -43,6 +43,7 @@ class UserServiceImpl implements UserService {
     @Override
     public User getByUsername(@NotNull @NotBlank String username) {
         var user = this.dao.findBy("username", username).stream().findFirst();
+        log.debug("is present: {}",user.isPresent());
         return user.orElseThrow(NotFoundException::new);
     }
 
@@ -53,12 +54,21 @@ class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void addUser(@NotNull @Valid User user) {
+    public void add(@NotNull @Valid User user) {
         if (dao.exists(user)) {
             log.debug("User already exists!");
             throw new DuplicatedException();
         }
-        log.debug("Adding user");
+        user.setPassword(hashService.hashOf(user.getPassword()));
+        dao.inTransaction(em -> dao.transactionalPersist(em, user));
+    }
+
+    @Override
+    public void signup(@NotNull @Valid User user) {
+        if (dao.exists(user)) {
+            log.debug("User already exists!");
+            throw new DuplicatedException();
+        }
         user.setRoles(Set.of(Role.MEMBER));
         user.setPassword(hashService.hashOf(user.getPassword()));
         dao.inTransaction(em -> dao.transactionalPersist(em, user));
@@ -66,9 +76,9 @@ class UserServiceImpl implements UserService {
 
     @Override
     public void updateUser(@NotNull @Valid User user) {
-        var found = getById(user.getId());
-        if (!user.getPassword().equals(found.getPassword()))
-            user.setPassword(hashService.hashOf(user.getPassword()));
+        var found = getByUsername(user.getUsername());
+        user.setId(found.getId());
+        user.setPassword(found.getPassword());
         dao.inTransaction(em -> dao.transactionalUpdate(em, user));
     }
 
