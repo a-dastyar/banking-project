@@ -8,6 +8,7 @@
     </head>
 
     <body>
+        <c:set var="menu" value="home"/>
         <div class="background"></div>
         <%@ include file="/views/components/header.jsp" %>
         <div class="container-sm">

@@ -8,6 +8,7 @@
     </head>
 
     <body>
+        <c:set var="menu" value="banks"/>
         <div class="background blurred"></div>
         <%@ include file="/views/components/header.jsp" %>
 
