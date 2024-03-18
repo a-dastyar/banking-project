@@ -10,6 +10,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -44,9 +46,9 @@ public class BankAccount implements BaseModel<Long> {
     @Column(name = "account_number", nullable = false)
     private String accountNumber;
 
-    @NotNull @NotBlank
-    @Column(name = "account_holder_name", nullable = false)
-    private String accountHolderName;
+    @ManyToOne
+    @JoinColumn(name = "account_holder_id")
+    private User accountHoler;
 
     @PositiveOrZero
     @Column(name = "balance")

@@ -29,19 +29,7 @@ class SavingAccountServiceImpl implements SavingAccountService {
 
     @Override
     public void add(SavingAccount account) {
-        validate(account);
         dao.persist(account);
-    }
-
-    private void validate(SavingAccount account) {
-        if (account == null
-                || account.getAccountNumber() == null
-                || account.getAccountNumber().isBlank()
-                || account.getAccountHolderName() == null
-                || account.getAccountHolderName().isBlank()
-                || account.getBalance() < 0) {
-            throw new InvalidAccountException();
-        }
     }
 
     @Override
