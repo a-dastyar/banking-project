@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import com.campus.banking.AbstractIT;
 import com.campus.banking.model.CheckingAccount;
+import com.campus.banking.model.User;
 
 import jakarta.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
@@ -281,6 +282,41 @@ public class CheckingAccountDAOIT extends AbstractIT {
         dao.persist(list);
         var found = dao.findBy("balance", 0.0);
         assertThat(found.size()).isEqualTo(5);
+    }
+
+    @Test
+    void findByUsername_withNoMatchingAccount_shouldReturnEmptyList() {
+        var user = User.builder()
+                .username("test")
+                .email("test@test.test")
+                .password("test").build();
+        dao.inTransaction(em -> em.persist(user));
+        var account = CheckingAccount.builder()
+                .accountNumber("3000")
+                .balance(10).build();
+        dao.persist(account);
+        var result = dao.findByAccountNumber(user.getUsername());
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void findByUsername_withOneMatchingAccount_shouldReturnList() {
+        var user = User.builder()
+                .username("test")
+                .email("test@test.test")
+                .password("test").build();
+        dao.inTransaction(em -> em.persist(user));
+        var account = CheckingAccount.builder()
+                .accountHolder(user)
+                .accountNumber("3000")
+                .balance(10).build();
+        var account2 = CheckingAccount.builder()
+                .accountNumber("4000")
+                .balance(10).build();
+        dao.persist(account);
+        dao.persist(account2);
+        var result = dao.findByUsername(user.getUsername());
+        assertThat(result.size()).isEqualTo(1);
     }
 
     @Test

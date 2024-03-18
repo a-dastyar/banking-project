@@ -1,5 +1,6 @@
 package com.campus.banking.persistence;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -37,6 +38,16 @@ class SavingAccountDAOImpl extends AbstractDAO<SavingAccount, Long> implements S
     }
 
     @Override
+    public List<SavingAccount> findByUsername(String username) {
+        return withEntityManager(em -> {
+            var query = em.createQuery("FROM BankAccount account JOIN account.accountHolder user where user.username = :username",
+                    SavingAccount.class);
+            query.setParameter("username", username);
+            return query.getResultList();
+        });
+    }
+    
+    @Override
     public boolean exists(SavingAccount entity) {
         return withEntityManager(em -> {
             CriteriaBuilder builder = em.getCriteriaBuilder();
@@ -55,8 +66,8 @@ class SavingAccountDAOImpl extends AbstractDAO<SavingAccount, Long> implements S
         var update = """
                 UPDATE bank_accounts account
                   JOIN saving_accounts saving
-                  ON saving.id = account.id
-                  SET account.balance = account.balance + (account.balance * saving.interest_rate/100.0)
+                    ON saving.id = account.id
+                   SET account.balance = account.balance + (account.balance * saving.interest_rate/100.0)
                   """;
         var insertTransactions = """
                 INSERT INTO transactions(
