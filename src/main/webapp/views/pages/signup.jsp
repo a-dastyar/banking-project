@@ -11,7 +11,7 @@
         <div class="background blurred"></div>
         <div class="d-flex flex-column min-vh-100 justify-content-center align-items-center">
             <div class="container-sm shadow-lg p-3 mb-5 rounded" style="max-width: 400px;background: #b6bbbf70;">
-                <form method="POST" action="users" id="add-user-form">
+                <form method="POST" action="${pageContext.request.contextPath}/signup" id="add-user-form">
                     <div class="mb-3">
                         <label for="username" class="form-label">Username</label>
                         <input type="text" class="form-control" id="username" name="username">
