@@ -14,7 +14,7 @@
         <div
             class="container-sm d-flex flex-column justify-content-center shadow-lg p-3 mt-5 mb-5 rounded" style="background: #b5b5b594;">
 
-            <table class="table">
+            <table class="table table-secondary">
                 <thead>
                     <tr>
                         <th scope="col">Username</th>
