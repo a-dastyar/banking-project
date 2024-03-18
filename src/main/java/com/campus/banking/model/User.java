@@ -29,12 +29,12 @@ import lombok.With;
 @With
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 @Entity
 @Table(name = "users", indexes = {
         @Index(name = "user_email_idx", columnList = "email", unique = true),
         @Index(name = "user_username_idx", columnList = "username", unique = true) })
-public class User implements BaseModel<Long> {
+public class User extends BaseModel<Long> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

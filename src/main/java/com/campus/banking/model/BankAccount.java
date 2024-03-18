@@ -28,13 +28,13 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 @Entity
 @Table(name = "bank_accounts", indexes = {
         @Index(name = "bnk_acc_num_idx", columnList = "account_number", unique = true) })
 @Inheritance(strategy = InheritanceType.JOINED)
 @DiscriminatorColumn(name = BankAccount.TYPE_COLUMN, discriminatorType = DiscriminatorType.STRING, length = 50)
-public class BankAccount implements BaseModel<Long> {
+public class BankAccount extends BaseModel<Long> {
     public static final String TYPE_COLUMN = "type";
 
     @Id
