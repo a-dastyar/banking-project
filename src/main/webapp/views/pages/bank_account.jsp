@@ -1,17 +1,19 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!DOCTYPE html>
 <html lang="en">
+    <%@ include file="/views/components/imports.jsp" %>
 
     <c:set var="accountExists" value="${account != null}"/>
     <c:set var="sumExists" value="${sum != null}"/>
     <c:set var="limitExists" value="${limit != null}"/>
 
     <head>
-        <%@ include file="header.jsp" %>
+        <%@ include file="/views/components/meta.jsp" %>
         <title>BankAccount<c:if test="${accountExists}"> | page of ${account.getAccountNumber()}</c:if></title>
     </head>
 
     <body>
+        <%@ include file="/views/components/header.jsp" %>
         <div class="container-sm">
 
             <a class="btn btn-primary" href="/banking">Go Home</a>
@@ -170,7 +172,7 @@
             </div>
 
         </div>
-        <%@ include file="footer.jsp" %>
+        <%@ include file="/views/components/footer.jsp" %>
     </body>
 
 </html>

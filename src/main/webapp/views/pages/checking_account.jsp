@@ -1,25 +1,27 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!DOCTYPE html>
 <html lang="en">
+    <%@ include file="/views/components/imports.jsp" %>
 
-    <c:set var="savingAccountExists" value="${saving_account != null}"/>
-    <c:if test="${savingAccountExists}">
-        <c:set var="account" value="${saving_account}"/>
+    <c:set var="checkingAccountExists" value="${checking_account != null}"/>
+    <c:if test="${checkingAccountExists}">
+        <c:set var="account" value="${checking_account}"/>
     </c:if>
     <c:set var="sumExists" value="${sum != null}"/>
     <c:set var="limitExists" value="${limit != null}"/>
 
     <head>
-        <%@ include file="header.jsp" %>
-        <title>BankAccount<c:if test="${savingAccountExists}"> | page of ${account.getAccountNumber()}</c:if></title>
+        <%@ include file="/views/components/meta.jsp" %>
+        <title>Checking Account<c:if test="${checkingAccountExists}"> | page of ${account.getAccountNumber()}</c:if></title>
     </head>
 
     <body>
+        <%@ include file="/views/components/header.jsp" %>
         <div class="container-sm">
 
             <a class="btn btn-primary" href="/banking">Go Home</a>
             <a class="btn btn-primary" href="bank_account">Go To Bank Account</a>
-            <a class="btn btn-primary" href="checking_account">Go To Checking Account</a>
+            <a class="btn btn-primary" href="saving_account">Go To Saving Account</a>
 
             <c:if test="${sumExists && limitExists}">
                 <table class="table">
@@ -38,17 +40,14 @@
                 </table>
             </c:if>
 
-            <c:if test="${savingAccountExists}">
+            <c:if test="${checkingAccountExists}">
                 <table class="table">
                     <thead>
                         <tr>
                             <th scope="col">Account Number</th>
                             <th scope="col">Account Holder Name</th>
-                            <c:if test="${savingAccountExists}">
-                                <th scope="col">Interest Rate</th>
-                                <th scope="col">Interest Period</th>
-                                <th scope="col">Minimum Balance</th>
-                            </c:if>
+                            <th scope="col">Over Draft Limit</th>
+                            <th scope="col">Debt</th>
                             <th scope="col">Balance</th>
                         </tr>
                     </thead>
@@ -56,11 +55,8 @@
                         <tr>
                             <td>${account.getAccountNumber()}</td>
                             <td>${account.getAccountHolderName()}</td>
-                            <c:if test="${savingAccountExists}">
-                                <td>${account.getInterestRate()}</td>
-                                <td>${account.getInterestPeriod()}</td>
-                                <td>${account.getMinimumBalance()}</td>
-                            </c:if>
+                            <td>${account.getOverDraftLimit()}</td>
+                            <td>${account.getDebt()}</td>
                             <td>${account.getBalance()}</td>
                         </tr>
                     </tbody>
@@ -69,7 +65,7 @@
 
             <div class="row">
                 <c:choose>
-                    <c:when test="${savingAccountExists}">
+                    <c:when test="${checkingAccountExists}">
                         <div class="accordion col-6" id="accordion">
                     </c:when>
                     <c:otherwise>
@@ -82,9 +78,9 @@
                                 Sum Higher Than
                             </button>
                         </h2>
-                        <div id="saving_account_sum_balance" class="accordion-collapse collapse" data-bs-parent="#accordion">
+                        <div id="bank_account_sum_balance" class="accordion-collapse collapse" data-bs-parent="#accordion">
                             <div class="accordion-body">
-                                <form method="POST" action="saving_account_sum_balance">
+                                <form method="POST" action="bank_account_sum_balance">
                                     <div class="mb-3">
                                         <label for="limit" class="form-label">Limit</label>
                                         <input type="number" class="form-control" id="limit" name="limit">
@@ -96,16 +92,16 @@
                     </div>
                     <div class="accordion-item">
                         <h2 class="accordion-header">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#saving_account_read" aria-expanded="false" aria-controls="saving_account_read">
-                                Read Saving Account
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#checking_account_read" aria-expanded="false" aria-controls="bank_account_read">
+                                Read Checking Account
                             </button>
                         </h2>
-                        <div id="saving_account_read" class="accordion-collapse collapse" data-bs-parent="#accordion">
+                        <div id="checking_account_read" class="accordion-collapse collapse" data-bs-parent="#accordion">
                             <div class="accordion-body">
-                                <form method="POST" action="saving_account">
+                                <form method="POST" action="checking_account">
                                     <div class="mb-3">
-                                        <label for="saving_account_number_r" class="form-label">Account Number</label>
-                                        <input type="text" class="form-control" id="saving_account_number_r" name="saving_account_number_r">
+                                        <label for="checking_account_number_r" class="form-label">Account Number</label>
+                                        <input type="text" class="form-control" id="checking_account_number_r" name="checking_account_number_r">
                                     </div>
                                     <button type="submit" class="btn btn-primary">Submit</button>
                                 </form>
@@ -114,39 +110,32 @@
                     </div>
                     <div class="accordion-item">
                         <h2 class="accordion-header">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#saving_account_create" aria-expanded="false" aria-controls="saving_account_create">
-                                Create savingAccount
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#checking_account_create" aria-expanded="false" aria-controls="checking_account_create">
+                                Create Checking Account
                             </button>
                         </h2>
-                        <div id="saving_account_create" class="accordion-collapse collapse" data-bs-parent="#accordion">
+                        <div id="checking_account_create" class="accordion-collapse collapse" data-bs-parent="#accordion">
                             <div class="accordion-body">
-                                <form method="POST" action="saving_account_create">
+                                <form method="POST" action="checking_account_create">
                                     <div class="mb-3">
-                                        <label for="saving_account_number" class="form-label">Account Number</label>
-                                        <input type="text" class="form-control" id="saving_account_number" name="saving_account_number">
+                                        <label for="checking_account_number" class="form-label">Account Number</label>
+                                        <input type="text" class="form-control" id="checking_account_number" name="checking_account_number">
                                     </div>
                                     <div class="mb-3">
-                                        <label for="saving_account_holder_name" class="form-label">Account Holder Name</label>
-                                        <input type="text" class="form-control" id="saving_account_holder_name" name="saving_account_holder_name">
+                                        <label for="checking_account_holder_name" class="form-label">Account Holder Name</label>
+                                        <input type="text" class="form-control" id="checking_account_holder_name" name="checking_account_holder_name">
                                     </div>
                                     <div class="mb-3">
-                                        <label for="saving_balance" class="form-label">Balance</label>
-                                        <input type="number" class="form-control" id="saving_balance" name="saving_balance">
+                                        <label for="checking_balance" class="form-label">Balance</label>
+                                        <input type="number" class="form-control" id="checking_balance" name="checking_balance">
                                     </div>
                                     <div class="mb-3">
-                                        <label for="saving_interest_rate" class="form-label">Interest Rate</label>
-                                        <input type="number" class="form-control" id="saving_interest_rate" name="saving_interest_rate">
+                                        <label for="checking_over_draft_limit" class="form-label">Over Draft Limit</label>
+                                        <input type="number" class="form-control" id="checking_over_draft_limit" name="checking_over_draft_limit">
                                     </div>
                                     <div class="mb-3">
-                                        <label for="saving_interest_period" class="form-label">Interest Period</label>
-                                        <select class="form-select" aria-label="Interest Period select" id="saving_interest_period" name="saving_interest_period">
-                                            <option value="MONTHLY">MONTHLY</option>
-                                            <option value="YEARLY">YEARLY</option>
-                                        </select>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="saving_minimum_balance" class="form-label">Minimum Balance</label>
-                                        <input type="number" class="form-control" id="saving_minimum_balance" name="saving_minimum_balance">
+                                        <label for="checking_debt" class="form-label">Debt</label>
+                                        <input type="number" class="form-control" id="checking_debt" name="checking_debt">
                                     </div>
                                     <button type="submit" class="btn btn-primary">Submit</button>
                                 </form>
@@ -155,17 +144,17 @@
                     </div>
                 </div>
     
-                <c:if test="${savingAccountExists}">
+                <c:if test="${accountExists || checkingAccountExists || savingAccountExists}">
                     <div class="accordion col-6" id="accordionExample">
                         <div class="accordion-item">
                             <h2 class="accordion-header">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#saving_account_deposit" aria-expanded="true" aria-controls="saving_account_deposit">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#checking_account_deposit" aria-expanded="true" aria-controls="checking_account_deposit">
                                     Deposit
                                 </button>
                             </h2>
-                            <div id="saving_account_deposit" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                            <div id="checking_account_deposit" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
                                 <div class="accordion-body">
-                                    <form method="POST" action="saving_account_deposit">
+                                    <form method="POST" action="checking_account_deposit">
                                         <div class="mb-3">
                                             <label for="deposit_amount" class="form-label">Deposit Amount</label>
                                             <input type="number" class="form-control" id="deposit_amount" name="deposit_amount">
@@ -177,13 +166,13 @@
                         </div>
                         <div class="accordion-item">
                             <h2 class="accordion-header">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#saving_account_withdraw" aria-expanded="false" aria-controls="saving_account_withdraw">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#checking_account_withdraw" aria-expanded="false" aria-controls="checking_account_withdraw">
                                     Withdraw
                                 </button>
                             </h2>
-                            <div id="saving_account_withdraw" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                            <div id="checking_account_withdraw" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
                                 <div class="accordion-body">
-                                    <form method="POST" action="saving_account_withdraw">
+                                    <form method="POST" action="checking_account_withdraw">
                                         <div class="mb-3">
                                             <label for="withdraw_amount" class="form-label">Withdraw Amount</label>
                                             <input type="number" class="form-control" id="withdraw_amount" name="withdraw_amount">
@@ -198,7 +187,7 @@
             </div>
 
         </div>
-        <%@ include file="footer.jsp" %>
+        <%@ include file="/views/components/footer.jsp" %>
     </body>
 
 </html>

@@ -36,7 +36,7 @@ public class BankAccountSumBalanceServlet extends HttpServlet {
         double sum = this.service.sumBalanceHigherThan(limit);
         req.setAttribute("sum", sum);
         req.setAttribute("limit", limit);
-        req.getRequestDispatcher("/views/bank_account.jsp").forward(req, resp);
+        req.getRequestDispatcher("/views/pages/bank_account.jsp").forward(req, resp);
     }
 
     private boolean isNum(int codePonit) {

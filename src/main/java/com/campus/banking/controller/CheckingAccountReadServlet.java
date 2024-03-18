@@ -34,7 +34,7 @@ public class CheckingAccountReadServlet extends HttpServlet {
                 req.setAttribute("checking_account", account);
             }
         }
-        req.getRequestDispatcher("/views/checking_account.jsp").forward(req, resp);
+        req.getRequestDispatcher("/views/pages/checking_account.jsp").forward(req, resp);
     }
 
     @Override
