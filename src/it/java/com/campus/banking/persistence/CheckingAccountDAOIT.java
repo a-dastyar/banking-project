@@ -37,20 +37,8 @@ public class CheckingAccountDAOIT extends AbstractIT {
     @Test
     void persist_withNullAccountNumber_shouldFail() {
         var account = CheckingAccount.builder()
-                .accountHolderName("Tester")
                 .balance(10.0)
-                .overDraftLimit(100.0)
-                .debt(0.0).build();
-        assertThatThrownBy(() -> dao.persist(account))
-                .hasMessageContaining("null");
-    }
-
-    @Test
-    void persist_withNullAccountHolderName_shouldFail() {
-        var account = CheckingAccount.builder()
-                .accountNumber("4000")
-                .balance(10.0)
-                .overDraftLimit(100.0)
+                .overdraftLimit(100.0)
                 .debt(0.0).build();
         assertThatThrownBy(() -> dao.persist(account))
                 .hasMessageContaining("null");
@@ -60,9 +48,8 @@ public class CheckingAccountDAOIT extends AbstractIT {
     void persist_withValidAccount_shouldSave() {
         var account = CheckingAccount.builder()
                 .accountNumber("4000")
-                .accountHolderName("Tester")
                 .balance(10.0)
-                .overDraftLimit(100.0)
+                .overdraftLimit(100.0)
                 .debt(0.0).build();
         dao.persist(account);
         assertThat(account.getId()).isNotNull();
@@ -73,20 +60,8 @@ public class CheckingAccountDAOIT extends AbstractIT {
     @Test
     void persistList_withNullAccountNumber_shouldFail() {
         var account = CheckingAccount.builder()
-                .accountHolderName("Tester")
                 .balance(10.0)
-                .overDraftLimit(100.0)
-                .debt(0.0).build();
-        assertThatThrownBy(() -> dao.persist(List.of(account)))
-                .hasMessageContaining("null");
-    }
-
-    @Test
-    void persistList_withNullAccountHolderName_shouldFail() {
-        var account = CheckingAccount.builder()
-                .accountNumber("4000")
-                .balance(10.0)
-                .overDraftLimit(100.0)
+                .overdraftLimit(100.0)
                 .debt(0.0).build();
         assertThatThrownBy(() -> dao.persist(List.of(account)))
                 .hasMessageContaining("null");
@@ -96,9 +71,8 @@ public class CheckingAccountDAOIT extends AbstractIT {
     void persistList_withValidAccount_shouldSave() {
         var account = CheckingAccount.builder()
                 .accountNumber("4000")
-                .accountHolderName("Tester")
                 .balance(10.0)
-                .overDraftLimit(100.0)
+                .overdraftLimit(100.0)
                 .debt(0.0).build();
         dao.persist(List.of(account));
         assertThat(account.getId()).isNotNull();
@@ -109,14 +83,11 @@ public class CheckingAccountDAOIT extends AbstractIT {
     @Test
     void persistList_withMultipleAccount_shouldSave() {
         var list = List.of(
-                CheckingAccount.builder().accountNumber("4000")
-                        .accountHolderName("Tester").build(),
-                CheckingAccount.builder().accountNumber("5000")
-                        .accountHolderName("Tester").build(),
-                CheckingAccount.builder().accountNumber("6000")
-                        .accountHolderName("New Tester").build());
+                CheckingAccount.builder().balance(10).accountNumber("4000").build(),
+                CheckingAccount.builder().balance(10).accountNumber("5000").build(),
+                CheckingAccount.builder().accountNumber("6000").build());
         dao.persist(list);
-        var found = dao.findBy("accountHolderName", "Tester");
+        var found = dao.findBy("balance", 10.0);
         assertThat(found.size()).isEqualTo(2);
     }
 
@@ -130,9 +101,8 @@ public class CheckingAccountDAOIT extends AbstractIT {
     void find_withAccountId_shouldReturnAccount() {
         var account = CheckingAccount.builder()
                 .accountNumber("4000")
-                .accountHolderName("Tester")
                 .balance(10.0)
-                .overDraftLimit(100.0)
+                .overdraftLimit(100.0)
                 .debt(0.0).build();
         dao.persist(account);
         assertThat(account.getId()).isNotNull();
@@ -144,9 +114,8 @@ public class CheckingAccountDAOIT extends AbstractIT {
     void transactionalRemove_withAccount_shouldRemove() {
         var account = CheckingAccount.builder()
                 .accountNumber("4000")
-                .accountHolderName("Tester")
                 .balance(10.0)
-                .overDraftLimit(100.0)
+                .overdraftLimit(100.0)
                 .debt(0.0).build();
         dao.persist(account);
         dao.inTransaction(em -> {
@@ -166,10 +135,8 @@ public class CheckingAccountDAOIT extends AbstractIT {
     @Test
     void getAll_withMultipleAccounts_shouldReturnAccounts() {
         var list = List.of(
-                CheckingAccount.builder().accountNumber("4000")
-                        .accountHolderName("Tester").build(),
-                CheckingAccount.builder().accountNumber("5000")
-                        .accountHolderName("Tester").build());
+                CheckingAccount.builder().accountNumber("4000").build(),
+                CheckingAccount.builder().accountNumber("5000").build());
         dao.persist(list);
         var found = dao.getAll();
         assertThat(found.size()).isEqualTo(2);
@@ -178,18 +145,12 @@ public class CheckingAccountDAOIT extends AbstractIT {
     @Test
     void getAllPaginated_withMultipleAccounts_shouldReturnPage() {
         var list = List.of(
-                CheckingAccount.builder().accountNumber("4000")
-                        .accountHolderName("Tester").build(),
-                CheckingAccount.builder().accountNumber("6000")
-                        .accountHolderName("Tester").build(),
-                CheckingAccount.builder().accountNumber("7000")
-                        .accountHolderName("Tester").build(),
-                CheckingAccount.builder().accountNumber("8000")
-                        .accountHolderName("Tester").build(),
-                CheckingAccount.builder().accountNumber("9000")
-                        .accountHolderName("Tester").build(),
-                CheckingAccount.builder().accountNumber("10000")
-                        .accountHolderName("Tester").build());
+                CheckingAccount.builder().accountNumber("4000").build(),
+                CheckingAccount.builder().accountNumber("6000").build(),
+                CheckingAccount.builder().accountNumber("7000").build(),
+                CheckingAccount.builder().accountNumber("8000").build(),
+                CheckingAccount.builder().accountNumber("9000").build(),
+                CheckingAccount.builder().accountNumber("10000").build());
         dao.persist(list);
         var found = dao.getAll(2, 2);
         assertThat(found.total()).isEqualTo(6);
@@ -200,18 +161,12 @@ public class CheckingAccountDAOIT extends AbstractIT {
     @Test
     void countAll_withMultipleAccounts_shouldReturnCount() {
         var list = List.of(
-                CheckingAccount.builder().accountNumber("4000")
-                        .accountHolderName("Tester").build(),
-                CheckingAccount.builder().accountNumber("6000")
-                        .accountHolderName("Tester").build(),
-                CheckingAccount.builder().accountNumber("7000")
-                        .accountHolderName("Tester").build(),
-                CheckingAccount.builder().accountNumber("8000")
-                        .accountHolderName("Tester").build(),
-                CheckingAccount.builder().accountNumber("9000")
-                        .accountHolderName("Tester").build(),
-                CheckingAccount.builder().accountNumber("10000")
-                        .accountHolderName("Tester").build());
+                CheckingAccount.builder().accountNumber("4000").build(),
+                CheckingAccount.builder().accountNumber("6000").build(),
+                CheckingAccount.builder().accountNumber("7000").build(),
+                CheckingAccount.builder().accountNumber("8000").build(),
+                CheckingAccount.builder().accountNumber("9000").build(),
+                CheckingAccount.builder().accountNumber("10000").build());
         dao.persist(list);
         var count = dao.countAll();
         assertThat(count).isEqualTo(6);
@@ -221,9 +176,8 @@ public class CheckingAccountDAOIT extends AbstractIT {
     void exists_withSameAccount_shouldReturnTrue() {
         var account = CheckingAccount.builder()
                 .accountNumber("4000")
-                .accountHolderName("Tester")
                 .balance(10.0)
-                .overDraftLimit(100.0)
+                .overdraftLimit(100.0)
                 .debt(0.0).build();
         dao.persist(account);
         var exists = dao.exists(account);
@@ -234,15 +188,13 @@ public class CheckingAccountDAOIT extends AbstractIT {
     void exists_withSameAccountNumber_shouldReturnTrue() {
         var account = CheckingAccount.builder()
                 .accountNumber("4000")
-                .accountHolderName("Tester")
                 .balance(10.0)
-                .overDraftLimit(100.0)
+                .overdraftLimit(100.0)
                 .debt(0.0).build();
         var newAccount = CheckingAccount.builder()
                 .accountNumber("4000")
-                .accountHolderName("Tester")
                 .balance(10.0)
-                .overDraftLimit(100.0)
+                .overdraftLimit(100.0)
                 .debt(0.0).build();
         dao.persist(account);
         var exists = dao.exists(newAccount);
@@ -253,15 +205,13 @@ public class CheckingAccountDAOIT extends AbstractIT {
     void exists_withDifferentAccountNumber_shouldReturnTrue() {
         var account = CheckingAccount.builder()
                 .accountNumber("4000")
-                .accountHolderName("Tester")
                 .balance(10.0)
-                .overDraftLimit(100.0)
+                .overdraftLimit(100.0)
                 .debt(0.0).build();
         var newAccount = CheckingAccount.builder()
                 .accountNumber("5000")
-                .accountHolderName("Tester")
                 .balance(10.0)
-                .overDraftLimit(100.0)
+                .overdraftLimit(100.0)
                 .debt(0.0).build();
         dao.persist(account);
         var exists = dao.exists(newAccount);
@@ -272,15 +222,14 @@ public class CheckingAccountDAOIT extends AbstractIT {
     void update_withAccount_shouldUpdate() {
         var account = CheckingAccount.builder()
                 .accountNumber("4000")
-                .accountHolderName("Tester")
                 .balance(10.0)
-                .overDraftLimit(100.0)
+                .overdraftLimit(100.0)
                 .debt(0.0).build();
         dao.persist(account);
-        account.setAccountHolderName("Updated");
+        account.setBalance(30);
         dao.update(account);
         var found = dao.find(account.getId()).get();
-        assertThat(found.getAccountHolderName()).isEqualTo("Updated");
+        assertThat(found.getBalance()).isEqualTo(30);
     }
 
     @Test
@@ -293,9 +242,8 @@ public class CheckingAccountDAOIT extends AbstractIT {
     void findByAccountNumber_withAccountNumber_shouldReturnAccount() {
         var account = CheckingAccount.builder()
                 .accountNumber("4000")
-                .accountHolderName("Tester")
                 .balance(10.0)
-                .overDraftLimit(100.0)
+                .overdraftLimit(100.0)
                 .debt(0.0).build();
         dao.persist(account);
         assertThat(account.getId()).isNotNull();
@@ -305,7 +253,7 @@ public class CheckingAccountDAOIT extends AbstractIT {
 
     @Test
     void findBy_withNoAccount_shouldReturnEmpty() {
-        var found = dao.findBy("accountHolderName", "Tester");
+        var found = dao.findBy("balance", 10.0);
         assertThat(found).isEmpty();
     }
 
@@ -313,38 +261,31 @@ public class CheckingAccountDAOIT extends AbstractIT {
     void findBy_withOneMatchingAccount_shouldReturnAccounts() {
         var account = CheckingAccount.builder()
                 .accountNumber("4000")
-                .accountHolderName("Tester")
                 .balance(10.0)
-                .overDraftLimit(100.0)
+                .overdraftLimit(100.0)
                 .debt(0.0).build();
         dao.persist(account);
-        var found = dao.findBy("accountHolderName", account.getAccountHolderName());
+        var found = dao.findBy("balance", account.getBalance());
         assertThat(found).isNotEmpty();
     }
 
     @Test
     void findBy_withMultipleMatchingAccount_shouldReturnAccounts() {
         var list = List.of(
-                CheckingAccount.builder().accountNumber("4000")
-                        .accountHolderName("Tester").build(),
-                CheckingAccount.builder().accountNumber("6000")
-                        .accountHolderName("Tester").build(),
-                CheckingAccount.builder().accountNumber("7000")
-                        .accountHolderName("Tester").build(),
-                CheckingAccount.builder().accountNumber("8000")
-                        .accountHolderName("Tester").build(),
-                CheckingAccount.builder().accountNumber("9000")
-                        .accountHolderName("Tester").build(),
-                CheckingAccount.builder().accountNumber("10000")
-                        .accountHolderName("New Tester").build());
+                CheckingAccount.builder().accountNumber("4000").balance(10).build(),
+                CheckingAccount.builder().accountNumber("6000").build(),
+                CheckingAccount.builder().accountNumber("7000").build(),
+                CheckingAccount.builder().accountNumber("8000").build(),
+                CheckingAccount.builder().accountNumber("9000").build(),
+                CheckingAccount.builder().accountNumber("10000").build());
         dao.persist(list);
-        var found = dao.findBy("accountHolderName", "Tester");
+        var found = dao.findBy("balance", 0.0);
         assertThat(found.size()).isEqualTo(5);
     }
 
     @Test
     void removeBy_withNoAccount_shouldNotFail() {
-        var removed = dao.removeBy("accountHolderName", "Tester");
+        var removed = dao.removeBy("balance", 10.0);
         assertThat(removed).isEqualTo(0);
     }
 
@@ -352,12 +293,11 @@ public class CheckingAccountDAOIT extends AbstractIT {
     void removeBy_withOneMatchingAccount_shouldRemove() {
         var account = CheckingAccount.builder()
                 .accountNumber("4000")
-                .accountHolderName("Tester")
                 .balance(10.0)
-                .overDraftLimit(100.0)
+                .overdraftLimit(100.0)
                 .debt(0.0).build();
         dao.persist(account);
-        var removed = dao.removeBy("accountHolderName", account.getAccountHolderName());
+        var removed = dao.removeBy("balance", account.getBalance());
         var found = dao.find(account.getId());
         assertThat(removed).isEqualTo(1);
         assertThat(found).isEmpty();
@@ -366,46 +306,34 @@ public class CheckingAccountDAOIT extends AbstractIT {
     @Test
     void removeBy_withMultipleMatchingAccount_shouldRemove() {
         var list = List.of(
-                CheckingAccount.builder().accountNumber("4000")
-                        .accountHolderName("Tester").build(),
-                CheckingAccount.builder().accountNumber("6000")
-                        .accountHolderName("Tester").build(),
-                CheckingAccount.builder().accountNumber("7000")
-                        .accountHolderName("Tester").build(),
-                CheckingAccount.builder().accountNumber("8000")
-                        .accountHolderName("Tester").build(),
-                CheckingAccount.builder().accountNumber("9000")
-                        .accountHolderName("Tester").build(),
-                CheckingAccount.builder().accountNumber("10000")
-                        .accountHolderName("New Tester").build());
+                CheckingAccount.builder().accountNumber("4000").balance(10).build(),
+                CheckingAccount.builder().accountNumber("6000").build(),
+                CheckingAccount.builder().accountNumber("7000").build(),
+                CheckingAccount.builder().accountNumber("8000").build(),
+                CheckingAccount.builder().accountNumber("9000").build(),
+                CheckingAccount.builder().accountNumber("10000").build());
         dao.persist(list);
-        var removed = dao.removeBy("accountHolderName", "Tester");
-        var found = dao.findBy("accountHolderName", "Tester");
+        var removed = dao.removeBy("balance", 0.0);
+        var found = dao.getAll();
         assertThat(removed).isEqualTo(5);
-        assertThat(found).isEmpty();
+        assertThat(found.size()).isEqualTo(1);
     }
 
     @Test
     void sumBalanceHigherThan_withNoAccountHigher_shouldReturnSum() {
         var list = List.of(
                 CheckingAccount.builder().accountNumber("4000")
-                        .balance(100)
-                        .accountHolderName("Tester").build(),
+                        .balance(100).build(),
                 CheckingAccount.builder().accountNumber("6000")
-                        .balance(100)
-                        .accountHolderName("Tester").build(),
+                        .balance(100).build(),
                 CheckingAccount.builder().accountNumber("7000")
-                        .balance(100)
-                        .accountHolderName("Tester").build(),
+                        .balance(100).build(),
                 CheckingAccount.builder().accountNumber("8000")
-                        .balance(100)
-                        .accountHolderName("Tester").build(),
+                        .balance(100).build(),
                 CheckingAccount.builder().accountNumber("9000")
-                        .balance(100)
-                        .accountHolderName("Tester").build(),
+                        .balance(100).build(),
                 CheckingAccount.builder().accountNumber("10000")
-                        .balance(100)
-                        .accountHolderName("Tester").build());
+                        .balance(100).build());
         dao.persist(list);
         var sum = dao.sumBalanceHigherThan(500);
         assertThat(sum).isEqualTo(0.0);
@@ -415,23 +343,17 @@ public class CheckingAccountDAOIT extends AbstractIT {
     void sumBalanceHigherThan_withOneAccountHigher_shouldReturnSum() {
         var list = List.of(
                 CheckingAccount.builder().accountNumber("4000")
-                        .balance(100)
-                        .accountHolderName("Tester").build(),
+                        .balance(100).build(),
                 CheckingAccount.builder().accountNumber("6000")
-                        .balance(100)
-                        .accountHolderName("Tester").build(),
+                        .balance(100).build(),
                 CheckingAccount.builder().accountNumber("7000")
-                        .balance(100)
-                        .accountHolderName("Tester").build(),
+                        .balance(100).build(),
                 CheckingAccount.builder().accountNumber("8000")
-                        .balance(100)
-                        .accountHolderName("Tester").build(),
+                        .balance(100).build(),
                 CheckingAccount.builder().accountNumber("9000")
-                        .balance(100)
-                        .accountHolderName("Tester").build(),
+                        .balance(100).build(),
                 CheckingAccount.builder().accountNumber("10000")
-                        .balance(2000)
-                        .accountHolderName("Tester").build());
+                        .balance(2000).build());
         dao.persist(list);
         var sum = dao.sumBalanceHigherThan(500);
         assertThat(sum).isEqualTo(2000.0);
@@ -441,23 +363,17 @@ public class CheckingAccountDAOIT extends AbstractIT {
     void sumBalanceHigherThan_withMultipleAccountHigher_shouldReturnSum() {
         var list = List.of(
                 CheckingAccount.builder().accountNumber("4000")
-                        .balance(100)
-                        .accountHolderName("Tester").build(),
+                        .balance(100).build(),
                 CheckingAccount.builder().accountNumber("6000")
-                        .balance(100)
-                        .accountHolderName("Tester").build(),
+                        .balance(100).build(),
                 CheckingAccount.builder().accountNumber("7000")
-                        .balance(600)
-                        .accountHolderName("Tester").build(),
+                        .balance(600).build(),
                 CheckingAccount.builder().accountNumber("8000")
-                        .balance(3000)
-                        .accountHolderName("Tester").build(),
+                        .balance(3000).build(),
                 CheckingAccount.builder().accountNumber("9000")
-                        .balance(100)
-                        .accountHolderName("Tester").build(),
+                        .balance(100).build(),
                 CheckingAccount.builder().accountNumber("10000")
-                        .balance(2000)
-                        .accountHolderName("Tester").build());
+                        .balance(2000).build());
         dao.persist(list);
         var sum = dao.sumBalanceHigherThan(500);
         assertThat(sum).isEqualTo(5600.0);
@@ -465,9 +381,8 @@ public class CheckingAccountDAOIT extends AbstractIT {
 
     private void assertCheckingAccountEqual(CheckingAccount result, CheckingAccount expected) {
         assertThat(result.getAccountNumber()).isEqualTo(expected.getAccountNumber());
-        assertThat(result.getAccountHolderName()).isEqualTo(expected.getAccountHolderName());
         assertThat(result.getBalance()).isEqualTo(expected.getBalance());
-        assertThat(result.getOverDraftLimit()).isEqualTo(expected.getOverDraftLimit());
+        assertThat(result.getOverdraftLimit()).isEqualTo(expected.getOverdraftLimit());
         assertThat(result.getDebt()).isEqualTo(expected.getDebt());
     }
 }

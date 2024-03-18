@@ -38,20 +38,6 @@ public class SavingAccountDAOIT extends AbstractIT {
     @Test
     void persist_withNullAccountNumber_shouldFail() {
         var account = SavingAccount.builder()
-                .accountHolderName("Tester")
-                .balance(10.0)
-                .minimumBalance(100.0)
-                .interestRate(0.0)
-                .interestPeriod(InterestPeriod.YEARLY)
-                .build();
-        assertThatThrownBy(() -> dao.persist(account))
-                .hasMessageContaining("null");
-    }
-
-    @Test
-    void persist_withNullAccountHolderName_shouldFail() {
-        var account = SavingAccount.builder()
-                .accountNumber("5000")
                 .balance(10.0)
                 .minimumBalance(100.0)
                 .interestRate(0.0)
@@ -65,7 +51,6 @@ public class SavingAccountDAOIT extends AbstractIT {
     void persist_withValidAccount_shouldSave() {
         var account = SavingAccount.builder()
                 .accountNumber("5000")
-                .accountHolderName("Tester")
                 .balance(10.0)
                 .minimumBalance(100.0)
                 .interestRate(0.0)
@@ -80,20 +65,6 @@ public class SavingAccountDAOIT extends AbstractIT {
     @Test
     void persistList_withNullAccountNumber_shouldFail() {
         var account = SavingAccount.builder()
-                .accountHolderName("Tester")
-                .balance(10.0)
-                .minimumBalance(100.0)
-                .interestRate(0.0)
-                .interestPeriod(InterestPeriod.YEARLY)
-                .build();
-        assertThatThrownBy(() -> dao.persist(List.of(account)))
-                .hasMessageContaining("null");
-    }
-
-    @Test
-    void persistList_withNullAccountHolderName_shouldFail() {
-        var account = SavingAccount.builder()
-                .accountNumber("5000")
                 .balance(10.0)
                 .minimumBalance(100.0)
                 .interestRate(0.0)
@@ -107,7 +78,6 @@ public class SavingAccountDAOIT extends AbstractIT {
     void persistList_withValidAccount_shouldSave() {
         var account = SavingAccount.builder()
                 .accountNumber("5000")
-                .accountHolderName("Tester")
                 .balance(10.0)
                 .minimumBalance(100.0)
                 .interestRate(0.0)
@@ -123,13 +93,14 @@ public class SavingAccountDAOIT extends AbstractIT {
     void persistList_withMultipleAccount_shouldSave() {
         var list = List.of(
                 SavingAccount.builder().accountNumber("5000")
-                        .accountHolderName("Tester").build(),
+                        .interestPeriod(InterestPeriod.YEARLY).interestRate(10.0)
+                        .balance(10.0).build(),
                 SavingAccount.builder().accountNumber("6000")
-                        .accountHolderName("Tester").build(),
+                        .interestPeriod(InterestPeriod.YEARLY).interestRate(10.0).build(),
                 SavingAccount.builder().accountNumber("7000")
-                        .accountHolderName("New Tester").build());
+                        .interestPeriod(InterestPeriod.YEARLY).interestRate(10.0).build());
         dao.persist(list);
-        var found = dao.findBy("accountHolderName", "Tester");
+        var found = dao.findBy("balance", 0.0);
         assertThat(found.size()).isEqualTo(2);
     }
 
@@ -143,7 +114,6 @@ public class SavingAccountDAOIT extends AbstractIT {
     void find_withAccountId_shouldReturnAccount() {
         var account = SavingAccount.builder()
                 .accountNumber("5000")
-                .accountHolderName("Tester")
                 .balance(10.0)
                 .minimumBalance(100.0)
                 .interestRate(0.0)
@@ -159,7 +129,6 @@ public class SavingAccountDAOIT extends AbstractIT {
     void transactionalRemove_withAccount_shouldRemove() {
         var account = SavingAccount.builder()
                 .accountNumber("5000")
-                .accountHolderName("Tester")
                 .balance(10.0)
                 .minimumBalance(100.0)
                 .interestRate(0.0)
@@ -184,11 +153,11 @@ public class SavingAccountDAOIT extends AbstractIT {
     void getAll_withMultipleAccounts_shouldReturnAccounts() {
         var list = List.of(
                 SavingAccount.builder().accountNumber("5000")
-                        .accountHolderName("Tester").build(),
+                        .interestPeriod(InterestPeriod.YEARLY).interestRate(10.0).build(),
                 SavingAccount.builder().accountNumber("6000")
-                        .accountHolderName("Tester").build(),
+                        .interestPeriod(InterestPeriod.YEARLY).interestRate(10.0).build(),
                 SavingAccount.builder().accountNumber("7000")
-                        .accountHolderName("New Tester").build());
+                        .interestPeriod(InterestPeriod.YEARLY).interestRate(10.0).build());
         dao.persist(list);
         var found = dao.getAll();
         assertThat(found.size()).isEqualTo(3);
@@ -198,17 +167,17 @@ public class SavingAccountDAOIT extends AbstractIT {
     void getAllPaginated_withMultipleAccounts_shouldReturnPage() {
         var list = List.of(
                 SavingAccount.builder().accountNumber("5000")
-                        .accountHolderName("Tester").build(),
+                        .interestPeriod(InterestPeriod.YEARLY).interestRate(10.0).build(),
                 SavingAccount.builder().accountNumber("6000")
-                        .accountHolderName("Tester").build(),
+                        .interestPeriod(InterestPeriod.YEARLY).interestRate(10.0).build(),
                 SavingAccount.builder().accountNumber("7000")
-                        .accountHolderName("Tester").build(),
+                        .interestPeriod(InterestPeriod.YEARLY).interestRate(10.0).build(),
                 SavingAccount.builder().accountNumber("8000")
-                        .accountHolderName("Tester").build(),
+                        .interestPeriod(InterestPeriod.YEARLY).interestRate(10.0).build(),
                 SavingAccount.builder().accountNumber("9000")
-                        .accountHolderName("Tester").build(),
+                        .interestPeriod(InterestPeriod.YEARLY).interestRate(10.0).build(),
                 SavingAccount.builder().accountNumber("10000")
-                        .accountHolderName("New Tester").build());
+                        .interestPeriod(InterestPeriod.YEARLY).interestRate(10.0).build());
         dao.persist(list);
         var found = dao.getAll(2, 2);
         assertThat(found.total()).isEqualTo(6);
@@ -220,17 +189,17 @@ public class SavingAccountDAOIT extends AbstractIT {
     void countAll_withMultipleAccounts_shouldReturnCount() {
         var list = List.of(
                 SavingAccount.builder().accountNumber("5000")
-                        .accountHolderName("Tester").build(),
+                        .interestPeriod(InterestPeriod.YEARLY).build(),
                 SavingAccount.builder().accountNumber("6000")
-                        .accountHolderName("Tester").build(),
+                        .interestPeriod(InterestPeriod.YEARLY).build(),
                 SavingAccount.builder().accountNumber("7000")
-                        .accountHolderName("Tester").build(),
+                        .interestPeriod(InterestPeriod.YEARLY).build(),
                 SavingAccount.builder().accountNumber("8000")
-                        .accountHolderName("Tester").build(),
+                        .interestPeriod(InterestPeriod.YEARLY).build(),
                 SavingAccount.builder().accountNumber("9000")
-                        .accountHolderName("Tester").build(),
+                        .interestPeriod(InterestPeriod.YEARLY).build(),
                 SavingAccount.builder().accountNumber("10000")
-                        .accountHolderName("New Tester").build());
+                        .interestPeriod(InterestPeriod.YEARLY).build());
         dao.persist(list);
         var count = dao.countAll();
         assertThat(count).isEqualTo(6);
@@ -240,7 +209,6 @@ public class SavingAccountDAOIT extends AbstractIT {
     void exists_withSameAccount_shouldReturnTrue() {
         var account = SavingAccount.builder()
                 .accountNumber("5000")
-                .accountHolderName("Tester")
                 .balance(10.0)
                 .minimumBalance(100.0)
                 .interestRate(0.0)
@@ -255,7 +223,6 @@ public class SavingAccountDAOIT extends AbstractIT {
     void exists_withSameAccountNumber_shouldReturnTrue() {
         var account = SavingAccount.builder()
                 .accountNumber("5000")
-                .accountHolderName("Tester")
                 .balance(10.0)
                 .minimumBalance(100.0)
                 .interestRate(0.0)
@@ -263,7 +230,6 @@ public class SavingAccountDAOIT extends AbstractIT {
                 .build();
         var newAccount = SavingAccount.builder()
                 .accountNumber("5000")
-                .accountHolderName("Tester")
                 .balance(10.0)
                 .minimumBalance(100.0)
                 .interestRate(0.0)
@@ -278,7 +244,6 @@ public class SavingAccountDAOIT extends AbstractIT {
     void exists_withDifferentAccountNumber_shouldReturnTrue() {
         var account = SavingAccount.builder()
                 .accountNumber("5000")
-                .accountHolderName("Tester")
                 .balance(10.0)
                 .minimumBalance(100.0)
                 .interestRate(0.0)
@@ -286,7 +251,6 @@ public class SavingAccountDAOIT extends AbstractIT {
                 .build();
         var newAccount = SavingAccount.builder()
                 .accountNumber("6000")
-                .accountHolderName("Tester")
                 .balance(10.0)
                 .minimumBalance(100.0)
                 .interestRate(0.0)
@@ -301,17 +265,16 @@ public class SavingAccountDAOIT extends AbstractIT {
     void update_withAccount_shouldUpdate() {
         var account = SavingAccount.builder()
                 .accountNumber("5000")
-                .accountHolderName("Tester")
                 .balance(10.0)
                 .minimumBalance(100.0)
                 .interestRate(0.0)
                 .interestPeriod(InterestPeriod.YEARLY)
                 .build();
         dao.persist(account);
-        account.setAccountHolderName("Updated");
+        account.setBalance(30.0);
         dao.update(account);
         var found = dao.find(account.getId()).get();
-        assertThat(found.getAccountHolderName()).isEqualTo("Updated");
+        assertThat(found.getBalance()).isEqualTo(30.0);
     }
 
     @Test
@@ -324,7 +287,6 @@ public class SavingAccountDAOIT extends AbstractIT {
     void findByAccountNumber_withAccountNumber_shouldReturnAccount() {
         var account = SavingAccount.builder()
                 .accountNumber("5000")
-                .accountHolderName("Tester")
                 .balance(10.0)
                 .minimumBalance(100.0)
                 .interestRate(0.0)
@@ -338,7 +300,7 @@ public class SavingAccountDAOIT extends AbstractIT {
 
     @Test
     void findBy_withNoAccount_shouldReturnEmpty() {
-        var found = dao.findBy("accountHolderName", "Tester");
+        var found = dao.findBy("balance", 0.0);
         assertThat(found).isEmpty();
     }
 
@@ -346,14 +308,13 @@ public class SavingAccountDAOIT extends AbstractIT {
     void findBy_withOneMatchingAccount_shouldReturnAccounts() {
         var account = SavingAccount.builder()
                 .accountNumber("5000")
-                .accountHolderName("Tester")
                 .balance(10.0)
                 .minimumBalance(100.0)
                 .interestRate(0.0)
                 .interestPeriod(InterestPeriod.YEARLY)
                 .build();
         dao.persist(account);
-        var found = dao.findBy("accountHolderName", account.getAccountHolderName());
+        var found = dao.findBy("balance", account.getBalance());
         assertThat(found).isNotEmpty();
     }
 
@@ -361,25 +322,25 @@ public class SavingAccountDAOIT extends AbstractIT {
     void findBy_withMultipleMatchingAccount_shouldReturnAccounts() {
         var list = List.of(
                 SavingAccount.builder().accountNumber("5000")
-                        .accountHolderName("Tester").build(),
+                        .interestPeriod(InterestPeriod.YEARLY).balance(10.0).build(),
                 SavingAccount.builder().accountNumber("6000")
-                        .accountHolderName("Tester").build(),
+                        .interestPeriod(InterestPeriod.YEARLY).build(),
                 SavingAccount.builder().accountNumber("7000")
-                        .accountHolderName("Tester").build(),
+                        .interestPeriod(InterestPeriod.YEARLY).build(),
                 SavingAccount.builder().accountNumber("8000")
-                        .accountHolderName("Tester").build(),
+                        .interestPeriod(InterestPeriod.YEARLY).build(),
                 SavingAccount.builder().accountNumber("9000")
-                        .accountHolderName("Tester").build(),
+                        .interestPeriod(InterestPeriod.YEARLY).build(),
                 SavingAccount.builder().accountNumber("10000")
-                        .accountHolderName("New Tester").build());
+                        .interestPeriod(InterestPeriod.YEARLY).build());
         dao.persist(list);
-        var found = dao.findBy("accountHolderName", "Tester");
+        var found = dao.findBy("balance", 0.0);
         assertThat(found.size()).isEqualTo(5);
     }
 
     @Test
     void removeBy_withNoAccount_shouldNotFail() {
-        var removed = dao.removeBy("accountHolderName", "Tester");
+        var removed = dao.removeBy("balance", 0.0);
         assertThat(removed).isEqualTo(0);
     }
 
@@ -387,14 +348,13 @@ public class SavingAccountDAOIT extends AbstractIT {
     void removeBy_withOneMatchingAccount_shouldRemove() {
         var account = SavingAccount.builder()
                 .accountNumber("5000")
-                .accountHolderName("Tester")
                 .balance(10.0)
                 .minimumBalance(100.0)
                 .interestRate(0.0)
                 .interestPeriod(InterestPeriod.YEARLY)
                 .build();
         dao.persist(account);
-        var removed = dao.removeBy("accountHolderName", account.getAccountHolderName());
+        var removed = dao.removeBy("balance", account.getBalance());
         var found = dao.find(account.getId());
         assertThat(removed).isEqualTo(1);
         assertThat(found).isEmpty();
@@ -403,46 +363,46 @@ public class SavingAccountDAOIT extends AbstractIT {
     @Test
     void removeBy_withMultipleMatchingAccount_shouldRemove() {
         var list = List.of(
-                SavingAccount.builder().accountNumber("5000")
-                        .accountHolderName("Tester").build(),
+                SavingAccount.builder().accountNumber("5000").balance(10.0)
+                        .interestPeriod(InterestPeriod.YEARLY).build(),
                 SavingAccount.builder().accountNumber("6000")
-                        .accountHolderName("Tester").build(),
+                        .interestPeriod(InterestPeriod.YEARLY).build(),
                 SavingAccount.builder().accountNumber("7000")
-                        .accountHolderName("Tester").build(),
+                        .interestPeriod(InterestPeriod.YEARLY).build(),
                 SavingAccount.builder().accountNumber("8000")
-                        .accountHolderName("Tester").build(),
+                        .interestPeriod(InterestPeriod.YEARLY).build(),
                 SavingAccount.builder().accountNumber("9000")
-                        .accountHolderName("Tester").build(),
+                        .interestPeriod(InterestPeriod.YEARLY).build(),
                 SavingAccount.builder().accountNumber("10000")
-                        .accountHolderName("New Tester").build());
+                        .interestPeriod(InterestPeriod.YEARLY).build());
         dao.persist(list);
-        var removed = dao.removeBy("accountHolderName", "Tester");
-        var found = dao.findBy("accountHolderName", "Tester");
+        var removed = dao.removeBy("balance", 0);
+        var found = dao.getAll();
         assertThat(removed).isEqualTo(5);
-        assertThat(found).isEmpty();
+        assertThat(found.size()).isEqualTo(1);
     }
 
     @Test
     void sumBalanceHigherThan_withNoAccountHigher_shouldReturnSum() {
         var list = List.of(
                 SavingAccount.builder().accountNumber("5000")
-                        .balance(100)
-                        .accountHolderName("Tester").build(),
+                        .interestPeriod(InterestPeriod.YEARLY)
+                        .balance(100).build(),
                 SavingAccount.builder().accountNumber("6000")
-                        .balance(100)
-                        .accountHolderName("Tester").build(),
+                        .interestPeriod(InterestPeriod.YEARLY)
+                        .balance(100).build(),
                 SavingAccount.builder().accountNumber("7000")
-                        .balance(100)
-                        .accountHolderName("Tester").build(),
+                        .interestPeriod(InterestPeriod.YEARLY)
+                        .balance(100).build(),
                 SavingAccount.builder().accountNumber("8000")
-                        .balance(100)
-                        .accountHolderName("Tester").build(),
+                        .interestPeriod(InterestPeriod.YEARLY)
+                        .balance(100).build(),
                 SavingAccount.builder().accountNumber("9000")
-                        .balance(100)
-                        .accountHolderName("Tester").build(),
+                        .interestPeriod(InterestPeriod.YEARLY)
+                        .balance(100).build(),
                 SavingAccount.builder().accountNumber("10000")
-                        .balance(100)
-                        .accountHolderName("New Tester").build());
+                        .interestPeriod(InterestPeriod.YEARLY)
+                        .balance(100).build());
         dao.persist(list);
         var sum = dao.sumBalanceHigherThan(500);
         assertThat(sum).isEqualTo(0.0);
@@ -452,23 +412,23 @@ public class SavingAccountDAOIT extends AbstractIT {
     void sumBalanceHigherThan_withOneAccountHigher_shouldReturnSum() {
         var list = List.of(
                 SavingAccount.builder().accountNumber("5000")
-                        .balance(100)
-                        .accountHolderName("Tester").build(),
+                        .interestPeriod(InterestPeriod.YEARLY)
+                        .balance(100).build(),
                 SavingAccount.builder().accountNumber("6000")
-                        .balance(100)
-                        .accountHolderName("Tester").build(),
+                        .interestPeriod(InterestPeriod.YEARLY)
+                        .balance(100).build(),
                 SavingAccount.builder().accountNumber("7000")
-                        .balance(100)
-                        .accountHolderName("Tester").build(),
+                        .interestPeriod(InterestPeriod.YEARLY)
+                        .balance(100).build(),
                 SavingAccount.builder().accountNumber("8000")
-                        .balance(100)
-                        .accountHolderName("Tester").build(),
+                        .interestPeriod(InterestPeriod.YEARLY)
+                        .balance(100).build(),
                 SavingAccount.builder().accountNumber("9000")
-                        .balance(100)
-                        .accountHolderName("Tester").build(),
+                        .interestPeriod(InterestPeriod.YEARLY)
+                        .balance(100).build(),
                 SavingAccount.builder().accountNumber("10000")
-                        .balance(2000)
-                        .accountHolderName("New Tester").build());
+                        .interestPeriod(InterestPeriod.YEARLY)
+                        .balance(2000).build());
         dao.persist(list);
         var sum = dao.sumBalanceHigherThan(500);
         assertThat(sum).isEqualTo(2000.0);
@@ -478,23 +438,23 @@ public class SavingAccountDAOIT extends AbstractIT {
     void sumBalanceHigherThan_withMultipleAccountHigher_shouldReturnSum() {
         var list = List.of(
                 SavingAccount.builder().accountNumber("5000")
-                        .balance(5000)
-                        .accountHolderName("Tester").build(),
+                        .interestPeriod(InterestPeriod.YEARLY)
+                        .balance(5000).build(),
                 SavingAccount.builder().accountNumber("6000")
-                        .balance(900)
-                        .accountHolderName("Tester").build(),
+                        .interestPeriod(InterestPeriod.YEARLY)
+                        .balance(900).build(),
                 SavingAccount.builder().accountNumber("7000")
-                        .balance(500)
-                        .accountHolderName("Tester").build(),
+                        .interestPeriod(InterestPeriod.YEARLY)
+                        .balance(500).build(),
                 SavingAccount.builder().accountNumber("8000")
-                        .balance(100)
-                        .accountHolderName("Tester").build(),
+                        .interestPeriod(InterestPeriod.YEARLY)
+                        .balance(100).build(),
                 SavingAccount.builder().accountNumber("9000")
-                        .balance(100)
-                        .accountHolderName("Tester").build(),
+                        .interestPeriod(InterestPeriod.YEARLY)
+                        .balance(100).build(),
                 SavingAccount.builder().accountNumber("10000")
-                        .balance(2000)
-                        .accountHolderName("New Tester").build());
+                        .interestPeriod(InterestPeriod.YEARLY)
+                        .balance(2000).build());
         dao.persist(list);
         var sum = dao.sumBalanceHigherThan(500);
         assertThat(sum).isEqualTo(7900.0);
@@ -504,17 +464,17 @@ public class SavingAccountDAOIT extends AbstractIT {
     void applyInterest_withMultipleAccountHigher_shouldAddInterestToBalance() {
         var list = List.of(
                 SavingAccount.builder().accountNumber("5000")
+                        .interestPeriod(InterestPeriod.YEARLY)
                         .balance(5000)
-                        .interestRate(10.0)
-                        .accountHolderName("Tester").build(),
+                        .interestRate(10.0).build(),
                 SavingAccount.builder().accountNumber("8000")
+                        .interestPeriod(InterestPeriod.YEARLY)
                         .balance(100)
-                        .interestRate(20.0)
-                        .accountHolderName("Tester").build(),
+                        .interestRate(20.0).build(),
                 SavingAccount.builder().accountNumber("10000")
+                        .interestPeriod(InterestPeriod.YEARLY)
                         .balance(2000)
-                        .interestRate(0.0)
-                        .accountHolderName("New Tester").build());
+                        .interestRate(0.0).build());
         dao.persist(list);
         dao.applyInterest();
         var sum = dao.sumBalanceHigherThan(0);
@@ -523,7 +483,6 @@ public class SavingAccountDAOIT extends AbstractIT {
 
     private void assertSavingAccountEqual(SavingAccount result, SavingAccount expected) {
         assertThat(result.getAccountNumber()).isEqualTo(expected.getAccountNumber());
-        assertThat(result.getAccountHolderName()).isEqualTo(expected.getAccountHolderName());
         assertThat(result.getBalance()).isEqualTo(expected.getBalance());
         assertThat(result.getMinimumBalance()).isEqualTo(expected.getMinimumBalance());
         assertThat(result.getInterestRate()).isEqualTo(expected.getInterestRate());
