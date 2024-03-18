@@ -1,10 +1,11 @@
 package com.campus.banking.controller;
 
 import java.io.IOException;
-import java.util.Optional;
+
 
 import com.campus.banking.model.Role;
 import com.campus.banking.service.UserService;
+import com.campus.banking.util.ServletUtils;
 
 import jakarta.inject.Inject;
 import jakarta.servlet.ServletException;
@@ -19,7 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @WebServlet("/users")
 @ServletSecurity(httpMethodConstraints = {
-        @HttpMethodConstraint(value = "GET", rolesAllowed = {Role.CONST.MANAGER, Role.CONST.ADMIN })
+        @HttpMethodConstraint(value = "GET", rolesAllowed = { Role.CONST.MANAGER, Role.CONST.ADMIN })
 })
 public class UserServlet extends HttpServlet {
 
@@ -33,11 +34,7 @@ public class UserServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         log.debug("GET");
-        var page = Optional.ofNullable(req.getParameter("page"))
-                .filter(str -> str.chars().allMatch(Character::isDigit))
-                .map(Integer::valueOf)
-                .filter(i -> i > 0)
-                .orElse(1);
+        var page = ServletUtils.getPageNumber(req.getParameter("page"));
         var userList = service.getAll(page);
         req.setAttribute("users", userList);
         req.getRequestDispatcher("/views/pages/users.jsp").forward(req, resp);
