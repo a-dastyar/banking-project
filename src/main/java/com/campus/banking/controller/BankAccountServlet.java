@@ -47,7 +47,7 @@ public class BankAccountServlet extends HttpServlet {
             req.setAttribute("min", val);
             req.setAttribute("sum", sum);
         }
-        req.getRequestDispatcher("/views/pages/bank_account.jsp").forward(req, resp);
+        req.getRequestDispatcher("/views/pages/bank_accounts.jsp").forward(req, resp);
     }
 
     @Override

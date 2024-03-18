@@ -48,7 +48,7 @@ public class CheckingAccountServlet extends HttpServlet {
             req.setAttribute("min", val);
             req.setAttribute("sum", sum);
         }
-        req.getRequestDispatcher("/views/pages/checking_account.jsp").forward(req, resp);
+        req.getRequestDispatcher("/views/pages/checking_accounts.jsp").forward(req, resp);
     }
 
     @Override
