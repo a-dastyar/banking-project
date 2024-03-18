@@ -1,207 +1,144 @@
-<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!DOCTYPE html>
 <html lang="en">
     <%@ include file="/views/components/imports.jsp" %>
-
-    <c:set var="savingAccountExists" value="${saving_account != null}"/>
-    <c:if test="${savingAccountExists}">
-        <c:set var="account" value="${saving_account}"/>
-    </c:if>
     <c:set var="sumExists" value="${sum != null}"/>
-    <c:set var="limitExists" value="${limit != null}"/>
 
     <head>
         <%@ include file="/views/components/meta.jsp" %>
-        <%@ include file="/views/components/header.jsp" %>
-        <title>BankAccount<c:if test="${savingAccountExists}"> | page of ${account.getAccountNumber()}</c:if></title>
+        <title>Saving accounts</title>
     </head>
 
     <body>
         <div class="background blurred"></div>
         <%@ include file="/views/components/header.jsp" %>
-        <div class="container-sm">
 
-            <a class="btn btn-primary" href="/banking">Go Home</a>
-            <a class="btn btn-primary" href="bank_account">Go To Bank Account</a>
-            <a class="btn btn-primary" href="checking_account">Go To Checking Account</a>
-
-            <c:if test="${sumExists && limitExists}">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th scope="col">Sum Balance</th>
-                            <th scope="col">Higher Than</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>${sum}</td>
-                            <td>${limit}</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </c:if>
-
-            <c:if test="${savingAccountExists}">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th scope="col">Account Number</th>
-                            <th scope="col">Account Holder Name</th>
-                            <c:if test="${savingAccountExists}">
-                                <th scope="col">Interest Rate</th>
-                                <th scope="col">Interest Period</th>
-                                <th scope="col">Minimum Balance</th>
-                            </c:if>
-                            <th scope="col">Balance</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>${account.getAccountNumber()}</td>
-                            <td>${account.getAccountHolderName()}</td>
-                            <c:if test="${savingAccountExists}">
-                                <td>${account.getInterestRate()}</td>
-                                <td>${account.getInterestPeriod()}</td>
-                                <td>${account.getMinimumBalance()}</td>
-                            </c:if>
-                            <td>${account.getBalance()}</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </c:if>
-
-            <div class="row">
-                <c:choose>
-                    <c:when test="${savingAccountExists}">
-                        <div class="accordion col-6" id="accordion">
-                    </c:when>
-                    <c:otherwise>
-                        <div class="accordion" id="accordion">
-                    </c:otherwise>
-                </c:choose>
-                    <div class="accordion-item">
-                        <h2 class="accordion-header">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#bank_account_sum_balance" aria-expanded="true" aria-controls="bank_account_sum_balance">
-                                Sum Higher Than
-                            </button>
-                        </h2>
-                        <div id="saving_account_sum_balance" class="accordion-collapse collapse" data-bs-parent="#accordion">
-                            <div class="accordion-body">
-                                <form method="POST" action="saving_account_sum_balance">
-                                    <div class="mb-3">
-                                        <label for="limit" class="form-label">Limit</label>
-                                        <input type="number" class="form-control" id="limit" name="limit">
-                                    </div>
-                                    <button type="submit" class="btn btn-primary">Submit</button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="accordion-item">
-                        <h2 class="accordion-header">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#saving_account_read" aria-expanded="false" aria-controls="saving_account_read">
-                                Read Saving Account
-                            </button>
-                        </h2>
-                        <div id="saving_account_read" class="accordion-collapse collapse" data-bs-parent="#accordion">
-                            <div class="accordion-body">
-                                <form method="POST" action="saving_account">
-                                    <div class="mb-3">
-                                        <label for="saving_account_number_r" class="form-label">Account Number</label>
-                                        <input type="text" class="form-control" id="saving_account_number_r" name="saving_account_number_r">
-                                    </div>
-                                    <button type="submit" class="btn btn-primary">Submit</button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="accordion-item">
-                        <h2 class="accordion-header">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#saving_account_create" aria-expanded="false" aria-controls="saving_account_create">
-                                Create savingAccount
-                            </button>
-                        </h2>
-                        <div id="saving_account_create" class="accordion-collapse collapse" data-bs-parent="#accordion">
-                            <div class="accordion-body">
-                                <form method="POST" action="saving_account_create">
-                                    <div class="mb-3">
-                                        <label for="saving_account_number" class="form-label">Account Number</label>
-                                        <input type="text" class="form-control" id="saving_account_number" name="saving_account_number">
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="saving_account_holder_name" class="form-label">Account Holder Name</label>
-                                        <input type="text" class="form-control" id="saving_account_holder_name" name="saving_account_holder_name">
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="saving_balance" class="form-label">Balance</label>
-                                        <input type="number" class="form-control" id="saving_balance" name="saving_balance">
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="saving_interest_rate" class="form-label">Interest Rate</label>
-                                        <input type="number" class="form-control" id="saving_interest_rate" name="saving_interest_rate">
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="saving_interest_period" class="form-label">Interest Period</label>
-                                        <select class="form-select" aria-label="Interest Period select" id="saving_interest_period" name="saving_interest_period">
-                                            <option value="MONTHLY">MONTHLY</option>
-                                            <option value="YEARLY">YEARLY</option>
-                                        </select>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="saving_minimum_balance" class="form-label">Minimum Balance</label>
-                                        <input type="number" class="form-control" id="saving_minimum_balance" name="saving_minimum_balance">
-                                    </div>
-                                    <button type="submit" class="btn btn-primary">Submit</button>
-                                </form>
-                            </div>
+        <div class="container-sm  mt-3 mid-container rounded" >
+            <div class="row h-100">
+                <div class="col-3 m-1 p-1 rounded" style="background-color: #65666638;">
+                    <div class="d-flex align-items-start">
+                        <div class="nav flex-column nav-pills me-3 w-100" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                          <button class="nav-link ${sumExists?'':'active'}" id="v-pills-list-tab" data-bs-toggle="pill" data-bs-target="#v-pills-list" type="button" role="tab" aria-controls="v-pills-list" aria-selected="true">List accounts</button>
+                          <button class="nav-link" id="v-pills-add-tab" data-bs-toggle="pill" data-bs-target="#v-pills-add" type="button" role="tab" aria-controls="v-pills-add" aria-selected="false">Add account</button>
+                          <button class="nav-link  ${sumExists?'active':''}" id="v-pills-sum-tab" data-bs-toggle="pill" data-bs-target="#v-pills-sum" type="button" role="tab" aria-controls="v-pills-sum" aria-selected="false">Sum balance</button>
                         </div>
                     </div>
                 </div>
-    
-                <c:if test="${savingAccountExists}">
-                    <div class="accordion col-6" id="accordionExample">
-                        <div class="accordion-item">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#saving_account_deposit" aria-expanded="true" aria-controls="saving_account_deposit">
-                                    Deposit
-                                </button>
-                            </h2>
-                            <div id="saving_account_deposit" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
-                                <div class="accordion-body">
-                                    <form method="POST" action="saving_account_deposit">
-                                        <div class="mb-3">
-                                            <label for="deposit_amount" class="form-label">Deposit Amount</label>
-                                            <input type="number" class="form-control" id="deposit_amount" name="deposit_amount">
-                                        </div>
-                                        <button type="submit" class="btn btn-primary">Submit</button>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="accordion-item">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#saving_account_withdraw" aria-expanded="false" aria-controls="saving_account_withdraw">
-                                    Withdraw
-                                </button>
-                            </h2>
-                            <div id="saving_account_withdraw" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
-                                <div class="accordion-body">
-                                    <form method="POST" action="saving_account_withdraw">
-                                        <div class="mb-3">
-                                            <label for="withdraw_amount" class="form-label">Withdraw Amount</label>
-                                            <input type="number" class="form-control" id="withdraw_amount" name="withdraw_amount">
-                                        </div>
-                                        <button type="submit" class="btn btn-primary">Submit</button>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
+              <div class="col m-1 p-1 rounded" style="background-color: #65666638;">
+                <div class="d-flex align-items-start">
+                    <div class="tab-content w-100" id="v-pills-tabContent">
+                      <div class="tab-pane rounded fade ${sumExists?'':'show active'}" id="v-pills-list" role="tabpanel" aria-labelledby="v-pills-list-tab" tabindex="0">
+                        <table class="table table-secondary">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Account number</th>
+                                    <th scope="col">Owner</th>
+                                    <th scope="col">Balance</th>
+                                    <th scope="col">Minimum balance</th>
+                                    <th scope="col">Interest rate</th>
+                                    <th scope="col">Interest period</th>
+                                    <th scope="col">Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <c:forEach var="account" items="${accounts.list()}">
+                                    <tr>
+                                        <td>${account.getAccountNumber()}</td>
+                                        <td>${account.getAccountHolder().getUsername()}</td>
+                                        <td>${account.getBalance()}</td>
+                                        <td>${account.getMinimumBalance()}</td>
+                                        <td>${account.getInterestRate()}</td>
+                                        <td>${account.getInterestPeriod()}</td>
+                                        <td><a class="link-secondary" href="${pageContext.request.contextPath}/saving-accounts/details?account_number=${account.accountNumber}">
+                                            Details
+                                        </a></td>
+                                    </tr>
+                                </c:forEach>
+                            </tbody>
+                        </table>
                       </div>
-                </c:if>
+                      <div class="tab-pane fade" id="v-pills-add" role="tabpanel" aria-labelledby="v-pills-add-tab" tabindex="0">
+                        <div class="container-sm w-75">
+                            <form method="POST" action="${pageContext.request.contextPath}/saving-accounts">
+                                <div class="mb-3 row">
+                                    <label class="col-form-label col-sm-3" for="account_number">Account number</label>
+                                    <div class="col-sm-6" >
+                                        <input  type="text" class="form-control" id="account_number" name="account_number">
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label class="col-form-label col-sm-3" for="username" >Holder username</label>
+                                    <div class="col-sm-6" >
+                                        <input type="text" class="form-control" id="username" name="username">
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label class="col-form-label col-sm-3" for="balance">Balance</label>
+                                    <div class="col-sm-6" >
+                                        <input type="number" class="form-control" id="balance" name="balance">
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label class="col-form-label col-sm-3" for="minimum_balance">Minimum balance</label>
+                                    <div class="col-sm-6" >
+                                        <input type="number" class="form-control" id="minimum_balance" name="minimum_balance">
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label class="col-form-label col-sm-3" for="interest_rate">Interest rate</label>
+                                    <div class="col-sm-6" >
+                                        <input type="number" class="form-control" id="interest_rate" name="interest_rate">
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label class="col-form-label col-sm-3" for="interest_period">Interest period</label>
+                                    <div class="col-sm-6" >
+                                        <select class="form-select" aria-label="Interest Period select" id="interest_period" name="interest_period">
+                                            <option value="YEARLY">YEARLY</option>
+                                            <option value="MONTHLY">MONTHLY</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Submit</button>
+                            </form>
+                        </div>
+                            
+                      </div>
+                      <div class="tab-pane fade ${sumExists?'show active':''}" id="v-pills-sum" role="tabpanel" aria-labelledby="v-pills-sum-tab" tabindex="0">
+                            <div class="m-3">
+                                <form method="GET" action="${pageContext.request.contextPath}/saving-accounts">
+                                    <div class="row mb-3">
+                                        <label for="sum_min" class="col-sm-2 col-form-label">Min balance:</label>
+                                        <div class="col-sm">
+                                            <input type="text" class="form-control" id="sum_min" name="sum_min">
+                                        </div>
+                                        <div class="col">
+                                            <button type="submit" class="btn btn-primary">Submit</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>    
+                            <c:if test="${sumExists}">
+                                <table class="table table-secondary">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Sum Balance</th>
+                                            <th scope="col">Higher Than</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>${sum}</td>
+                                            <td>${min}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </c:if>
+                      </div>
+                    </div>
+                  </div>
+              </div>
             </div>
-
-        </div>
+          </div>
         <%@ include file="/views/components/footer.jsp" %>
     </body>
 
