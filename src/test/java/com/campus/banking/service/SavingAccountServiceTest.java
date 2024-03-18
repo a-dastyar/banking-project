@@ -7,6 +7,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.only;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Optional;
@@ -22,6 +25,7 @@ import org.mockito.stubbing.Answer;
 
 import com.campus.banking.exception.InvalidTransactionException;
 import com.campus.banking.model.SavingAccount;
+import com.campus.banking.model.User;
 import com.campus.banking.persistence.SavingAccountDAO;
 import com.campus.banking.persistence.TransactionDAO;
 
@@ -34,13 +38,16 @@ public class SavingAccountServiceTest {
     SavingAccountDAO dao;
 
     @Mock
+    UserService users;
+
+    @Mock
     TransactionDAO trxDao;
 
     SavingAccountService service;
 
     @BeforeEach
     void setup() {
-        service = new SavingAccountServiceImpl(dao, trxDao);
+        service = new SavingAccountServiceImpl(dao, trxDao, users, 10);
     }
 
     @SuppressWarnings("unchecked")
@@ -51,9 +58,61 @@ public class SavingAccountServiceTest {
     }
 
     @Test
+    void add_withNullUser_shouldFail() {
+        var account = SavingAccount.builder()
+                .accountNumber("3000")
+                .build();
+        assertThatThrownBy(() -> service.add(account)).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void add_withNullUsername_shouldFail() {
+        var account = SavingAccount.builder()
+                .accountHolder(User.builder().build())
+                .accountNumber("3000")
+                .build();
+        assertThatThrownBy(() -> service.add(account)).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void add_withBlankUsername_shouldFail() {
+        var account = SavingAccount.builder()
+                .accountHolder(User.builder().username("").build())
+                .accountNumber("3000")
+                .build();
+        assertThatThrownBy(() -> service.add(account)).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void add_withZeroBalance_shouldNotInsertTransaction() {
+        var account = SavingAccount.builder()
+                .accountHolder(User.builder().username("Tester").build())
+                .accountNumber("3000")
+                .balance(0.0)
+                .build();
+        doAnswer(this::executeConsumer).when(dao).inTransaction(any());
+        service.add(account);
+        verify(trxDao, never()).transactionalPersist(any(), any());
+        assertThatNoException();
+    }
+
+    @Test
+    void add_withBalance_shouldInsertTransaction() {
+        var account = SavingAccount.builder()
+                .accountHolder(User.builder().username("Tester").build())
+                .accountNumber("3000")
+                .balance(10.0)
+                .build();
+        doAnswer(this::executeConsumer).when(dao).inTransaction(any());
+        service.add(account);
+        verify(trxDao, only()).transactionalPersist(any(), any());
+        assertThatNoException();
+    }
+
+    @Test
     void add_withValidAccount_shouldAdd() {
         var account = SavingAccount.builder()
-                .accountHolderName("Tester")
+                .accountHolder(User.builder().username("Tester").build())
                 .accountNumber("3000")
                 .build();
         service.add(account);
@@ -63,7 +122,7 @@ public class SavingAccountServiceTest {
     @Test
     void getByAccountNumber_withNullAccountNumber_shouldReturnAccount() {
         var account = SavingAccount.builder()
-                .accountHolderName("Tester")
+                .accountHolder(User.builder().username("Tester").build())
                 .accountNumber("3000")
                 .build();
         when(dao.findByAccountNumber(any())).thenReturn(Optional.of(account));

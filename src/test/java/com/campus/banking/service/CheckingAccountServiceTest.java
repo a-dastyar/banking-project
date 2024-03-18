@@ -6,6 +6,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Optional;
@@ -22,6 +24,7 @@ import org.mockito.stubbing.Answer;
 import com.campus.banking.exception.InsufficientFundsException;
 import com.campus.banking.exception.LessThanMinimumTransactionException;
 import com.campus.banking.model.CheckingAccount;
+import com.campus.banking.model.User;
 import com.campus.banking.persistence.BankAccountDAO;
 import com.campus.banking.persistence.TransactionDAO;
 
@@ -34,13 +37,16 @@ public class CheckingAccountServiceTest {
     BankAccountDAO<CheckingAccount> dao;
 
     @Mock
+    UserService users;
+
+    @Mock
     TransactionDAO trxDao;
 
     CheckingAccountService service;
 
     @BeforeEach
     void setup() {
-        service = new CheckingAccountServiceImpl(dao, trxDao);
+        service = new CheckingAccountServiceImpl(dao, trxDao, users, 10);
     }
 
     @SuppressWarnings("unchecked")
@@ -51,9 +57,60 @@ public class CheckingAccountServiceTest {
     }
 
     @Test
+    void add_withNullUser_shouldFail() {
+        var account = CheckingAccount.builder()
+                .accountNumber("3000")
+                .build();
+        assertThatThrownBy(() -> service.add(account)).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void add_withNullUsername_shouldFail() {
+        var account = CheckingAccount.builder()
+                .accountHolder(User.builder().build())
+                .accountNumber("3000")
+                .build();
+        assertThatThrownBy(() -> service.add(account)).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void add_withBlankUsername_shouldFail() {
+        var account = CheckingAccount.builder()
+                .accountHolder(User.builder().username("").build())
+                .accountNumber("3000")
+                .build();
+        assertThatThrownBy(() -> service.add(account)).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void add_withBalanceLessThanTransactionFee_shouldFail() {
+        var account = CheckingAccount.builder()
+                .accountHolder(User.builder().username("Tester").build())
+                .accountNumber("3000")
+                .balance(CheckingAccount.TRANSACTION_FEE - 1.0)
+                .build();
+        doAnswer(this::executeConsumer).when(dao).inTransaction(any());
+        assertThatThrownBy(() -> service.add(account)).isInstanceOf(LessThanMinimumTransactionException.class);
+    }
+
+    @Test
+    void add_withBalance_shouldInsertTransaction() {
+        var balance = CheckingAccount.TRANSACTION_FEE * 10;
+        var account = CheckingAccount.builder()
+                .accountHolder(User.builder().username("Tester").build())
+                .accountNumber("3000")
+                .balance(balance)
+                .build();
+        doAnswer(this::executeConsumer).when(dao).inTransaction(any());
+        service.add(account);
+        verify(trxDao, times(2)).transactionalPersist(any(), any());
+        assertThat(account.getBalance()).isEqualTo(balance - CheckingAccount.TRANSACTION_FEE);
+    }
+
+    @Test
     void add_withValidAccount_shouldAdd() {
         var account = CheckingAccount.builder()
-                .accountHolderName("Tester")
+                .accountHolder(User.builder().username("Tester").build())
                 .accountNumber("3000")
                 .build();
         service.add(account);
@@ -63,7 +120,7 @@ public class CheckingAccountServiceTest {
     @Test
     void getByAccountNumber_withNullAccountNumber_shouldReturnAccount() {
         var account = CheckingAccount.builder()
-                .accountHolderName("Tester")
+                .accountHolder(User.builder().username("Tester").build())
                 .accountNumber("3000")
                 .build();
         when(dao.findByAccountNumber(any())).thenReturn(Optional.of(account));
@@ -83,7 +140,7 @@ public class CheckingAccountServiceTest {
         var account = CheckingAccount.builder()
                 .accountNumber("4000")
                 .balance(0.0)
-                .overDraftLimit(0.0)
+                .overdraftLimit(0.0)
                 .build();
         doAnswer(this::executeConsumer).when(dao).inTransaction(any());
         when(dao.findByAccountNumberForUpdate(any(), any())).thenReturn(Optional.of(account));
@@ -95,7 +152,7 @@ public class CheckingAccountServiceTest {
     void withdraw_withEnoughBalanceButNotEnoughForTrxFee_shouldFail() {
         var account = CheckingAccount.builder()
                 .balance(1000.0)
-                .overDraftLimit(0.0)
+                .overdraftLimit(0.0)
                 .build();
         doAnswer(this::executeConsumer).when(dao).inTransaction(any());
         when(dao.findByAccountNumberForUpdate(any(), any())).thenReturn(Optional.of(account));
@@ -107,7 +164,7 @@ public class CheckingAccountServiceTest {
     void withdraw_withZeroBalanceAndEnoughOverdraftButNotEnoughForTrxFee_shouldFail() {
         var account = CheckingAccount.builder()
                 .balance(0.0)
-                .overDraftLimit(1000.0)
+                .overdraftLimit(1000.0)
                 .build();
         doAnswer(this::executeConsumer).when(dao).inTransaction(any());
         when(dao.findByAccountNumberForUpdate(any(), any())).thenReturn(Optional.of(account));
@@ -119,7 +176,7 @@ public class CheckingAccountServiceTest {
     void withdraw_withSomeBalanceAndSomeOverdraftButNotEnough_shouldFail() {
         var account = CheckingAccount.builder()
                 .balance(500.0)
-                .overDraftLimit(500.0)
+                .overdraftLimit(500.0)
                 .build();
         doAnswer(this::executeConsumer).when(dao).inTransaction(any());
         when(dao.findByAccountNumberForUpdate(any(), any())).thenReturn(Optional.of(account));
@@ -131,7 +188,7 @@ public class CheckingAccountServiceTest {
     void withdraw_withSomeBalanceAndSomeOverdraftButNotEnoughForTrxFee_shouldFail() {
         var account = CheckingAccount.builder()
                 .balance(500.0)
-                .overDraftLimit(500.0)
+                .overdraftLimit(500.0)
                 .build();
         doAnswer(this::executeConsumer).when(dao).inTransaction(any());
         when(dao.findByAccountNumberForUpdate(any(), any())).thenReturn(Optional.of(account));
@@ -143,7 +200,7 @@ public class CheckingAccountServiceTest {
     void withdraw_withEnoughBalanceButNoTrxFeeLeftForDeposit_shouldFail() {
         var account = CheckingAccount.builder()
                 .balance(500.0)
-                .overDraftLimit(0.0)
+                .overdraftLimit(0.0)
                 .build();
         doAnswer(this::executeConsumer).when(dao).inTransaction(any());
         when(dao.findByAccountNumberForUpdate(any(), any())).thenReturn(Optional.of(account));
@@ -155,7 +212,7 @@ public class CheckingAccountServiceTest {
     void withdraw_withZeroBalanceButEnoughOverdraftLimit_shouldWithdraw() {
         var account = CheckingAccount.builder()
                 .balance(0.0)
-                .overDraftLimit(1000.0)
+                .overdraftLimit(1000.0)
                 .build();
         doAnswer(this::executeConsumer).when(dao).inTransaction(any());
         when(dao.findByAccountNumberForUpdate(any(), any())).thenReturn(Optional.of(account));
@@ -168,7 +225,7 @@ public class CheckingAccountServiceTest {
     void withdraw_withEnoughBalanceButNotEnoughForTrxFeeAndEnoughOverdraftLimit_shouldWithdraw() {
         var account = CheckingAccount.builder()
                 .balance(1000.0)
-                .overDraftLimit(1000.0)
+                .overdraftLimit(1000.0)
                 .build();
         doAnswer(this::executeConsumer).when(dao).inTransaction(any());
         when(dao.findByAccountNumberForUpdate(any(), any())).thenReturn(Optional.of(account));
@@ -181,7 +238,7 @@ public class CheckingAccountServiceTest {
     void withdraw_withEnoughBalanceAndEnoughOverdraftLimit_shouldWithdraw() {
         var account = CheckingAccount.builder()
                 .balance(1000.0)
-                .overDraftLimit(1000.0)
+                .overdraftLimit(1000.0)
                 .build();
         doAnswer(this::executeConsumer).when(dao).inTransaction(any());
         when(dao.findByAccountNumberForUpdate(any(), any())).thenReturn(Optional.of(account));
