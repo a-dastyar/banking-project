@@ -15,7 +15,7 @@ import jakarta.validation.constraints.PositiveOrZero;
 public interface BankAccountService<T extends BankAccount> {
 
     public static BankAccount toBankAccount(Map<String, String[]> properties) {
-        var userId = Arrays.stream(properties.get("user_id")).map(Long::valueOf).findFirst().orElse(null);
+        var userId = Arrays.stream(properties.get("username")).findFirst().orElse(null);
         return BankAccount.builder()
                 .accountNumber(Arrays.stream(properties.get("account_number")).findFirst().orElse(null))
                 .accountHoler(User.builder().id(userId).build())
