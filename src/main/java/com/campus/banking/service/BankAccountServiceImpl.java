@@ -1,6 +1,7 @@
 package com.campus.banking.service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
@@ -64,6 +65,11 @@ class BankAccountServiceImpl implements BankAccountService<BankAccount> {
     public BankAccount getByAccountNumber(@NotNull @NotBlank String accountNumber) {
         return dao.findByAccountNumber(accountNumber)
                 .orElseThrow(NotFoundException::new);
+    }
+
+    @Override
+    public List<BankAccount> getByUsername(@NotNull @NotBlank String username) {
+        return dao.findByUsername(username);
     }
 
     @Override

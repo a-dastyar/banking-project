@@ -1,6 +1,7 @@
 package com.campus.banking.service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
@@ -60,10 +61,16 @@ class SavingAccountServiceImpl implements SavingAccountService {
         }
         return account.getAccountHolder().getUsername();
     }
+
     @Override
     public SavingAccount getByAccountNumber(@NotNull @NotBlank String accountNumber) {
         return dao.findByAccountNumber(accountNumber)
                 .orElseThrow(NotFoundException::new);
+    }
+
+    @Override
+    public List<SavingAccount> getByUsername(@NotNull @NotBlank String username) {
+        return dao.findByUsername(username);
     }
 
     @Override

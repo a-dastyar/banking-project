@@ -12,6 +12,7 @@ import com.campus.banking.persistence.Page;
 import com.campus.banking.persistence.TransactionDAO;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
@@ -66,6 +67,11 @@ class CheckingAccountServiceImpl implements CheckingAccountService {
         return account.getAccountHolder().getUsername();
     }
 
+    @Override
+    public List<CheckingAccount> getByUsername(@NotNull @NotBlank String username) {
+        return dao.findByUsername(username);
+    }
+    
     @Override
     public Page<CheckingAccount> getPage(@Positive int page) {
         return dao.getAll(page, maxPageSize);

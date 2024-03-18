@@ -1,6 +1,7 @@
 package com.campus.banking.service;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import com.campus.banking.model.BankAccount;
@@ -38,4 +39,7 @@ public interface BankAccountService<T extends BankAccount> {
     void withdraw(@NotNull @NotBlank String accountNumber, @Positive double amount);
 
     double sumBalanceHigherThan(@PositiveOrZero double min);
+
+    List<T> getByUsername(@NotNull @NotBlank String username);
+    
 }
