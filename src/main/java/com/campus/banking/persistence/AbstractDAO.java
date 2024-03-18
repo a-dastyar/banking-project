@@ -109,6 +109,25 @@ public abstract class AbstractDAO<T extends BaseModel<S>, S> implements DAO<T, S
 
     @Override
     @SuppressWarnings("unchecked")
+    public <U> Page<T> findBy(String fieldName, U fieldValue, int page, int size) {
+        return withEntityManager(em -> {
+            CriteriaBuilder builder = em.getCriteriaBuilder();
+            CriteriaQuery<T> query = builder.createQuery(getType());
+            Root<T> select = query.from(getType());
+            ParameterExpression<U> parameter = builder.parameter((Class<U>) fieldValue.getClass());
+            query.where(builder.equal(select.get(fieldName), parameter));
+            TypedQuery<T> typedQuery = em.createQuery(query);
+            typedQuery.setParameter(parameter, fieldValue);
+            typedQuery.setFirstResult((page - 1) * size);
+            typedQuery.setMaxResults(size);
+            List<T> list = typedQuery.getResultList();
+            long countAll = countAll();
+            return new Page<>(list, countAll, page, size);
+        });
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
     public <U> List<T> findByForUpdate(EntityManager em, String fieldName, U fieldValue) {
         CriteriaBuilder builder = em.getCriteriaBuilder();
         CriteriaQuery<T> query = builder.createQuery(getType());
@@ -129,7 +148,7 @@ public abstract class AbstractDAO<T extends BaseModel<S>, S> implements DAO<T, S
             Root<T> select = delete.from(getType());
             delete.where(builder.equal(select.get(fieldName), fieldValue));
             Query deleteQuery = em.createQuery(delete);
-            var result =  deleteQuery.executeUpdate();
+            var result = deleteQuery.executeUpdate();
             em.flush();
             em.clear();
             return result;

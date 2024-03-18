@@ -21,7 +21,7 @@ public interface DAO<T extends BaseModel<S>, S> {
 
     void transactionalUpdate(EntityManager em, T entity);
 
-    void transactionalRemove(EntityManager em,T entity);
+    void transactionalRemove(EntityManager em, T entity);
 
     void persist(List<T> entity);
 
@@ -33,6 +33,8 @@ public interface DAO<T extends BaseModel<S>, S> {
 
     long countAll();
 
+    <U> Page<T> findBy(String fieldName, U fieldValue, int page, int size);
+
     <U> List<T> findBy(String fieldName, U fieldValue);
 
     <U> List<T> findByForUpdate(EntityManager em, String fieldName, U fieldValue);
@@ -41,7 +43,7 @@ public interface DAO<T extends BaseModel<S>, S> {
 
     boolean exists(T entity);
 
-    <U> U withEntityManager(Function<EntityManager,U> action);
+    <U> U withEntityManager(Function<EntityManager, U> action);
 
     void inTransaction(Consumer<EntityManager> action);
 
