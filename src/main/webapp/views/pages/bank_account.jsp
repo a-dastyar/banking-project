@@ -13,8 +13,8 @@
     </head>
 
     <body>
-        <%@ include file="/views/components/header.jsp" %>
         <div class="background blurred"></div>
+        <%@ include file="/views/components/header.jsp" %>
         <div class="container-sm">
 
             <a class="btn btn-primary" href="/banking">Go Home</a>
