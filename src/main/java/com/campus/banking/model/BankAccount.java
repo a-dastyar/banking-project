@@ -30,8 +30,8 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Entity
-@Table(name = "bank_accounts",indexes = { 
-    @Index(name = "bnk_acc_num_idx", columnList = "account_number", unique = true)})
+@Table(name = "bank_accounts", indexes = {
+        @Index(name = "bnk_acc_num_idx", columnList = "account_number", unique = true) })
 @Inheritance(strategy = InheritanceType.JOINED)
 @DiscriminatorColumn(name = BankAccount.TYPE_COLUMN, discriminatorType = DiscriminatorType.STRING, length = 50)
 public class BankAccount implements BaseModel<Long> {
@@ -41,14 +41,15 @@ public class BankAccount implements BaseModel<Long> {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull @NotBlank
+    @NotNull
+    @NotBlank
     @EqualsAndHashCode.Include
     @Column(name = "account_number", nullable = false)
     private String accountNumber;
 
     @ManyToOne
     @JoinColumn(name = "account_holder_id")
-    private User accountHoler;
+    private User accountHolder;
 
     @PositiveOrZero
     @Column(name = "balance")
