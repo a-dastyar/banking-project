@@ -39,6 +39,7 @@ class EntityManagerFactoryProvider {
                 "hibernate.show_sql", showSQL,
                 "hibernate.format_sql", showSQL,
                 "hibernate.highlight_sql", showSQL,
+                "jakarta.persistence.sql-load-script-source", "scripts/insert_admin.sql",
                 "jakarta.persistence.schema-generation.database.action", schema,
                 "jakarta.persistence.bean.manager", beanManager);
                 

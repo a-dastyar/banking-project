@@ -30,7 +30,7 @@ public abstract class AbstractIT {
                 "hibernate.hikari.dataSource.user", mysql.getUsername(),
                 "hibernate.hikari.dataSource.password", mysql.getPassword(),
                 "hibernate.show_sql", "false",
-                "jakarta.persistence.schema-generation.database.action", "create-drop");
+                "jakarta.persistence.schema-generation.database.action", "drop-and-create");
 
         emf = Persistence.createEntityManagerFactory("App", properties);
     }

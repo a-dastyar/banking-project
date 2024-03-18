@@ -2,6 +2,8 @@ package com.campus.banking.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
@@ -29,6 +31,7 @@ public class SavingAccount extends BankAccount {
     private double interestRate;
 
     @NotNull
+    @Enumerated(EnumType.STRING)
     @Column(name = "interest_period")
     private InterestPeriod interestPeriod;
 
