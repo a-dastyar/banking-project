@@ -1,28 +1,28 @@
 <c:set var="hasManagementAccess" value="${pageContext.request.isUserInRole('MANAGER') || pageContext.request.isUserInRole('ADMIN')}"/>
 <nav class="navbar navbar-expand-lg" style="background-color: #c6c6c600;border-bottom: 1px solid #cbd6df;">
     <div class="container-fluid">
-        <a class="navbar-brand" href="#">Banking System</a>
+        <a class="navbar-brand" href="${pageContext.request.contextPath}/">Banking System</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
             aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav">
-                <li class="nav-item p-1 pt-0 pb-0 m-1" style="border: 1px solid #8691a294;border-radius: 5px;">
-                    <a class="nav-link active"  href="${pageContext.request.contextPath}/">Home</a>
+            <ul class="navbar-nav nav-underline">
+                <li class="nav-item" >
+                    <a class="nav-link mt-1 ${menu=='home'?'active':''}"  href="${pageContext.request.contextPath}/">Home</a>
                 </li>
                 <c:if test='${hasManagementAccess}'>
-                    <li class="nav-item p-1 pt-0 pb-0 m-1" style="border: 1px solid #8691a294;border-radius: 5px;">
-                        <a class="nav-link active"  href="${pageContext.request.contextPath}/bank-accounts">Bank Accounts</a>
+                    <li class="nav-item">
+                        <a class="nav-link mt-1 ${menu=='banks'?'active':''}"  href="${pageContext.request.contextPath}/bank-accounts">Bank Accounts</a>
                     </li>
-                    <li class="nav-item p-1 pt-0 pb-0 m-1" style="border: 1px solid #8691a294;border-radius: 5px;">
-                        <a class="nav-link active"  href="${pageContext.request.contextPath}/saving-accounts">Saving Accounts</a>
+                    <li class="nav-item">
+                        <a class="nav-link mt-1 ${menu=='savings'?'active':''}"  href="${pageContext.request.contextPath}/saving-accounts">Saving Accounts</a>
                     </li>
-                    <li class="nav-item p-1 pt-0 pb-0 m-1" style="border: 1px solid #8691a294;border-radius: 5px;">
-                        <a class="nav-link active"  href="${pageContext.request.contextPath}/checking-accounts">Checking Accounts</a>
+                    <li class="nav-item">
+                        <a class="nav-link mt-1 ${menu=='checkings'?'active':''}"  href="${pageContext.request.contextPath}/checking-accounts">Checking Accounts</a>
                     </li>
-                    <li class="nav-item p-1 pt-0 pb-0 m-1" style="border: 1px solid #8691a294;border-radius: 5px;">
-                        <a class="nav-link active"  href="${pageContext.request.contextPath}/users">Users</a>
+                    <li class="nav-item">
+                        <a class="nav-link mt-1 ${menu=='users'?'active':''}"  href="${pageContext.request.contextPath}/users">Users</a>
                     </li>
                 </c:if>
             </ul>
