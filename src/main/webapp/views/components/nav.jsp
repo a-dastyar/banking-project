@@ -1,3 +1,4 @@
+<c:set var="hasManagementAccess" value="${pageContext.request.isUserInRole('MANAGER') || pageContext.request.isUserInRole('ADMIN')}"/>
 <nav class="navbar navbar-expand-lg" style="background-color: #c6c6c600;border-bottom: 1px solid #cbd6df;">
     <div class="container-fluid">
         <a class="navbar-brand" href="#">Banking System</a>
@@ -8,11 +9,22 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav">
                 <li class="nav-item p-1 pt-0 pb-0 m-1" style="border: 1px solid #8691a294;border-radius: 5px;">
-                    <a class="nav-link active"  href=".">Home</a>
+                    <a class="nav-link active"  href="${pageContext.request.contextPath}/">Home</a>
                 </li>
-                <li class="nav-item p-1 pt-0 pb-0 m-1" style="border: 1px solid #8691a294;border-radius: 5px;">
-                    <a class="nav-link active"  href="users">Users</a>
-                </li>
+                <c:if test='${hasManagementAccess}'>
+                    <li class="nav-item p-1 pt-0 pb-0 m-1" style="border: 1px solid #8691a294;border-radius: 5px;">
+                        <a class="nav-link active"  href="${pageContext.request.contextPath}/bank-accounts">Bank Accounts</a>
+                    </li>
+                    <li class="nav-item p-1 pt-0 pb-0 m-1" style="border: 1px solid #8691a294;border-radius: 5px;">
+                        <a class="nav-link active"  href="${pageContext.request.contextPath}/saving-accounts">Saving Accounts</a>
+                    </li>
+                    <li class="nav-item p-1 pt-0 pb-0 m-1" style="border: 1px solid #8691a294;border-radius: 5px;">
+                        <a class="nav-link active"  href="${pageContext.request.contextPath}/checking-accounts">Checking Accounts</a>
+                    </li>
+                    <li class="nav-item p-1 pt-0 pb-0 m-1" style="border: 1px solid #8691a294;border-radius: 5px;">
+                        <a class="nav-link active"  href="${pageContext.request.contextPath}/users">Users</a>
+                    </li>
+                </c:if>
             </ul>
         </div>
         <c:if test="${pageContext.request.userPrincipal!=null}">
@@ -22,7 +34,7 @@
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
                     <li>
-                        <form method="post" action="logout">
+                        <form method="post" action="${pageContext.request.contextPath}/logout">
                             <button type="submit" class="dropdown-item">Logout</button>
                         </form>
                     </li>
@@ -30,7 +42,7 @@
             </div>
         </c:if>
         <c:if test="${pageContext.request.userPrincipal==null}">
-            <a  class="btn btn-secondary" href="login">Login</a>
+            <a  class="btn btn-secondary" href="${pageContext.request.contextPath}/login">Login</a>
         </c:if>
     </div>
 </nav>
