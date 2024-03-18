@@ -24,6 +24,7 @@ public class ErrorHandlerServlet extends HttpServlet {
         var error = switch (exception) {
             case NotFoundException e -> "404.jsp";
             case DuplicatedException e -> "400.jsp";
+            case IllegalArgumentException e -> "400.jsp";
             case ConstraintViolationException e -> "400.jsp";
             default -> "500.jsp";
         };
