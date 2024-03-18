@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
-    <%@ taglib prefix="c" uri="jakarta.tags.core" %>
-
+    <%@ include file="/views/components/imports.jsp" %>
+    
     <head>
         <%@ include file="/views/components/meta.jsp" %>
         <title>Login</title>
@@ -23,7 +23,7 @@
                     <div>
                         <p class="mb-0">Don't have an account? <a
                                 class="link-dark link-underline-opacity-25 link-underline-opacity-100-hover"
-                                href="signup">Sign Up</a>
+                                href="${pageContext.request.contextPath}/signup">Sign Up</a>
                         </p>
                     </div>
                     <c:if test="${param.failed}">
