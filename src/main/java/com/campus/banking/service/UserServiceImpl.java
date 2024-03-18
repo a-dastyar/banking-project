@@ -13,7 +13,7 @@ import com.campus.banking.persistence.UserDAO;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +37,12 @@ class UserServiceImpl implements UserService {
     @Override
     public User getById(@Positive long id) {
         var user = this.dao.find(id);
+        return user.orElseThrow(NotFoundException::new);
+    }
+
+    @Override
+    public User getByUsername(@NotNull @NotBlank String username) {
+        var user = this.dao.findBy("username", username).stream().findFirst();
         return user.orElseThrow(NotFoundException::new);
     }
 
@@ -67,7 +73,7 @@ class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Page<User> getAll(@Min(1) int page) {
+    public Page<User> getAll(@Positive int page) {
         log.debug("GetAll for page[{}]", page);
         return dao.getAll(page, maxPageSize);
     }

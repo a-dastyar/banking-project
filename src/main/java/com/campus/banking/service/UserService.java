@@ -10,7 +10,7 @@ import com.campus.banking.model.User;
 import com.campus.banking.persistence.Page;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
@@ -33,11 +33,13 @@ public interface UserService {
 
     User getById(@Positive long id);
 
+    User getByUsername(@NotNull @NotBlank String username);
+
     void removeById(@Positive long id);
 
     void addUser(@NotNull @Valid User user);
 
     void updateUser(@NotNull @Valid User user);
 
-    Page<User> getAll(@Min(1) int page);
+    Page<User> getAll(@Positive int page);
 }
