@@ -31,8 +31,8 @@ public class TomcatEmbedded implements Server {
     private static final String ADDITION_WEB_INF_CLASSES = "target/classes";
     private static final String WEB_APP_MOUNT = "/WEB-INF/classes";
     private static final String INTERNAL_PATH = "/";
-    private static final String WEB_APP_DIR = "src/main/webapp/";;
-    private static final String BASE_DIR = "/tmp";;
+    private static final String WEB_APP_DIR = "target/classes/META-INF/resources/";
+    private static final String BASE_DIR = System.getProperty("java.io.tmpdir");
 
     public TomcatEmbedded(Config config) {
         this.config = config;
