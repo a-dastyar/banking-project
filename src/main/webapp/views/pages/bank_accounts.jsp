@@ -9,6 +9,7 @@
     </head>
 
     <body>
+        <c:set var="menu" value="banks"/>
         <div class="background blurred"></div>
         <%@ include file="/views/components/header.jsp" %>
 
@@ -33,15 +34,19 @@
                                     <th scope="col">Account number</th>
                                     <th scope="col">Owner</th>
                                     <th scope="col">Balance</th>
+                                    <th scope="col">Created</th>
                                     <th scope="col">Details</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <c:forEach var="account" items="${accounts.list()}">
+                                    <fmt:parseDate  value="${account.getCreatedAt()}"  type="both" pattern="yyyy-MM-dd'T'HH:mm:ss" var="parsedDate" />
+                                    <fmt:formatDate value="${parsedDate}" type="both" pattern="yyyy-MM-dd HH:mm:ss" var="date" />
                                     <tr>
                                         <td>${account.getAccountNumber()}</td>
                                         <td>${account.getAccountHolder().getUsername()}</td>
                                         <td>${account.getBalance()}</td>
+                                        <td>${date}</td>
                                         <td><a class="link-secondary" href="${pageContext.request.contextPath}/bank-accounts/details?account_number=${account.accountNumber}">
                                             Details
                                         </a></td>

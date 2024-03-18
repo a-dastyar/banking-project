@@ -5,10 +5,11 @@
 
     <head>
         <%@ include file="/views/components/meta.jsp" %>
-        <title>Saving accounts</title>
+        <title>Checking accounts</title>
     </head>
 
     <body>
+        <c:set var="menu" value="checkings"/>
         <div class="background blurred"></div>
         <%@ include file="/views/components/header.jsp" %>
 
@@ -33,22 +34,24 @@
                                     <th scope="col">Account number</th>
                                     <th scope="col">Owner</th>
                                     <th scope="col">Balance</th>
-                                    <th scope="col">Minimum balance</th>
-                                    <th scope="col">Interest rate</th>
-                                    <th scope="col">Interest period</th>
+                                    <th scope="col">Overdraft limit</th>
+                                    <th scope="col">Debt</th>
+                                    <th scope="col">Created</th>
                                     <th scope="col">Details</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <c:forEach var="account" items="${accounts.list()}">
+                                    <fmt:parseDate  value="${account.getCreatedAt()}"  type="both" pattern="yyyy-MM-dd'T'HH:mm:ss" var="parsedDate" />
+                                    <fmt:formatDate value="${parsedDate}" type="both" pattern="yyyy-MM-dd HH:mm:ss" var="date" />
                                     <tr>
                                         <td>${account.getAccountNumber()}</td>
                                         <td>${account.getAccountHolder().getUsername()}</td>
                                         <td>${account.getBalance()}</td>
-                                        <td>${account.getMinimumBalance()}</td>
-                                        <td>${account.getInterestRate()}</td>
-                                        <td>${account.getInterestPeriod()}</td>
-                                        <td><a class="link-secondary" href="${pageContext.request.contextPath}/saving-accounts/details?account_number=${account.accountNumber}">
+                                        <td>${account.getOverdraftLimit()}</td>
+                                        <td>${account.getDebt()}</td>
+                                        <td>${date}</td>
+                                        <td><a class="link-secondary" href="${pageContext.request.contextPath}/checking-accounts/details?account_number=${account.accountNumber}">
                                             Details
                                         </a></td>
                                     </tr>
@@ -58,7 +61,7 @@
                       </div>
                       <div class="tab-pane fade" id="v-pills-add" role="tabpanel" aria-labelledby="v-pills-add-tab" tabindex="0">
                         <div class="container-sm w-75">
-                            <form method="POST" action="${pageContext.request.contextPath}/saving-accounts">
+                            <form method="POST" action="${pageContext.request.contextPath}/checking-accounts">
                                 <div class="mb-3 row">
                                     <label class="col-form-label col-sm-3" for="account_number">Account number</label>
                                     <div class="col-sm-6" >
@@ -78,24 +81,15 @@
                                     </div>
                                 </div>
                                 <div class="mb-3 row">
-                                    <label class="col-form-label col-sm-3" for="minimum_balance">Minimum balance</label>
+                                    <label class="col-form-label col-sm-3" for="overdraft_limit">Overdraft limit</label>
                                     <div class="col-sm-6" >
-                                        <input type="number" class="form-control" id="minimum_balance" name="minimum_balance">
+                                        <input type="number" class="form-control" id="overdraft_limit" name="overdraft_limit">
                                     </div>
                                 </div>
                                 <div class="mb-3 row">
-                                    <label class="col-form-label col-sm-3" for="interest_rate">Interest rate</label>
+                                    <label class="col-form-label col-sm-3" for="debt">Debt</label>
                                     <div class="col-sm-6" >
-                                        <input type="number" class="form-control" id="interest_rate" name="interest_rate">
-                                    </div>
-                                </div>
-                                <div class="mb-3 row">
-                                    <label class="col-form-label col-sm-3" for="interest_period">Interest period</label>
-                                    <div class="col-sm-6" >
-                                        <select class="form-select" aria-label="Interest Period select" id="interest_period" name="interest_period">
-                                            <option value="YEARLY">YEARLY</option>
-                                            <option value="MONTHLY">MONTHLY</option>
-                                        </select>
+                                        <input type="number" class="form-control" id="debt" name="debt">
                                     </div>
                                 </div>
                                 <button type="submit" class="btn btn-primary">Submit</button>
@@ -105,7 +99,7 @@
                       </div>
                       <div class="tab-pane fade ${sumExists?'show active':''}" id="v-pills-sum" role="tabpanel" aria-labelledby="v-pills-sum-tab" tabindex="0">
                             <div class="m-3">
-                                <form method="GET" action="${pageContext.request.contextPath}/saving-accounts">
+                                <form method="GET" action="${pageContext.request.contextPath}/checking-accounts">
                                     <div class="row mb-3">
                                         <label for="sum_min" class="col-sm-2 col-form-label">Min balance:</label>
                                         <div class="col-sm">
@@ -121,8 +115,8 @@
                                 <table class="table table-secondary">
                                     <thead>
                                         <tr>
-                                            <th scope="col">Sum Balance</th>
-                                            <th scope="col">Higher Than</th>
+                                            <th scope="col">Sum balance</th>
+                                            <th scope="col">Higher than</th>
                                         </tr>
                                     </thead>
                                     <tbody>
