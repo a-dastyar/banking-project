@@ -27,7 +27,7 @@ public class CheckingAccount extends BankAccount {
 
     @PositiveOrZero
     @Column(name = "overdraft_limit")
-    private double overDraftLimit;
+    private double overdraftLimit;
 
     @PositiveOrZero
     @Column(name = "debt")
