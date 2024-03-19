@@ -1,5 +1,5 @@
 <c:set var="hasManagementAccess" value="${pageContext.request.isUserInRole('MANAGER') || pageContext.request.isUserInRole('ADMIN')}"/>
-<nav class="navbar navbar-expand-lg" style="background-color: #c6c6c600;border-bottom: 1px solid #cbd6df;">
+<nav class="navbar navbar-expand-lg" style="background-color: #bbc3c62e;border-bottom: 1px solid #cbd6df;">
     <div class="container-fluid">
         <a class="navbar-brand" href="${pageContext.request.contextPath}/">Banking System</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
@@ -8,20 +8,20 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav nav-underline">
-                <li class="nav-item" >
+                <li class="nav-item main-nav" >
                     <a class="nav-link mt-1 ${menu=='home'?'active':''}"  href="${pageContext.request.contextPath}/">Home</a>
                 </li>
                 <c:if test='${hasManagementAccess}'>
-                    <li class="nav-item">
+                    <li class="nav-item main-nav">
                         <a class="nav-link mt-1 ${menu=='banks'?'active':''}"  href="${pageContext.request.contextPath}/bank-accounts">Bank Accounts</a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item main-nav">
                         <a class="nav-link mt-1 ${menu=='savings'?'active':''}"  href="${pageContext.request.contextPath}/saving-accounts">Saving Accounts</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link mt-1 ${menu=='checkings'?'active':''}"  href="${pageContext.request.contextPath}/checking-accounts">Checking Accounts</a>
+                    <li class="nav-item main-nav">
+                        <a class="nav-link ${menu=='checkings'?'active':''} mt-1"  href="${pageContext.request.contextPath}/checking-accounts">Checking Accounts</a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item main-nav">
                         <a class="nav-link mt-1 ${menu=='users'?'active':''}"  href="${pageContext.request.contextPath}/users">Users</a>
                     </li>
                 </c:if>
@@ -42,7 +42,7 @@
             </div>
         </c:if>
         <c:if test="${pageContext.request.userPrincipal==null}">
-            <a  class="btn btn-secondary" href="${pageContext.request.contextPath}/login">Login</a>
+            <a  class="btn btn-primary" href="${pageContext.request.contextPath}/login">Login</a>
         </c:if>
     </div>
 </nav>
