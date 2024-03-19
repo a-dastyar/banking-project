@@ -44,6 +44,6 @@ public class SavingAccountDetailServlet extends HttpServlet {
         
         req.setAttribute("account", account);
         req.setAttribute("transactions", transactions);
-        req.getRequestDispatcher("/views/pages/saving_account_detail.jsp").forward(req, resp);
+        req.getRequestDispatcher("/views/pages/accounts/saving_account_detail.jsp").forward(req, resp);
     }
 }
