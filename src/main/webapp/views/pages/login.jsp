@@ -31,7 +31,9 @@
                             <div>Invalid credentials!</div>
                         </div>
                     </c:if>
-                    <button type="submit" class="btn btn-secondary">Login</button>
+                    <div class="row justify-content-center align-items-center">
+                        <button type="submit" class="btn btn-primary col-sm-3 mt-2">Login</button>
+                    </div>
                 </form>
             </div>
         </div>

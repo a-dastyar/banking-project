@@ -24,7 +24,9 @@
                         <label for="password" class="form-label">Password</label>
                         <input type="password" class="form-control" id="password" name="password">
                     </div>
-                    <button type="submit" class="btn btn-secondary">Sign up</button>
+                    <div class="row justify-content-center align-items-center">
+                        <button type="submit" class="btn btn-primary col-sm-3 mt-2">Sign up</button>
+                    </div>
                 </form>
             </div>
         </div>
