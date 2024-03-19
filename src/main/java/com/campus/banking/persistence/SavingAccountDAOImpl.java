@@ -40,7 +40,7 @@ class SavingAccountDAOImpl extends AbstractDAO<SavingAccount, Long> implements S
     @Override
     public List<SavingAccount> findByUsername(String username) {
         return withEntityManager(em -> {
-            var query = em.createQuery("FROM BankAccount account JOIN account.accountHolder user where user.username = :username",
+            var query = em.createQuery("FROM SavingAccount account JOIN account.accountHolder user where user.username = :username",
                     SavingAccount.class);
             query.setParameter("username", username);
             return query.getResultList();

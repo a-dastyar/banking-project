@@ -39,7 +39,7 @@ class CheckingAccountDAOImpl extends AbstractDAO<CheckingAccount, Long>
     @Override
     public List<CheckingAccount> findByUsername(String username) {
         return withEntityManager(em -> {
-            var query = em.createQuery("FROM BankAccount account JOIN account.accountHolder user where user.username = :username",
+            var query = em.createQuery("FROM CheckingAccount account JOIN account.accountHolder user where user.username = :username",
                     CheckingAccount.class);
             query.setParameter("username", username);
             return query.getResultList();
