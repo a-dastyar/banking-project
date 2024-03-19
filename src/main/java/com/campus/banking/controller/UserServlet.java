@@ -38,7 +38,7 @@ public class UserServlet extends HttpServlet {
         var userList = service.getAll(page);
         req.setAttribute("users", userList);
         req.setAttribute("roles", Role.values());
-        req.getRequestDispatcher("/views/pages/users.jsp").forward(req, resp);
+        req.getRequestDispatcher("/views/pages/users/users.jsp").forward(req, resp);
     }
 
     @Override
