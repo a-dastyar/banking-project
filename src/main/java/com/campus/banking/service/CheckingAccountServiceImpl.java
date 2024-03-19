@@ -24,7 +24,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @ApplicationScoped
 class CheckingAccountServiceImpl implements CheckingAccountService {
 
@@ -44,6 +46,7 @@ class CheckingAccountServiceImpl implements CheckingAccountService {
 
     @Override
     public void add(@NotNull @Valid CheckingAccount account) {
+        validateAccountInfo(account);
         var user = users.getByUsername(getUsername(account));
         account.setAccountHolder(user);
         dao.inTransaction(em -> {
@@ -56,6 +59,13 @@ class CheckingAccountServiceImpl implements CheckingAccountService {
             insertTransaction(em, account, amount, TransactionType.DEPOSIT);
             insertTransaction(em, account, CheckingAccount.TRANSACTION_FEE, TransactionType.TRANSACTION_FEE);
         });
+    }
+
+    private void validateAccountInfo(CheckingAccount account) {
+        if (account.getBalance() > 0.0d && account.getDebt()>0.0d)
+            throw new IllegalArgumentException("Can't have balance while in debt");
+        if (account.getDebt() > account.getOverdraftLimit())
+            throw new IllegalArgumentException("Can't have debt more than overdraft limit");
     }
 
     private String getUsername(BankAccount account) {
@@ -71,7 +81,7 @@ class CheckingAccountServiceImpl implements CheckingAccountService {
     public List<CheckingAccount> getByUsername(@NotNull @NotBlank String username) {
         return dao.findByUsername(username);
     }
-    
+
     @Override
     public Page<CheckingAccount> getPage(@Positive int page) {
         return dao.getAll(page, maxPageSize);
@@ -85,9 +95,9 @@ class CheckingAccountServiceImpl implements CheckingAccountService {
 
     @Override
     public void deposit(@NotNull @NotBlank String accountNumber, @Positive double amount) {
+        log.debug("Deposit {} to Account[{}]", amount, accountNumber);
         if (amount <= CheckingAccount.TRANSACTION_FEE)
             throw new LessThanMinimumTransactionException();
-
         dao.inTransaction(em -> {
             var account = dao.findByAccountNumberForUpdate(em, accountNumber)
                     .orElseThrow(NotFoundException::new);
