@@ -51,12 +51,21 @@ public class UserDetailServlet extends HttpServlet {
                 .orElseThrow(IllegalArgumentException::new);
 
         var user = service.getByUsername(username);
-        var userRoles = user.getRoles().stream().collect(Collectors.toMap(Role::toString, r -> true));
+        var bankAccounts = account.getByUsername(username);
+        var checkingAccounts = checking.getByUsername(username);
+        var savingAccounts = saving.getByUsername(username);
+        
         req.setAttribute("user", user);
+        req.setAttribute("bankAccounts", bankAccounts);
+        req.setAttribute("checkingAccounts", checkingAccounts);
+        req.setAttribute("savingAccounts", savingAccounts);
+
+        var userRoles = user.getRoles().stream().collect(Collectors.toMap(Role::toString, r -> true));
+
         req.setAttribute("roles", Role.values());
         req.setAttribute("userRoles", userRoles);
-        log.debug("user roles: {}",userRoles);
-        req.getRequestDispatcher("/views/pages/user_detail.jsp").forward(req, resp);
+
+        req.getRequestDispatcher("/views/pages/users/user_detail.jsp").forward(req, resp);
     }
 
     @Override
