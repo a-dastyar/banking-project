@@ -7,8 +7,7 @@
                 <th scope="col">Owner</th>
                 <th scope="col">Balance</th>
                 <th scope="col">Minimum balance</th>
-                <th scope="col">Interest rate</th>
-                <th scope="col">Interest period</th>
+                <th scope="col">Interest</th>
                 <th scope="col">Created</th>
                 <th scope="col">Details</th>
             </tr>
@@ -22,8 +21,7 @@
                     <td>${account.getAccountHolder().getUsername()}</td>
                     <td>${account.getBalance()}</td>
                     <td>${account.getMinimumBalance()}</td>
-                    <td>${account.getInterestRate()}</td>
-                    <td>${account.getInterestPeriod()}</td>
+                    <td>${account.getInterestRate()}% / ${account.getInterestPeriod()}</td>
                     <td>${date}</td>
                     <td><a class="link-secondary" href="${pageContext.request.contextPath}/saving-accounts/details?account_number=${account.accountNumber}">
                         Details

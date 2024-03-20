@@ -1,10 +1,13 @@
 <%@ include file="/views/components/commons/imports.jsp" %>
-<div class="m-3">
-    <form method="GET" action="${pageContext.request.contextPath}/${endPoint}">
+<div class="m-3 mt-3 p-3 border rounded">
+    <form method="GET" action="${pageContext.request.contextPath}/${endPoint}" class="needs-validation" novalidate>
         <div class="row mb-3">
             <label for="sum_min" class="col-sm-2 col-form-label">Min balance:</label>
             <div class="col-sm">
-                <input type="text" class="form-control" id="sum_min" name="sum_min">
+                <input type="number" class="form-control" id="sum_min" name="sum_min" value="0" min="0" required>
+                <div class="invalid-feedback">
+                    Please enter an non-negative amount.
+                </div>
             </div>
             <div class="col">
                 <button type="submit" class="btn btn-primary">Submit</button>

@@ -14,11 +14,11 @@
                 <form method="POST" action="j_security_check" id="add-user-form">
                     <div class="mb-3">
                         <label for="username" class="form-label">Username</label>
-                        <input type="text" class="form-control" id="username" name="j_username">
+                        <input type="text" class="form-control" id="username" name="j_username" required>
                     </div>
                     <div class="mb-3">
                         <label for="password" class="form-label">Password</label>
-                        <input type="password" class="form-control" id="password" name="j_password">
+                        <input type="password" class="form-control" id="password" name="j_password" required>
                     </div>
                     <div>
                         <p class="mb-0">Don't have an account? <a
@@ -33,6 +33,7 @@
                     </c:if>
                     <div class="row justify-content-center align-items-center">
                         <button type="submit" class="btn btn-primary col-sm-3 mt-2">Login</button>
+                        <a href="${pageContext.request.contextPath}" class="link-dark link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">Home</a>
                     </div>
                 </form>
             </div>
