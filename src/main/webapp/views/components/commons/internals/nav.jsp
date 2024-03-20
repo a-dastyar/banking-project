@@ -19,7 +19,7 @@
                         <a class="nav-link mt-1 ${menu=='savings'?'active':''}"  href="${pageContext.request.contextPath}/saving-accounts">Saving Accounts</a>
                     </li>
                     <li class="nav-item main-nav">
-                        <a class="nav-link ${menu=='checkings'?'active':''} mt-1"  href="${pageContext.request.contextPath}/checking-accounts">Checking Accounts</a>
+                        <a class="nav-link mt-1 ${menu=='checkings'?'active':''}"  href="${pageContext.request.contextPath}/checking-accounts">Checking Accounts</a>
                     </li>
                     <li class="nav-item main-nav">
                         <a class="nav-link mt-1 ${menu=='users'?'active':''}"  href="${pageContext.request.contextPath}/users">Users</a>

@@ -29,7 +29,7 @@ public class SignupServlet  extends HttpServlet {
         if (req.getUserPrincipal() != null){
             resp.sendRedirect(req.getContextPath());
         }else{
-            req.getRequestDispatcher("/views/pages/signup.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/pages/singles/signup.jsp").forward(req, resp);
         }
     }
     

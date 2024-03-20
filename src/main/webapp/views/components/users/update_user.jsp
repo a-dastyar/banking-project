@@ -1,4 +1,4 @@
-<%@ include file="/views/components/imports.jsp" %>
+<%@ include file="/views/components/commons/imports.jsp" %>
 <div class="container-sm w-75">
     <form method="POST" action="${pageContext.request.contextPath}/users/details">
         <div class="mb-3 row">

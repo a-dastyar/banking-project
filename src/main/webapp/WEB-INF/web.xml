@@ -55,8 +55,8 @@
   <login-config>
     <auth-method>FORM</auth-method>
     <form-login-config>
-      <form-login-page>/views/pages/login.jsp</form-login-page>
-      <form-error-page>/views/pages/login.jsp?failed=true</form-error-page>
+      <form-login-page>/views/pages/singles/login.jsp</form-login-page>
+      <form-error-page>/views/pages/singles/login.jsp?failed=true</form-error-page>
     </form-login-config>
   </login-config>
 

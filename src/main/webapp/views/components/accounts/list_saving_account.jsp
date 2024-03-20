@@ -1,4 +1,4 @@
-<%@ include file="/views/components/imports.jsp" %>
+<%@ include file="/views/components/commons/imports.jsp" %>
 <c:if test="${savingsList.size() > 0}">
     <table class="table border-dark">
         <thead>

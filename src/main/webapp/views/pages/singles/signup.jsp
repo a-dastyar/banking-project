@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-    <%@ include file="/views/components/imports.jsp" %>
+    <%@ include file="/views/components/commons/imports.jsp" %>
 
     <head>
-        <%@ include file="/views/components/meta.jsp" %>
+        <%@ include file="/views/components/commons/meta.jsp" %>
         <title>Login</title>
     </head>
 
@@ -30,7 +30,7 @@
                 </form>
             </div>
         </div>
-        <%@ include file="/views/components/footer.jsp" %>
+        <%@ include file="/views/components/commons/footer.jsp" %>
     </body>
 
 </html>

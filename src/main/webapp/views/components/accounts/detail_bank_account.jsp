@@ -1,4 +1,4 @@
-<%@ include file="/views/components/imports.jsp" %>
+<%@ include file="/views/components/commons/imports.jsp" %>
 <dl class="row col">
     <dt class="col-sm-3">Account number</dt>
     <dd class="col-sm-7">${account.getAccountNumber()}</dd>

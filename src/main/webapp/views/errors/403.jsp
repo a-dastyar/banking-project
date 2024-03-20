@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-    <%@ include file="/views/components/meta.jsp" %>
+    <%@ include file="/views/components/commons/meta.jsp" %>
     <title>403 | Forbidden</title>
 </head>
 

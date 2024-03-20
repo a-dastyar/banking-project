@@ -1,4 +1,4 @@
-<%@ include file="/views/components/imports.jsp" %>
+<%@ include file="/views/components/commons/imports.jsp" %>
 <div class="m-3">
     <form method="GET" action="${pageContext.request.contextPath}/${endPoint}">
         <div class="row mb-3">

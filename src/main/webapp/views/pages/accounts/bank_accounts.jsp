@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
-    <%@ include file="/views/components/imports.jsp" %>
+    <%@ include file="/views/components/commons/imports.jsp" %>
     <c:set var="sumExists" value="${sum != null}" />
 
     <head>
-        <%@ include file="/views/components/meta.jsp" %>
+        <%@ include file="/views/components/commons/meta.jsp" %>
         <title>Bank accounts</title>
     </head>
 
@@ -14,7 +14,7 @@
         <c:set var="menu" value="banks" scope="request" />
         <c:set var="paths" value="${['Bank accounts']}" scope="request" />
         <c:set var="urls" value="${['bank-accounts']}" scope="request" />
-        <%@ include file="/views/components/header.jsp" %>
+        <%@ include file="/views/components/commons/header.jsp" %>
         
         <c:if test="${min!=null}">
             <c:set var="activePanel" value="2" scope="request"/>
@@ -34,9 +34,9 @@
                 "/views/components/accounts/sum_balance.jsp"
             });
         %>
-        <%@ include file="/views/components/content.jsp" %>
+        <%@ include file="/views/components/commons/content.jsp" %>
          
-        <%@ include file="/views/components/footer.jsp" %>
+        <%@ include file="/views/components/commons/footer.jsp" %>
     </body>
 
 </html>

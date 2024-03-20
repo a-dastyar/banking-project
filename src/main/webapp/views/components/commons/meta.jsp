@@ -31,7 +31,8 @@
 
     .main-nav>.nav-link.active,
     .main-nav>.nav-link.active:active,
-    .main-nav>.nav-link:hover {
+    .main-nav>.nav-link:hover,
+    .main-nav>.nav-link:focus{
         color: #0d6efd !important;
     }
 
@@ -43,5 +44,9 @@
     table tr th {
         background-color: rgba(39, 46, 49, 0) !important;
         padding: 20px;
+    }
+    table caption{
+        width: fit-content;
+        background-color: #daeaff99;
     }
 </style>

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-    <%@ include file="/views/components/imports.jsp" %>
+    <%@ include file="/views/components/commons/imports.jsp" %>
 
     <head>
-        <%@ include file="/views/components/meta.jsp" %>
+        <%@ include file="/views/components/commons/meta.jsp" %>
         
         <title>Users | ${user.getUsername()}</title>
     </head>
@@ -14,7 +14,7 @@
         <c:set var="menu" value="users" scope="request"/>
         <c:set var="paths" value="${['Users','Details']}" scope="request" />
         <c:set var="urls" value="${['users','details']}" scope="request" />
-        <%@ include file="/views/components/header.jsp" %>
+        <%@ include file="/views/components/commons/header.jsp" %>
 
         <c:set var="endPoint" value="users" scope="request"/>
         <c:set var="user" value="${user}" scope="request"/>
@@ -37,9 +37,9 @@
                 "/views/components/accounts/list_checking_account.jsp"
             });
         %>
-        <%@ include file="/views/components/content.jsp" %>
+        <%@ include file="/views/components/commons/content.jsp" %>
         
-        <%@ include file="/views/components/footer.jsp" %>
+        <%@ include file="/views/components/commons/footer.jsp" %>
     </body>
 
 </html>

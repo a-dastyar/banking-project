@@ -1,4 +1,4 @@
-<%@ include file="/views/components/imports.jsp" %>
+<%@ include file="/views/components/commons/imports.jsp" %>
 <dl class="row">
     <dt class="col-sm-3">Username</dt>
     <dd class="col-sm-9">${user.getUsername()}</dd>

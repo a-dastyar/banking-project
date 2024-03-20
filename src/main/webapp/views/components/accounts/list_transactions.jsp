@@ -1,5 +1,6 @@
-<%@ include file="/views/components/imports.jsp" %>
-<table class="table border-dark">
+<%@ include file="/views/components/commons/imports.jsp" %>
+<table class="table border-dark caption-top">
+    <caption class="text-dark rounded-end p-1 pr-2 pr-2 mb-2">Transactions</caption>
     <thead>
         <tr>
             <th scope="col">Amount</th>
