@@ -45,6 +45,7 @@
         background-color: rgba(39, 46, 49, 0) !important;
         padding: 20px;
     }
+    
     table caption{
         width: fit-content;
         background-color: #daeaff99;
