@@ -65,7 +65,7 @@ public class UserDetailServlet extends HttpServlet {
         req.setAttribute("roles", Role.values());
         req.setAttribute("userRoles", userRoles);
 
-        req.getRequestDispatcher("/views/pages/users/user_detail.jsp").forward(req, resp);
+        req.getRequestDispatcher("/views/pages/users/user_details.jsp").forward(req, resp);
     }
 
     @Override

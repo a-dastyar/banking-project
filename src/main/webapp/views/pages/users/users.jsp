@@ -25,7 +25,7 @@
                 "Add user"
             });
             pageContext.setAttribute("panelContents",new String[]{
-                "/views/components/users/list_user.jsp",
+                "/views/components/users/list_users.jsp",
                 "/views/components/users/add_user.jsp"
             });
         %>

@@ -32,9 +32,9 @@
             pageContext.setAttribute("panelContents",new String[]{
                 "/views/components/users/detail_user.jsp",
                 "/views/components/users/update_user.jsp",
-                "/views/components/accounts/list_bank_account.jsp",
-                "/views/components/accounts/list_saving_account.jsp",
-                "/views/components/accounts/list_checking_account.jsp"
+                "/views/components/accounts/list_bank_accounts.jsp",
+                "/views/components/accounts/list_saving_accounts.jsp",
+                "/views/components/accounts/list_checking_accounts.jsp"
             });
         %>
         <%@ include file="/views/components/commons/content.jsp" %>

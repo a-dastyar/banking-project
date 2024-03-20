@@ -45,6 +45,6 @@ public class BankAccountDetailServlet extends HttpServlet {
         
         req.setAttribute("account", account);
         req.setAttribute("transactions", transactions);
-        req.getRequestDispatcher("/views/pages/accounts/bank_account_detail.jsp").forward(req, resp);
+        req.getRequestDispatcher("/views/pages/accounts/bank_account_details.jsp").forward(req, resp);
     }
 }

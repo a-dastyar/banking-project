@@ -29,7 +29,7 @@
                 "Sum balance",
             });
             pageContext.setAttribute("panelContents",new String[]{
-                "/views/components/accounts/list_bank_account.jsp",
+                "/views/components/accounts/list_bank_accounts.jsp",
                 "/views/components/accounts/add_bank_account.jsp",
                 "/views/components/accounts/sum_balance.jsp"
             });
