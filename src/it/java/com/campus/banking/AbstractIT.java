@@ -25,11 +25,14 @@ public abstract class AbstractIT {
     @BeforeEach
     public void beforeEach() {
         log.debug("Creating EntityManagerFactory");
+        var showSql = false;
         var properties = Map.of(
                 "hibernate.hikari.jdbcUrl", mysql.getJdbcUrl(),
                 "hibernate.hikari.dataSource.user", mysql.getUsername(),
                 "hibernate.hikari.dataSource.password", mysql.getPassword(),
-                "hibernate.show_sql", "false",
+                "hibernate.show_sql", showSql,
+                "hibernate.format_sql", showSql,
+                "hibernate.highlight_sql", showSql,
                 "jakarta.persistence.schema-generation.database.action", "drop-and-create");
 
         emf = Persistence.createEntityManagerFactory("App", properties);
