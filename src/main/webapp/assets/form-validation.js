@@ -8,7 +8,7 @@
     // Loop over them and prevent submission
     Array.from(forms).forEach(form => {
         form.addEventListener('submit', event => {
-            clearOldMessages(['balance', 'debt', 'overdraft_limit', 'minimum_balance']);
+            clearOldMessages(['balance', 'debt', 'overdraft_limit', 'minimum_balance', 'withdraw_amount']);
             if (!form.checkValidity() || !checkCustomValidation(form)) {
                 event.preventDefault()
                 event.stopPropagation()
@@ -43,15 +43,24 @@ function clearOldMessages(fields) {
 }
 
 function checkCustomValidation(form) {
-    return validateCheckingAccountForm(form) && validateSavingAccountForm(form)
+    return (
+        validateCheckingAccountForm(form)
+        && validateSavingAccountForm(form)
+        && validateWithdrawForm(form)
+    );
 }
 function validateCheckingAccountForm(form) {
     if (form["id"] == "add-checking-account-form") {
-        if (form["balance"].value > 0.0 && form["debt"].value > 0.0) {
+        
+        const balance = Number(form["balance"].value);
+        const debt = Number(form["debt"].value);
+        const overdraftLimit = Number(form["overdraft_limit"].value);
+
+        if (balance > 0.0 && debt > 0.0) {
             showInvalidMessage("Can not have balance while in debt!", ['balance', 'debt']);
             return false;
         }
-        if (form["debt"].value > form["overdraft_limit"].value) {
+        if (debt > overdraftLimit) {
             showInvalidMessage("Can not have more debt than overdraft limit!", ['debt', 'overdraft_limit']);
             return false;
         }
@@ -61,7 +70,11 @@ function validateCheckingAccountForm(form) {
 
 function validateSavingAccountForm(form) {
     if (form["id"] == "add-saving-account-form") {
-        if (form["balance"].value < form["minimum_balance"].value) {
+
+        const balance = Number(form["balance"].value);
+        const minimumBalance = Number(form["minimum_balance"].value);
+
+        if (balance < minimumBalance) {
             showInvalidMessage("Balance can not be less than minimum balance!", ['balance', 'minimum_balance']);
             return false;
         }
