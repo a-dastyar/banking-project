@@ -18,6 +18,14 @@
     })
 })()
 
+function checkCustomValidation(form) {
+    return (
+        validateCheckingAccountForm(form)
+        && validateSavingAccountForm(form)
+        && validateWithdrawForm(form)
+    );
+}
+
 function showInvalidMessage(message, fields) {
     Array.from(fields).forEach(id => {
         document.querySelector("#" + id).setCustomValidity("invalid");
@@ -42,16 +50,9 @@ function clearOldMessages(fields) {
     }
 }
 
-function checkCustomValidation(form) {
-    return (
-        validateCheckingAccountForm(form)
-        && validateSavingAccountForm(form)
-        && validateWithdrawForm(form)
-    );
-}
 function validateCheckingAccountForm(form) {
     if (form["id"] == "add-checking-account-form") {
-        
+
         const balance = Number(form["balance"].value);
         const debt = Number(form["debt"].value);
         const overdraftLimit = Number(form["overdraft_limit"].value);
