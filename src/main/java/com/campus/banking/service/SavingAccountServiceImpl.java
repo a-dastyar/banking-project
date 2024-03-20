@@ -111,12 +111,22 @@ class SavingAccountServiceImpl implements SavingAccountService {
     }
 
     private void doWithdraw(EntityManager em, SavingAccount account, double amount) {
-        double maximum_withdraw = account.getBalance() - account.getMinimumBalance();
+        double maximum_withdraw = getAllowedWithdraw(account);
         if (amount > maximum_withdraw) {
             throw new InvalidTransactionException("Can not withdraw more than " + maximum_withdraw);
         }
         account.setBalance(account.getBalance() - amount);
         dao.transactionalUpdate(em, account);
+    }
+
+    @Override
+    public double getAllowedWithdraw(@NotNull @Valid SavingAccount account) {
+        return account.getBalance() - account.getMinimumBalance();
+    }
+    
+    @Override
+    public double getMinimumDeposit(@NotNull @Valid SavingAccount account) {
+        return 10;
     }
 
     @Override

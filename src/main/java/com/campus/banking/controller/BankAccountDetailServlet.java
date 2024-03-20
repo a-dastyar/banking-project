@@ -44,6 +44,8 @@ public class BankAccountDetailServlet extends HttpServlet {
         var transactions = service.getTransactions(accountNumber, trxPage);
         
         req.setAttribute("account", account);
+        req.setAttribute("maxWithdraw", service.getAllowedWithdraw(account));
+        req.setAttribute("minDeposit", service.getMinimumDeposit(account));
         req.setAttribute("transactions", transactions);
         req.getRequestDispatcher("/views/pages/accounts/bank_account_details.jsp").forward(req, resp);
     }

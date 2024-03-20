@@ -62,7 +62,7 @@ class CheckingAccountServiceImpl implements CheckingAccountService {
     }
 
     private void validateAccountInfo(CheckingAccount account) {
-        if (account.getBalance() > 0.0d && account.getDebt()>0.0d)
+        if (account.getBalance() > 0.0d && account.getDebt() > 0.0d)
             throw new IllegalArgumentException("Can't have balance while in debt");
         if (account.getDebt() > account.getOverdraftLimit())
             throw new IllegalArgumentException("Can't have debt more than overdraft limit");
@@ -136,9 +136,9 @@ class CheckingAccountServiceImpl implements CheckingAccountService {
             var account = dao.findByAccountNumberForUpdate(em, accountNumber)
                     .orElseThrow(NotFoundException::new);
 
-            var allowedWithdrawAmount = getAllowedWithdrawAmount(account);
+            var allowedWithdrawAmount = getAllowedWithdraw(account);
 
-            if (amount + CheckingAccount.TRANSACTION_FEE > allowedWithdrawAmount) {
+            if (amount > allowedWithdrawAmount) {
                 throw new InsufficientFundsException();
             }
 
@@ -165,16 +165,22 @@ class CheckingAccountServiceImpl implements CheckingAccountService {
         dao.transactionalUpdate(em, account);
     }
 
-    private double getAllowedWithdrawAmount(CheckingAccount checkingAccount) {
-        var amount = checkingAccount.getBalance();
+    @Override
+    public double getAllowedWithdraw(@NotNull @Valid CheckingAccount account) {
+        var amount = account.getBalance();
 
         // Add overdraft
-        amount += (checkingAccount.getOverdraftLimit() - checkingAccount.getDebt());
+        amount += (account.getOverdraftLimit() - account.getDebt());
 
         // Don't allow to empty the account so that there is enough amount for
         // deposit transaction fee
-        amount -= CheckingAccount.TRANSACTION_FEE;
+        amount -= CheckingAccount.TRANSACTION_FEE * 2;
         return amount;
+    }
+
+    @Override
+    public double getMinimumDeposit(@NotNull @Valid CheckingAccount account) {
+        return CheckingAccount.TRANSACTION_FEE * 2;
     }
 
     @Override

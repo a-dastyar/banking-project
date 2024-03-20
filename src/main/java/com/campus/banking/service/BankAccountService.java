@@ -41,5 +41,9 @@ public interface BankAccountService<T extends BankAccount> {
     double sumBalanceHigherThan(@PositiveOrZero double min);
 
     List<T> getByUsername(@NotNull @NotBlank String username);
+
+    double getAllowedWithdraw(@NotNull @Valid T account);
+
+    double getMinimumDeposit(@NotNull @Valid T account);
     
 }

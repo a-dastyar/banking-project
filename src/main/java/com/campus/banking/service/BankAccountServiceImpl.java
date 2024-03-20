@@ -111,6 +111,16 @@ class BankAccountServiceImpl implements BankAccountService<BankAccount> {
     }
 
     @Override
+    public double getAllowedWithdraw(@NotNull @Valid BankAccount account) {
+        return account.getBalance();
+    }
+
+    @Override
+    public double getMinimumDeposit(@NotNull @Valid BankAccount account) {
+        return 10;
+    }
+
+    @Override
     public double sumBalanceHigherThan(@PositiveOrZero double min) {
         return dao.sumBalanceHigherThan(min);
     }

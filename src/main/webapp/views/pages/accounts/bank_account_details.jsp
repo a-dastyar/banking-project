@@ -17,6 +17,8 @@
 
         <c:set var="endPoint" value="bank-accounts" scope="request"/>
         <c:set var="account" value="${account}" scope="request"/>
+        <c:set var="maxWithdraw" value="${maxWithdraw}" scope="request"/>
+        <c:set var="minDeposit" value="${minDeposit}" scope="request"/>
         <%
             pageContext.setAttribute("panelItems",new String[]{
                 "Account info",

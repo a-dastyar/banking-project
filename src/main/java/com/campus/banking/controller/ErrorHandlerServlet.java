@@ -3,6 +3,7 @@ package com.campus.banking.controller;
 import java.io.IOException;
 
 import com.campus.banking.exception.DuplicatedException;
+import com.campus.banking.exception.InsufficientFundsException;
 import com.campus.banking.exception.InvalidTransactionException;
 import com.campus.banking.exception.LessThanMinimumTransactionException;
 import com.campus.banking.exception.NotFoundException;
@@ -32,15 +33,19 @@ public class ErrorHandlerServlet extends HttpServlet {
                 resp.setStatus(400);
                 yield "400.jsp";
             }
-            case IllegalArgumentException e -> {
-                resp.setStatus(400);
-                yield "400.jsp";
-            }
             case InvalidTransactionException e -> {
                 resp.setStatus(400);
                 yield "400.jsp";
             }
+            case InsufficientFundsException e -> {
+                resp.setStatus(400);
+                yield "400.jsp";
+            }
             case LessThanMinimumTransactionException e -> {
+                resp.setStatus(400);
+                yield "400.jsp";
+            }
+            case IllegalArgumentException e -> {
                 resp.setStatus(400);
                 yield "400.jsp";
             }
