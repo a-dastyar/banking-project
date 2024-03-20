@@ -1,7 +1,7 @@
 <%@ include file="/views/components/commons/imports.jsp" %>
-<div class="container-sm w-75">
+<div class="container-sm w-75 mt-3 p-3 border rounded">
     <form method="POST" action="${pageContext.request.contextPath}/users/details" class="needs-validation" novalidate>
-        <div class="mb-3 row">
+        <div class="mb-3 row offset-sm-2">
             <label class="col-form-label col-sm-3" for="username">Username</label>
             <div class="col-sm-6" >
                 <input type="text" class="form-control" id="username" name="username" value="${user.username}" pattern=".{3,}" maxlength="20" required>
@@ -10,7 +10,7 @@
                 </div>
             </div>
         </div>
-        <div class="mb-3 row">
+        <div class="mb-3 row offset-sm-2">
             <label class="col-form-label col-sm-3" for="email">Email</label>
             <div class="col-sm-6" >
                 <input type="email" class="form-control" id="email" name="email" value="${user.email}" pattern=".+@.+\..{2,}" maxlength="20" required>
@@ -19,11 +19,11 @@
                 </div>
             </div>
         </div>
-        <div class="form-group">
-            <label for="roles">Roles</label>
-            <select multiple class="form-control" id="roles" name="roles" required>
+        <div class="mb-3 w-75 row offset-sm-2 form-group">
+            <label for="roles" class="col-sm-3" >Roles</label>
+            <select multiple class="form-control col-sm" id="roles" name="roles" required>
                 <c:forEach var="role" items="${roles}">
-                    <option ${userRoles[role.toString()]?"selected":""} >${role}</option>
+                    <option>${role}</option>
                 </c:forEach>
             </select>
             <div class="invalid-feedback">
