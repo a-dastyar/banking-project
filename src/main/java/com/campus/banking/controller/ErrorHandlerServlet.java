@@ -26,7 +26,7 @@ public class ErrorHandlerServlet extends HttpServlet {
         var error = switch (exception) {
             case NotFoundException e ->  {
                 resp.setStatus(404);
-                yield "400.jsp";
+                yield "404.jsp";
             }
             case DuplicatedException e -> {
                 resp.setStatus(400);
