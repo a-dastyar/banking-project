@@ -47,6 +47,7 @@ public class BankAccount extends BaseModel<Long> {
     @Column(name = "account_number", nullable = false)
     private String accountNumber;
 
+    @NotNull
     @ManyToOne
     @JoinColumn(name = "account_holder_id")
     private User accountHolder;
