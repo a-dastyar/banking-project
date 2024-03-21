@@ -30,7 +30,7 @@
 <c:if test="${accountsList == null || accountsList.size() == 0}">
     <div class="container-sm row text-center justify-content-center" role="alert">
         <div class="col-auto mt-4 mx-auto alert alert-dark">
-            There is no checking account yet!
+            There is no bank account yet!
         </div>
     </div>
 </c:if>
