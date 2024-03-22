@@ -62,8 +62,10 @@ public abstract class AbstractDAO<T extends BaseModel<S>, S> implements DAO<T, S
     @Override
     public List<T> getAll() {
         return withEntityManager(em -> {
-            CriteriaQuery<T> criteriaQuery = em.getCriteriaBuilder().createQuery(getType());
-            criteriaQuery.from(getType());
+            CriteriaBuilder builder = em.getCriteriaBuilder();
+            CriteriaQuery<T> criteriaQuery = builder.createQuery(getType());
+            Root<T> select = criteriaQuery.from(getType());
+            criteriaQuery.where(builder.equal(select.type(), getType()));
             return em.createQuery(criteriaQuery).getResultList();
         });
     }
@@ -71,8 +73,10 @@ public abstract class AbstractDAO<T extends BaseModel<S>, S> implements DAO<T, S
     @Override
     public Page<T> getAll(int page, int size) {
         return withEntityManager(em -> {
-            CriteriaQuery<T> criteriaQuery = em.getCriteriaBuilder().createQuery(getType());
-            criteriaQuery.from(getType());
+            CriteriaBuilder builder = em.getCriteriaBuilder();
+            CriteriaQuery<T> criteriaQuery = builder.createQuery(getType());
+            Root<T> select = criteriaQuery.from(getType());
+            criteriaQuery.where(builder.equal(select.type(), getType()));
             TypedQuery<T> query = em.createQuery(criteriaQuery);
             query.setFirstResult((page - 1) * size);
             query.setMaxResults(size);
@@ -87,7 +91,9 @@ public abstract class AbstractDAO<T extends BaseModel<S>, S> implements DAO<T, S
         return withEntityManager(em -> {
             CriteriaBuilder builder = em.getCriteriaBuilder();
             CriteriaQuery<Long> query = builder.createQuery(Long.class);
-            query.select(builder.count(query.from(getType())));
+            Root<T> select = query.from(getType());
+            query.select(builder.count(select));
+            query.where(builder.equal(select.type(), getType()));
             return em.createQuery(query).getSingleResult();
         });
     }
@@ -99,6 +105,7 @@ public abstract class AbstractDAO<T extends BaseModel<S>, S> implements DAO<T, S
             CriteriaBuilder builder = em.getCriteriaBuilder();
             CriteriaQuery<T> query = builder.createQuery(getType());
             Root<T> select = query.from(getType());
+            query.where(builder.equal(select.type(), getType()));
             ParameterExpression<U> parameter = builder.parameter((Class<U>) fieldValue.getClass());
             query.where(builder.equal(select.get(fieldName), parameter));
             TypedQuery<T> typedQuery = em.createQuery(query);
@@ -109,10 +116,31 @@ public abstract class AbstractDAO<T extends BaseModel<S>, S> implements DAO<T, S
 
     @Override
     @SuppressWarnings("unchecked")
+    public <U> Page<T> findBy(String fieldName, U fieldValue, int page, int size) {
+        return withEntityManager(em -> {
+            CriteriaBuilder builder = em.getCriteriaBuilder();
+            CriteriaQuery<T> query = builder.createQuery(getType());
+            Root<T> select = query.from(getType());
+            query.where(builder.equal(select.type(), getType()));
+            ParameterExpression<U> parameter = builder.parameter((Class<U>) fieldValue.getClass());
+            query.where(builder.equal(select.get(fieldName), parameter));
+            TypedQuery<T> typedQuery = em.createQuery(query);
+            typedQuery.setParameter(parameter, fieldValue);
+            typedQuery.setFirstResult((page - 1) * size);
+            typedQuery.setMaxResults(size);
+            List<T> list = typedQuery.getResultList();
+            long countAll = countAll();
+            return new Page<>(list, countAll, page, size);
+        });
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
     public <U> List<T> findByForUpdate(EntityManager em, String fieldName, U fieldValue) {
         CriteriaBuilder builder = em.getCriteriaBuilder();
         CriteriaQuery<T> query = builder.createQuery(getType());
         Root<T> select = query.from(getType());
+        query.where(builder.equal(select.type(), getType()));
         ParameterExpression<U> parameter = builder.parameter((Class<U>) fieldValue.getClass());
         query.where(builder.equal(select.get(fieldName), parameter));
         TypedQuery<T> typedQuery = em.createQuery(query);
@@ -127,9 +155,11 @@ public abstract class AbstractDAO<T extends BaseModel<S>, S> implements DAO<T, S
             CriteriaBuilder builder = em.getCriteriaBuilder();
             CriteriaDelete<T> delete = builder.createCriteriaDelete(getType());
             Root<T> select = delete.from(getType());
-            delete.where(builder.equal(select.get(fieldName), fieldValue));
+            delete.where(builder.and(
+                    builder.equal(select.get(fieldName), fieldValue),
+                    builder.equal(select.type(), getType())));
             Query deleteQuery = em.createQuery(delete);
-            var result =  deleteQuery.executeUpdate();
+            var result = deleteQuery.executeUpdate();
             em.flush();
             em.clear();
             return result;

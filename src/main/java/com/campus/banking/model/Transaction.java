@@ -25,11 +25,11 @@ import lombok.With;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 @Entity
 @Table(name = "transactions", indexes = {
         @Index(name = "trx_bnk_acc_id_idx", columnList = "bank_account_id", unique = false) })
-public class Transaction implements BaseModel<Long> {
+public class Transaction extends BaseModel<Long> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -3,6 +3,9 @@ package com.campus.banking.controller;
 import java.io.IOException;
 
 import com.campus.banking.exception.DuplicatedException;
+import com.campus.banking.exception.InsufficientFundsException;
+import com.campus.banking.exception.InvalidTransactionException;
+import com.campus.banking.exception.LessThanMinimumTransactionException;
 import com.campus.banking.exception.NotFoundException;
 
 import jakarta.servlet.RequestDispatcher;
@@ -22,9 +25,34 @@ public class ErrorHandlerServlet extends HttpServlet {
         log.debug("Handling error");
         var exception = req.getAttribute(RequestDispatcher.ERROR_EXCEPTION);
         var error = switch (exception) {
-            case NotFoundException e -> "404.jsp";
-            case DuplicatedException e -> "400.jsp";
-            case ConstraintViolationException e -> "400.jsp";
+            case NotFoundException e ->  {
+                resp.setStatus(404);
+                yield "404.jsp";
+            }
+            case DuplicatedException e -> {
+                resp.setStatus(400);
+                yield "400.jsp";
+            }
+            case InvalidTransactionException e -> {
+                resp.setStatus(400);
+                yield "400.jsp";
+            }
+            case InsufficientFundsException e -> {
+                resp.setStatus(400);
+                yield "400.jsp";
+            }
+            case LessThanMinimumTransactionException e -> {
+                resp.setStatus(400);
+                yield "400.jsp";
+            }
+            case IllegalArgumentException e -> {
+                resp.setStatus(400);
+                yield "400.jsp";
+            }
+            case ConstraintViolationException e -> {
+                resp.setStatus(400);
+                yield "400.jsp";
+            }
             default -> "500.jsp";
         };
         log.debug("forwarding to {} for exception {}", error, exception);

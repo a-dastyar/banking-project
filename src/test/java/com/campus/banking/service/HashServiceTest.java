@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 
 public class HashServiceTest {
 
-    private HashService service = new Aragon2HashService();
+    private HashService service = new Argon2HashService();
 
     @Test
     void hashOf_withRawString_shouldHash() {

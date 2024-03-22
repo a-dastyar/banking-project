@@ -1,5 +1,6 @@
 package com.campus.banking.persistence;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -33,6 +34,16 @@ class CheckingAccountDAOImpl extends AbstractDAO<CheckingAccount, Long>
     public Optional<CheckingAccount> findByAccountNumberForUpdate(EntityManager em, String accountNumber) {
         return findByForUpdate(em, "accountNumber", accountNumber).stream()
                 .findFirst();
+    }
+
+    @Override
+    public List<CheckingAccount> findByUsername(String username) {
+        return withEntityManager(em -> {
+            var query = em.createQuery("FROM CheckingAccount account JOIN account.accountHolder user where user.username = :username",
+                    CheckingAccount.class);
+            query.setParameter("username", username);
+            return query.getResultList();
+        });
     }
 
     @Override

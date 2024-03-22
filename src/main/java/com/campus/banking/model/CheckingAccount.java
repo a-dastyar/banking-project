@@ -4,6 +4,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -24,9 +25,11 @@ public class CheckingAccount extends BankAccount {
 
     public static final int TRANSACTION_FEE = 100;
 
+    @PositiveOrZero
     @Column(name = "overdraft_limit")
-    private double overDraftLimit;
+    private double overdraftLimit;
 
+    @PositiveOrZero
     @Column(name = "debt")
     private double debt;
 

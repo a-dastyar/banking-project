@@ -1,5 +1,6 @@
 package com.campus.banking.persistence;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -35,15 +36,30 @@ class BankAccountDAOImpl extends AbstractDAO<BankAccount, Long> implements BankA
     }
 
     @Override
+    public List<BankAccount> findByUsername(String username) {
+        return withEntityManager(em -> {
+            var query = em.createQuery(
+                    "FROM BankAccount account JOIN account.accountHolder user where user.username = :username and TYPE(account) = :type",
+                    BankAccount.class);
+            query.setParameter("username", username);
+            query.setParameter("type", getType());
+            return query.getResultList();
+        });
+    }
+
+    @Override
     public boolean exists(BankAccount entity) {
         return withEntityManager(em -> {
             CriteriaBuilder builder = em.getCriteriaBuilder();
             CriteriaQuery<Long> query = builder.createQuery(Long.class);
-            Root<BankAccount> root = query.from(getType());
-            query.select(builder.count(root));
-            query.where(builder.or(
-                    builder.equal(root.get("id"), entity.getId()),
-                    builder.equal(root.get("accountNumber"), entity.getAccountNumber())));
+            Root<BankAccount> select = query.from(getType());
+            query.select(builder.count(select));
+            query.where(builder.and(
+                builder.or(
+                    builder.equal(select.get("id"), entity.getId()),
+                    builder.equal(select.get("accountNumber"), entity.getAccountNumber())),
+                    builder.equal(select.type(), getType()))
+            );
             return em.createQuery(query).getSingleResult() > 0;
         });
     }
@@ -53,9 +69,11 @@ class BankAccountDAOImpl extends AbstractDAO<BankAccount, Long> implements BankA
         return withEntityManager(em -> {
             CriteriaBuilder builder = em.getCriteriaBuilder();
             CriteriaQuery<Double> query = builder.createQuery(Double.class);
-            Root<BankAccount> root = query.from(getType());
-            query.select(builder.sumAsDouble(root.get("balance")));
-            query.where(builder.gt(root.get("balance"), min));
+            Root<BankAccount> select = query.from(getType());
+            query.select(builder.sumAsDouble(select.get("balance")));
+            query.where(builder.and(
+                    builder.gt(select.get("balance"), min),
+                    builder.equal(select.type(), getType())));
             var result = em.createQuery(query).getSingleResult();
             return result == null ? 0.0d : result;
         });

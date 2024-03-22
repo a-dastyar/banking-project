@@ -19,7 +19,7 @@ import org.eclipse.microprofile.config.Config;
 
 import com.campus.banking.model.Role;
 import com.campus.banking.service.HashService;
-import com.campus.banking.service.Aragon2HashService;
+import com.campus.banking.service.Argon2HashService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -98,7 +98,7 @@ public class TomcatEmbedded implements Server {
 
     private void addCredentialHandler(DataSourceRealm realm) {
         var handler = new CredentialHandler() {
-            HashService hashService = new Aragon2HashService();
+            HashService hashService = new Argon2HashService();
 
             @Override
             public boolean matches(String input, String hash) {

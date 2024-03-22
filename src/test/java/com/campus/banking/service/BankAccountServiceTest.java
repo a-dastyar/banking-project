@@ -6,6 +6,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.only;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Optional;
@@ -20,9 +23,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
 
 import com.campus.banking.exception.InsufficientFundsException;
-import com.campus.banking.exception.InvalidAccountException;
-import com.campus.banking.exception.NotFoundException;
 import com.campus.banking.model.BankAccount;
+import com.campus.banking.model.User;
 import com.campus.banking.persistence.BankAccountDAO;
 import com.campus.banking.persistence.TransactionDAO;
 
@@ -35,13 +37,18 @@ public class BankAccountServiceTest {
     BankAccountDAO<BankAccount> dao;
 
     @Mock
+    UserService users;
+
+    @Mock
     TransactionDAO trxDao;
+
+    int maxPageSize = 10;
 
     BankAccountService<BankAccount> service;
 
     @BeforeEach
     void setup() {
-        service = new BankAccountServiceImpl(dao, trxDao);
+        service = new BankAccountServiceImpl(dao, trxDao, users, maxPageSize);
     }
 
     @SuppressWarnings("unchecked")
@@ -52,79 +59,72 @@ public class BankAccountServiceTest {
     }
 
     @Test
-    void add_withNull_shouldFail() {
-        assertThatThrownBy(() -> service.add(null))
-                .isInstanceOf(InvalidAccountException.class);
-    }
-
-    @Test
-    void add_withAccountWithoutAccountNumber_shouldFail() {
-        var account = BankAccount.builder()
-                .accountHolderName("Tester")
-                .build();
-        assertThatThrownBy(() -> service.add(account)).isInstanceOf(InvalidAccountException.class);
-    }
-
-    @Test
-    void add_withAccountWithBlankAccountNumber_shouldFail() {
-        var account = BankAccount.builder()
-                .accountHolderName("Tester")
-                .accountNumber("")
-                .build();
-        assertThatThrownBy(() -> service.add(account))
-                .isInstanceOf(InvalidAccountException.class);
-    }
-
-    @Test
-    void add_withAccountWithoutAccountHolderName_shouldFail() {
+    void add_withNullUser_shouldFail() {
         var account = BankAccount.builder()
                 .accountNumber("3000")
                 .build();
-        assertThatThrownBy(() -> service.add(account))
-                .isInstanceOf(InvalidAccountException.class);
+        assertThatThrownBy(() -> service.add(account)).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
-    void add_withAccountWithBlankAccountHolderName_shouldFail() {
+    void add_withNullUsername_shouldFail() {
         var account = BankAccount.builder()
+                .accountHolder(User.builder().build())
                 .accountNumber("3000")
-                .accountHolderName("")
                 .build();
-        assertThatThrownBy(() -> service.add(account))
-                .isInstanceOf(InvalidAccountException.class);
+        assertThatThrownBy(() -> service.add(account)).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
-    void add_withNegativeBalance_shouldFail() {
+    void add_withBlankUsername_shouldFail() {
         var account = BankAccount.builder()
+                .accountHolder(User.builder().username("").build())
                 .accountNumber("3000")
-                .accountHolderName("Test")
-                .balance(-1.0)
                 .build();
-        assertThatThrownBy(() -> service.add(account))
-                .isInstanceOf(InvalidAccountException.class);
+        assertThatThrownBy(() -> service.add(account)).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void add_withZeroBalance_shouldNotInsertTransaction() {
+        var account = BankAccount.builder()
+                .accountHolder(User.builder().username("Tester").build())
+                .accountNumber("3000")
+                .balance(0.0)
+                .build();
+        doAnswer(this::executeConsumer).when(dao).inTransaction(any());
+        service.add(account);
+        verify(trxDao, never()).transactionalPersist(any(), any());
+        assertThatNoException();
+    }
+
+    @Test
+    void add_withBalance_shouldInsertTransaction() {
+        var account = BankAccount.builder()
+                .accountHolder(User.builder().username("Tester").build())
+                .accountNumber("3000")
+                .balance(10.0)
+                .build();
+        doAnswer(this::executeConsumer).when(dao).inTransaction(any());
+        service.add(account);
+        verify(trxDao, only()).transactionalPersist(any(), any());
+        assertThatNoException();
     }
 
     @Test
     void add_withValidAccount_shouldAdd() {
         var account = BankAccount.builder()
-                .accountHolderName("Tester")
+                .accountHolder(User.builder().username("Tester").build())
                 .accountNumber("3000")
+                .balance(10)
                 .build();
         service.add(account);
         assertThatNoException();
     }
 
     @Test
-    void getByAccountNumber_withNullAccountNumber_shouldFail() {
-        assertThatThrownBy(() -> service.getByAccountNumber(null))
-                .isInstanceOf(IllegalArgumentException.class);
-    }
-
-    @Test
     void getByAccountNumber_withNullAccountNumber_shouldReturnAccount() {
         var account = BankAccount.builder()
-                .accountHolderName("Tester")
+                .accountHolder(User.builder().username("Tester").build())
                 .accountNumber("3000")
                 .build();
         when(dao.findByAccountNumber(any())).thenReturn(Optional.of(account));
@@ -133,17 +133,10 @@ public class BankAccountServiceTest {
     }
 
     @Test
-    void withdraw_withNegativeAmount_shouldFail() {
-        var accountNumber = "3000";
-        assertThatThrownBy(() -> service.withdraw(accountNumber, -10.0))
-                .isInstanceOf(IllegalArgumentException.class);
-    }
-
-    @Test
     void withdraw_withMoreThanBalance_shouldFail() {
         var account = BankAccount.builder()
                 .accountNumber("3000")
-                .accountHolderName("Test")
+                .accountHolder(User.builder().username("Tester").build())
                 .balance(10.0)
                 .build();
         doAnswer(this::executeConsumer).when(dao).inTransaction(any());
@@ -153,18 +146,9 @@ public class BankAccountServiceTest {
     }
 
     @Test
-    void withdraw_withNoAccount_shouldFail() {
-        var accountNumber = "3000";
-        doAnswer(this::executeConsumer).when(dao).inTransaction(any());
-        when(dao.findByAccountNumberForUpdate(any(), any())).thenReturn(Optional.empty());
-        assertThatThrownBy(() -> service.withdraw(accountNumber, 11.0))
-                .isInstanceOf(NotFoundException.class);
-    }
-
-    @Test
     void withdraw_withLessThanBalance_shouldWithdraw() {
         var account = BankAccount.builder()
-                .accountHolderName("Tester")
+                .accountHolder(User.builder().username("Tester").build())
                 .accountNumber("3000")
                 .balance(10.0)
                 .build();
@@ -176,16 +160,9 @@ public class BankAccountServiceTest {
     }
 
     @Test
-    void deposit_withNegativeAmount_shouldFail() {
-        var accountNumber = "3000";
-        assertThatThrownBy(() -> service.deposit(accountNumber, -10.0))
-                .isInstanceOf(IllegalArgumentException.class);
-    }
-
-    @Test
     void deposit_withPositiveAmount_shouldDeposit() {
         var account = BankAccount.builder()
-                .accountHolderName("Tester")
+                .accountHolder(User.builder().username("Tester").build())
                 .accountNumber("3000")
                 .balance(10.0)
                 .build();

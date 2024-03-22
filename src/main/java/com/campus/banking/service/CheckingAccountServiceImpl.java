@@ -1,74 +1,106 @@
 package com.campus.banking.service;
 
 import com.campus.banking.exception.InsufficientFundsException;
-import com.campus.banking.exception.InvalidAccountException;
 import com.campus.banking.exception.LessThanMinimumTransactionException;
 import com.campus.banking.exception.NotFoundException;
+import com.campus.banking.model.BankAccount;
 import com.campus.banking.model.CheckingAccount;
 import com.campus.banking.model.Transaction;
 import com.campus.banking.model.TransactionType;
 import com.campus.banking.persistence.BankAccountDAO;
+import com.campus.banking.persistence.Page;
 import com.campus.banking.persistence.TransactionDAO;
 
 import java.time.LocalDateTime;
+import java.util.List;
+
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @ApplicationScoped
 class CheckingAccountServiceImpl implements CheckingAccountService {
 
-    protected BankAccountDAO<CheckingAccount> dao;
-    protected TransactionDAO trxDao;
+    private BankAccountDAO<CheckingAccount> dao;
+    private TransactionDAO trxDao;
+    private UserService users;
+    private int maxPageSize;
 
     @Inject
-    public CheckingAccountServiceImpl(BankAccountDAO<CheckingAccount> dao, TransactionDAO trxDao) {
+    public CheckingAccountServiceImpl(BankAccountDAO<CheckingAccount> dao, TransactionDAO trxDao, UserService users,
+            @ConfigProperty(name = "app.pagination.max_size") int maxPageSize) {
         this.dao = dao;
         this.trxDao = trxDao;
+        this.users = users;
+        this.maxPageSize = maxPageSize;
     }
 
     @Override
-    public void add(CheckingAccount account) {
-        validate(account);
-        dao.persist(account);
+    public void add(@NotNull @Valid CheckingAccount account) {
+        validateAccountInfo(account);
+        var user = users.getByUsername(getUsername(account));
+        account.setAccountHolder(user);
+        dao.inTransaction(em -> {
+            var amount = account.getBalance();
+            if (amount <= CheckingAccount.TRANSACTION_FEE)
+                throw new LessThanMinimumTransactionException();
+
+            account.setBalance(amount - CheckingAccount.TRANSACTION_FEE);
+            dao.transactionalPersist(em, account);
+            insertTransaction(em, account, amount, TransactionType.DEPOSIT);
+            insertTransaction(em, account, CheckingAccount.TRANSACTION_FEE, TransactionType.TRANSACTION_FEE);
+        });
     }
 
-    private void validate(CheckingAccount account) {
-        if (account == null
-                || account.getAccountNumber() == null
-                || account.getAccountNumber().isBlank()
-                || account.getAccountHolderName() == null
-                || account.getAccountHolderName().isBlank()
-                || account.getBalance() < 0) {
-            throw new InvalidAccountException();
-        }
+    private void validateAccountInfo(CheckingAccount account) {
+        if (account.getBalance() > 0.0d && account.getDebt() > 0.0d)
+            throw new IllegalArgumentException("Can't have balance while in debt");
+        if (account.getDebt() > account.getOverdraftLimit())
+            throw new IllegalArgumentException("Can't have debt more than overdraft limit");
     }
 
-    @Override
-    public CheckingAccount getByAccountNumber(String accountNumber) {
-        validateAccountNumber(accountNumber);
-        return dao.findByAccountNumber(accountNumber)
-                .orElseThrow(() -> new NotFoundException());
-    }
-
-    private void validateAccountNumber(String accountNumber) {
-        if (accountNumber == null || accountNumber.isBlank()) {
+    private String getUsername(BankAccount account) {
+        if (account.getAccountHolder() == null
+                || account.getAccountHolder().getUsername() == null
+                || account.getAccountHolder().getUsername().isBlank()) {
             throw new IllegalArgumentException();
         }
+        return account.getAccountHolder().getUsername();
     }
 
     @Override
-    public void deposit(String accountNumber, double amount) {
-        if (amount < 0)
-            throw new IllegalArgumentException("Can not deposit negative amount");
+    public List<CheckingAccount> getByUsername(@NotNull @NotBlank String username) {
+        return dao.findByUsername(username);
+    }
 
+    @Override
+    public Page<CheckingAccount> getPage(@Positive int page) {
+        return dao.getAll(page, maxPageSize);
+    }
+
+    @Override
+    public CheckingAccount getByAccountNumber(@NotNull @NotBlank String accountNumber) {
+        return dao.findByAccountNumber(accountNumber)
+                .orElseThrow(NotFoundException::new);
+    }
+
+    @Override
+    public void deposit(@NotNull @NotBlank String accountNumber, @Positive double amount) {
+        log.debug("Deposit {} to Account[{}]", amount, accountNumber);
         if (amount <= CheckingAccount.TRANSACTION_FEE)
             throw new LessThanMinimumTransactionException();
-
         dao.inTransaction(em -> {
             var account = dao.findByAccountNumberForUpdate(em, accountNumber)
-                    .orElseThrow(() -> new NotFoundException());
+                    .orElseThrow(NotFoundException::new);
             doWithdraw(em, account, CheckingAccount.TRANSACTION_FEE);
             insertTransaction(em, account, CheckingAccount.TRANSACTION_FEE, TransactionType.TRANSACTION_FEE);
             doDeposit(em, account, amount);
@@ -96,20 +128,17 @@ class CheckingAccountServiceImpl implements CheckingAccountService {
     }
 
     @Override
-    public void withdraw(String accountNumber, double amount) {
-        if (amount < 0)
-            throw new IllegalArgumentException("Can not withdraw negative amount");
-
+    public void withdraw(@NotNull @NotBlank String accountNumber, @Positive double amount) {
         if (amount <= CheckingAccount.TRANSACTION_FEE)
             throw new LessThanMinimumTransactionException();
 
         dao.inTransaction(em -> {
             var account = dao.findByAccountNumberForUpdate(em, accountNumber)
-                    .orElseThrow(() -> new NotFoundException());
+                    .orElseThrow(NotFoundException::new);
 
-            var allowedWithdrawAmount = getAllowedWithdrawAmount(account);
+            var allowedWithdrawAmount = getAllowedWithdraw(account);
 
-            if (amount + CheckingAccount.TRANSACTION_FEE > allowedWithdrawAmount) {
+            if (amount > allowedWithdrawAmount) {
                 throw new InsufficientFundsException();
             }
 
@@ -136,20 +165,26 @@ class CheckingAccountServiceImpl implements CheckingAccountService {
         dao.transactionalUpdate(em, account);
     }
 
-    private double getAllowedWithdrawAmount(CheckingAccount checkingAccount) {
-        var amount = checkingAccount.getBalance();
+    @Override
+    public double getAllowedWithdraw(@NotNull @Valid CheckingAccount account) {
+        var amount = account.getBalance();
 
         // Add overdraft
-        amount += (checkingAccount.getOverDraftLimit() - checkingAccount.getDebt());
+        amount += (account.getOverdraftLimit() - account.getDebt());
 
         // Don't allow to empty the account so that there is enough amount for
         // deposit transaction fee
-        amount -= CheckingAccount.TRANSACTION_FEE;
+        amount -= CheckingAccount.TRANSACTION_FEE * 2;
         return amount;
     }
 
     @Override
-    public double sumBalanceHigherThan(double min) {
+    public double getMinimumDeposit(@NotNull @Valid CheckingAccount account) {
+        return CheckingAccount.TRANSACTION_FEE * 2;
+    }
+
+    @Override
+    public double sumBalanceHigherThan(@PositiveOrZero double min) {
         return dao.sumBalanceHigherThan(min);
     }
 
@@ -160,5 +195,11 @@ class CheckingAccountServiceImpl implements CheckingAccountService {
                 .date(LocalDateTime.now())
                 .type(type).build();
         trxDao.transactionalPersist(em, trx);
+    }
+
+    @Override
+    public Page<Transaction> getTransactions(@NotNull @NotBlank String accountNumber, @Positive int page) {
+        var found = getByAccountNumber(accountNumber);
+        return trxDao.findBy("account", found, page, maxPageSize);
     }
 }
