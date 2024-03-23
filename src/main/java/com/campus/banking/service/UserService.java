@@ -8,6 +8,7 @@ import java.util.stream.Stream;
 import com.campus.banking.model.Role;
 import com.campus.banking.model.User;
 import com.campus.banking.persistence.Page;
+import com.campus.banking.util.Utils;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -23,12 +24,16 @@ public interface UserService {
                 .filter(role -> rolesName.stream().anyMatch(role::equals))
                 .map(Role::valueOf)
                 .collect(Collectors.toSet());
-        var email = Stream.of(Optional.ofNullable(properties.get("email"))
-                .orElse(new String[] {})).findFirst().orElse(null);
-        String username = Stream.of(Optional.ofNullable(properties.get("username"))
-                .orElse(new String[] {})).findFirst().orElse(null);
-        String password = Stream.of(Optional.ofNullable(properties.get("password"))
-                .orElse(new String[] {})).findFirst().orElse(null);
+
+        var email = Utils.first(properties, "email")
+                .orElse(null);
+
+        var username = Utils.first(properties, "username")
+                .orElse(null);
+
+        var password = Utils.first(properties, "password")
+                .orElse(null);
+                
         return User.builder()
                 .email(email)
                 .username(username)
@@ -37,17 +42,15 @@ public interface UserService {
                 .build();
     }
 
-    User getById(@Positive long id);
-
     User getByUsername(@NotNull @NotBlank String username);
-
-    void removeById(@Positive long id);
 
     void add(@NotNull @Valid User user);
 
     void signup(@NotNull @Valid User user);
 
-    void updateUser(@NotNull @Valid User user);
+    void update(@NotNull @Valid User user);
 
     Page<User> getAll(@Positive int page);
+
+    void setupAdminAccount();
 }

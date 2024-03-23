@@ -45,6 +45,7 @@ class BankAccountServiceImpl implements BankAccountService<BankAccount> {
         var user = users.getByUsername(getUsername(account));
         account.setAccountHolder(user);
         dao.inTransaction(em -> {
+            account.setId(null);
             dao.transactionalPersist(em, account);
             if (account.getBalance() > 0.0d) {
                 insertTransaction(em, account, account.getBalance(), TransactionType.DEPOSIT);
