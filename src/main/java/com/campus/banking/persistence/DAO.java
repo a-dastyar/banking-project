@@ -33,6 +33,8 @@ public interface DAO<T extends BaseModel<S>, S> {
 
     long countAll();
 
+    <U> long countBy(String fieldName, U fieldValue);
+
     <U> Page<T> findBy(String fieldName, U fieldValue, int page, int size);
 
     <U> List<T> findBy(String fieldName, U fieldValue);
