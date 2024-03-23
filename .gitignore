@@ -89,3 +89,8 @@ nb-configuration.xml
 ##############################
 .directory
 database.json
+
+##############################
+## Code coverage reportes
+##############################
+coverage
