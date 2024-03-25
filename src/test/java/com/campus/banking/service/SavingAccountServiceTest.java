@@ -39,13 +39,16 @@ public class SavingAccountServiceTest extends AbstractAccountServiceTest<SavingA
     private UserService users;
 
     @Mock
+    private AccountNumberGenerator generator;
+
+    @Mock
     private TransactionDAO trxDao;
 
     private SavingAccountService service;
 
     @BeforeEach
     void setup() {
-        service = new SavingAccountServiceImpl(dao, trxDao, users, 10);
+        service = new SavingAccountServiceImpl(dao, trxDao, generator, users, 10);
         super.service = service;
         super.dao = dao;
     }

@@ -20,15 +20,19 @@ import jakarta.validation.constraints.Positive;
 @ApplicationScoped
 class BankAccountServiceImpl extends AbstractAccountServiceImpl<BankAccount> {
 
-    private BankAccountDAO<BankAccount> dao;
+    private final BankAccountDAO<BankAccount> dao;
 
-    private UserService users;
+    private final AccountNumberGenerator generator;
+
+    private final UserService users;
 
     @Inject
-    public BankAccountServiceImpl(BankAccountDAO<BankAccount> dao, TransactionDAO trxDao, UserService users,
+    public BankAccountServiceImpl(BankAccountDAO<BankAccount> dao, TransactionDAO trxDao,
+            AccountNumberGenerator generator, UserService users,
             @ConfigProperty(name = "app.pagination.max_size") int maxPageSize) {
         super(dao, trxDao, maxPageSize);
         this.dao = dao;
+        this.generator = generator;
         this.users = users;
     }
 
@@ -38,6 +42,7 @@ class BankAccountServiceImpl extends AbstractAccountServiceImpl<BankAccount> {
         account.setAccountHolder(user);
         dao.inTransaction(em -> {
             account.setId(null);
+            account.setAccountNumber(generator.transactionalGenerate(em));
             dao.transactionalPersist(em, account);
             if (account.getBalance() > 0.0d) {
                 insertTransaction(em, account, account.getBalance(), TransactionType.DEPOSIT);

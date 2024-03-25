@@ -21,18 +21,22 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @ApplicationScoped
-class CheckingAccountServiceImpl extends AbstractAccountServiceImpl<CheckingAccount> implements CheckingAccountService{
+class CheckingAccountServiceImpl extends AbstractAccountServiceImpl<CheckingAccount> implements CheckingAccountService {
 
-    private BankAccountDAO<CheckingAccount> dao;
-    
-    private UserService users;
+    private final BankAccountDAO<CheckingAccount> dao;
+
+    private final AccountNumberGenerator generator;
+
+    private final UserService users;
 
     @Inject
-    public CheckingAccountServiceImpl(BankAccountDAO<CheckingAccount> dao, TransactionDAO trxDao, UserService users,
+    public CheckingAccountServiceImpl(BankAccountDAO<CheckingAccount> dao, TransactionDAO trxDao,
+            AccountNumberGenerator generator, UserService users,
             @ConfigProperty(name = "app.pagination.max_size") int maxPageSize) {
         super(dao, trxDao, maxPageSize);
         this.dao = dao;
         this.users = users;
+        this.generator = generator;
     }
 
     @Override
@@ -47,6 +51,7 @@ class CheckingAccountServiceImpl extends AbstractAccountServiceImpl<CheckingAcco
 
             account.setBalance(amount - CheckingAccount.TRANSACTION_FEE);
             account.setId(null);
+            account.setAccountNumber(generator.transactionalGenerate(em));
             dao.transactionalPersist(em, account);
             insertTransaction(em, account, amount, TransactionType.DEPOSIT);
             insertTransaction(em, account, CheckingAccount.TRANSACTION_FEE, TransactionType.TRANSACTION_FEE);

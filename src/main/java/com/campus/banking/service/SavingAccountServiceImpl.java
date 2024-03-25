@@ -18,18 +18,22 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 @ApplicationScoped
-class SavingAccountServiceImpl  extends AbstractAccountServiceImpl<SavingAccount> implements SavingAccountService{
+class SavingAccountServiceImpl extends AbstractAccountServiceImpl<SavingAccount> implements SavingAccountService {
 
-    private SavingAccountDAO dao;
+    private final SavingAccountDAO dao;
 
-    private UserService users;
+    private final AccountNumberGenerator generator;
+
+    private final UserService users;
 
     @Inject
-    public SavingAccountServiceImpl(SavingAccountDAO dao, TransactionDAO trxDao, UserService users,
+    public SavingAccountServiceImpl(SavingAccountDAO dao, TransactionDAO trxDao, AccountNumberGenerator generator,
+            UserService users,
             @ConfigProperty(name = "app.pagination.max_size") int maxPageSize) {
         super(dao, trxDao, maxPageSize);
         this.dao = dao;
         this.users = users;
+        this.generator = generator;
     }
 
     @Override
@@ -39,6 +43,7 @@ class SavingAccountServiceImpl  extends AbstractAccountServiceImpl<SavingAccount
         dao.inTransaction(em -> {
             account.setAccountHolder(user);
             account.setId(null);
+            account.setAccountNumber(generator.transactionalGenerate(em));
             dao.transactionalPersist(em, account);
             if (account.getBalance() > 0.0d) {
                 insertTransaction(em, account, account.getBalance(), TransactionType.DEPOSIT);
@@ -47,7 +52,7 @@ class SavingAccountServiceImpl  extends AbstractAccountServiceImpl<SavingAccount
     }
 
     private void validateAccountInfo(SavingAccount account) {
-        if (account.getBalance()<account.getMinimumBalance()){
+        if (account.getBalance() < account.getMinimumBalance()) {
             throw new IllegalArgumentException();
         }
     }

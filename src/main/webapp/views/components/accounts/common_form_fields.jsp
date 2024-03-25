@@ -1,13 +1,4 @@
 <div class="mb-3 row offset-sm-2">
-    <label class="col-form-label col-md-4" for="account_number" >Account number</label>
-    <div class="col-sm-6 has-validation" >
-        <input type="text" class="form-control" id="account_number" name="account_number" required>
-        <div class="invalid-feedback">
-            Please enter an account number.
-        </div>
-    </div>
-</div>
-<div class="mb-3 row offset-sm-2">
     <label class="col-form-label col-md-4" for="username" >Holder username</label>
     <div class="col-sm-6 has-validation" >
         <input type="text" class="form-control" id="username" name="username" required>

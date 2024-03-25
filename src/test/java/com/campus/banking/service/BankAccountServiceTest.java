@@ -37,6 +37,9 @@ public class BankAccountServiceTest extends AbstractAccountServiceTest<BankAccou
     private UserService users;
 
     @Mock
+    private AccountNumberGenerator generator;
+
+    @Mock
     private TransactionDAO trxDao;
 
     private int maxPageSize = 10;
@@ -45,7 +48,7 @@ public class BankAccountServiceTest extends AbstractAccountServiceTest<BankAccou
 
     @BeforeEach
     void setup() {
-        service = new BankAccountServiceImpl(dao, trxDao, users, maxPageSize);
+        service = new BankAccountServiceImpl(dao, trxDao, generator, users, maxPageSize);
         super.service = service;
         super.dao = dao;
     }
@@ -127,9 +130,9 @@ public class BankAccountServiceTest extends AbstractAccountServiceTest<BankAccou
         service.deposit(account.getAccountNumber(), 10.0);
         assertThat(account.getBalance()).isEqualTo(20.0);
     }
-    
+
     @Test
-    void getMinimumDeposit_shouldReturnConstant(){
+    void getMinimumDeposit_shouldReturnConstant() {
         var account = BankAccount.builder()
                 .accountHolder(User.builder().username("Tester").build())
                 .accountNumber("3000")
@@ -146,7 +149,7 @@ public class BankAccountServiceTest extends AbstractAccountServiceTest<BankAccou
     }
 
     @Test
-    void getAllowedWithdraw_withNoBalance_shouldReturnZero(){
+    void getAllowedWithdraw_withNoBalance_shouldReturnZero() {
         var account = BankAccount.builder()
                 .accountHolder(User.builder().username("Tester").build())
                 .accountNumber("3000")
@@ -157,7 +160,7 @@ public class BankAccountServiceTest extends AbstractAccountServiceTest<BankAccou
     }
 
     @Test
-    void getAllowedWithdraw_withBalance_shouldReturnBalance(){
+    void getAllowedWithdraw_withBalance_shouldReturnBalance() {
         var account = BankAccount.builder()
                 .accountHolder(User.builder().username("Tester").build())
                 .accountNumber("3000")
@@ -198,7 +201,6 @@ public class BankAccountServiceTest extends AbstractAccountServiceTest<BankAccou
         assertThat(account.getBalance()).isEqualTo(10.0);
         assertThat(account.getAccountHolder().getUsername()).isEqualTo("tester");
     }
-
 
     @Override
     Stream<BankAccount> generate(int count) {
