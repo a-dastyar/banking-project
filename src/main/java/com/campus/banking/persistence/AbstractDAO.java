@@ -87,6 +87,29 @@ public abstract class AbstractDAO<T extends BaseModel<S>, S> implements DAO<T, S
     }
 
     @Override
+    public Page<T> getAllOrdered(int page, int size, String orderField, Order order) {
+        return withEntityManager(em -> {
+            CriteriaBuilder builder = em.getCriteriaBuilder();
+            CriteriaQuery<T> criteriaQuery = builder.createQuery(getType());
+            Root<T> select = criteriaQuery.from(getType());
+            if (orderField != null) {
+                var by = switch (order) {
+                    case ASC -> builder.asc(select.get(orderField));
+                    case DESC -> builder.desc(select.get(orderField));
+                };
+                criteriaQuery.orderBy(by);
+            }
+            criteriaQuery.where(builder.equal(select.type(), getType()));
+            TypedQuery<T> query = em.createQuery(criteriaQuery);
+            query.setFirstResult((page - 1) * size);
+            query.setMaxResults(size);
+            List<T> list = query.getResultList();
+            long countAll = countAll();
+            return new Page<>(list, countAll, page, size);
+        });
+    }
+
+    @Override
     public long countAll() {
         return withEntityManager(em -> {
             CriteriaBuilder builder = em.getCriteriaBuilder();
@@ -132,13 +155,26 @@ public abstract class AbstractDAO<T extends BaseModel<S>, S> implements DAO<T, S
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public <U> Page<T> findBy(String fieldName, U fieldValue, int page, int size) {
+        return findByOrdered(fieldName, fieldValue, page, size, null, Order.ASC);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <U> Page<T> findByOrdered(String fieldName, U fieldValue, int page, int size, String orderField,
+            Order order) {
         return withEntityManager(em -> {
             CriteriaBuilder builder = em.getCriteriaBuilder();
             CriteriaQuery<T> query = builder.createQuery(getType());
             Root<T> select = query.from(getType());
             query.where(builder.equal(select.type(), getType()));
+            if (orderField != null) {
+                var by = switch (order) {
+                    case ASC -> builder.asc(select.get(orderField));
+                    case DESC -> builder.desc(select.get(orderField));
+                };
+                query.orderBy(by);
+            }
             ParameterExpression<U> parameter = builder.parameter((Class<U>) fieldValue.getClass());
             query.where(builder.equal(select.get(fieldName), parameter));
             TypedQuery<T> typedQuery = em.createQuery(query);

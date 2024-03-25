@@ -30,12 +30,16 @@ public interface DAO<T extends BaseModel<S>, S> {
     List<T> getAll();
 
     Page<T> getAll(int page, int size);
+    
+    Page<T> getAllOrdered(int page, int size, String orderField, Order order);
 
     long countAll();
 
     <U> long countBy(String fieldName, U fieldValue);
 
     <U> Page<T> findBy(String fieldName, U fieldValue, int page, int size);
+
+    <U> Page<T> findByOrdered(String fieldName, U fieldValue, int page, int size, String orderField, Order order);
 
     <U> List<T> findBy(String fieldName, U fieldValue);
 
