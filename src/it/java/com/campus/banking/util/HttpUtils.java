@@ -25,6 +25,8 @@ public class HttpUtils {
 
     private final String baseURI;
 
+    private int defaultTimeout = 500;
+
     public HttpUtils(int port) {
         baseURI = String.format("http://localhost:%d/banking", port);
     }
@@ -40,14 +42,20 @@ public class HttpUtils {
         return URI.create(uri);
     }
 
-    public HttpRequest.Builder requestBuilder(URI uri) {
+    public HttpRequest.Builder GETRequestBuilder(URI uri) {
         return HttpRequest.newBuilder(uri)
-                .timeout(Duration.ofMillis(200));
+                .timeout(Duration.ofMillis(defaultTimeout));
     }
 
-    public HttpRequest.Builder requestBuilder(URI uri, Duration timeout) {
-        return HttpRequest.newBuilder(uri)
-                .timeout(timeout);
+    public HttpRequest.Builder GETRequestBuilder() {
+        return HttpRequest.newBuilder()
+                .timeout(Duration.ofMillis(defaultTimeout));
+    }
+
+    public HttpRequest.Builder POSTRequestBuilder() {
+        return HttpRequest.newBuilder()
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .timeout(Duration.ofMillis(defaultTimeout));
     }
 
     public HttpClient.Builder clientBuilder() {
@@ -70,12 +78,26 @@ public class HttpUtils {
     }
 
     public Response<String> login(HttpClient client, String username, String password) {
-        var loginResponse = sendRequest(client, requestBuilder(resourceURI("/login"), Duration.ofSeconds(2)).build());
+        var req = GETRequestBuilder(resourceURI("/login"))
+                .timeout(Duration.ofSeconds(2))
+                .build();
+        var loginResponse = sendRequest(client, req);
         assertThat(loginResponse.status()).isEqualTo(Response.Status.Success);
 
-        var request = requestBuilder(resourceURI("/j_security_check"), Duration.ofSeconds(4))
-                .header("Content-Type", "application/x-www-form-urlencoded")
+        var request = POSTRequestBuilder()
+                .uri(resourceURI("/j_security_check"))
+                .timeout(Duration.ofSeconds(4))
                 .POST(getFormDataBody(Map.of("j_username", username, "j_password", password)))
+                .build();
+        var response = sendRequest(client, request);
+        return response;
+    }
+
+    public Response<String> signup(HttpClient client, Map<String, String> form) {
+        var request = POSTRequestBuilder()
+                .uri(resourceURI("/signup"))
+                .timeout(Duration.ofMinutes(2))
+                .POST(getFormDataBody(form))
                 .build();
         var response = sendRequest(client, request);
         return response;
@@ -90,7 +112,7 @@ public class HttpUtils {
 
     public boolean healthCheck(URI uri, int retires) {
         var client = HttpClient.newHttpClient();
-        var request = requestBuilder(uri)
+        var request = GETRequestBuilder(uri)
                 .GET()
                 .build();
         var response = sendRequest(client, request);
