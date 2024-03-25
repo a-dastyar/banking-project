@@ -19,7 +19,7 @@ import jakarta.persistence.criteria.Root;
 class SavingAccountDAOImpl extends AbstractDAO<SavingAccount, Long> implements SavingAccountDAO {
 
     private EntityManager entityManager;
-    
+
     @Inject
     public SavingAccountDAOImpl(EntityManager entityManager) {
         this.entityManager = entityManager;
@@ -34,19 +34,20 @@ class SavingAccountDAOImpl extends AbstractDAO<SavingAccount, Long> implements S
     @Override
     public Optional<SavingAccount> findByAccountNumberForUpdate(EntityManager em, String accountNumber) {
         return findByForUpdate(em, "accountNumber", accountNumber).stream()
-                 .findFirst();
+                .findFirst();
     }
 
     @Override
     public List<SavingAccount> findByUsername(String username) {
         return withEntityManager(em -> {
-            var query = em.createQuery("FROM SavingAccount account JOIN account.accountHolder user where user.username = :username",
+            var query = em.createQuery(
+                    "FROM SavingAccount account JOIN account.accountHolder user where user.username = :username",
                     SavingAccount.class);
             query.setParameter("username", username);
             return query.getResultList();
         });
     }
-    
+
     @Override
     public boolean exists(SavingAccount entity) {
         return withEntityManager(em -> {
@@ -83,21 +84,12 @@ class SavingAccountDAOImpl extends AbstractDAO<SavingAccount, Long> implements S
                   JOIN bank_accounts account
                     ON saving.id = account.id
                     """;
-        withEntityManager(em -> {
-            var trx = em.getTransaction();
-            try {
-                trx.begin();
-                Query query = em.createQuery("FROM SavingAccount");
-                query.setLockMode(LockModeType.PESSIMISTIC_WRITE);
-                query.getResultList();
-                em.createNativeQuery(insertTransactions).executeUpdate();
-                em.createNativeQuery(update).executeUpdate();
-                trx.commit();
-            } catch (RuntimeException ex) {
-                trx.rollback();
-                throw ex;
-            }
-            return null;
+        inTransaction(em -> {
+            Query query = em.createQuery("FROM SavingAccount");
+            query.setLockMode(LockModeType.PESSIMISTIC_WRITE);
+            query.getResultList();
+            em.createNativeQuery(insertTransactions).executeUpdate();
+            em.createNativeQuery(update).executeUpdate();
         });
     }
 
