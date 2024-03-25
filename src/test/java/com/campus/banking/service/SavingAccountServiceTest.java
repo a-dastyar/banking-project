@@ -12,6 +12,7 @@ import static org.mockito.Mockito.only;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -24,6 +25,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
 
 import com.campus.banking.exception.InvalidTransactionException;
+import com.campus.banking.model.InterestPeriod;
 import com.campus.banking.model.SavingAccount;
 import com.campus.banking.model.User;
 import com.campus.banking.persistence.SavingAccountDAO;
@@ -35,15 +37,15 @@ import jakarta.persistence.EntityManager;
 public class SavingAccountServiceTest {
 
     @Mock
-    SavingAccountDAO dao;
+    private SavingAccountDAO dao;
 
     @Mock
-    UserService users;
+    private UserService users;
 
     @Mock
-    TransactionDAO trxDao;
+    private TransactionDAO trxDao;
 
-    SavingAccountService service;
+    private SavingAccountService service;
 
     @BeforeEach
     void setup() {
@@ -79,6 +81,17 @@ public class SavingAccountServiceTest {
         var account = SavingAccount.builder()
                 .accountHolder(User.builder().username("").build())
                 .accountNumber("3000")
+                .build();
+        assertThatThrownBy(() -> service.add(account)).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void add_withBalanceLessThanMinimumBalance_shouldFail() {
+        var account = SavingAccount.builder()
+                .accountHolder(User.builder().username("").build())
+                .accountNumber("3000")
+                .balance(100.0)
+                .minimumBalance(200.0)
                 .build();
         assertThatThrownBy(() -> service.add(account)).isInstanceOf(IllegalArgumentException.class);
     }
@@ -204,4 +217,100 @@ public class SavingAccountServiceTest {
         assertThat(account.getBalance()).isEqualTo(11.0);
     }
 
+    @Test
+    void getMinimumDeposit_shouldReturnConstant(){
+        var account = SavingAccount.builder()
+                .accountHolder(User.builder().username("Tester").build())
+                .accountNumber("3000")
+                .balance(10.0)
+                .build();
+        var account2 = SavingAccount.builder()
+                .accountHolder(User.builder().username("Tester2").build())
+                .accountNumber("4000")
+                .balance(500.0)
+                .build();
+        var first = service.getMinimumDeposit(account);
+        var second = service.getMinimumDeposit(account2);
+        assertThat(first).isEqualTo(second);
+    }
+
+    @Test
+    void getAllowedWithdraw_withMinimumWithdraw_shouldReturnAmount(){
+        var account = SavingAccount.builder()
+                .accountHolder(User.builder().username("Tester").build())
+                .accountNumber("3000")
+                .balance(100.0)
+                .minimumBalance(90.0)
+                .build();
+        var first = service.getAllowedWithdraw(account);
+        assertThat(first).isEqualTo(10.0);
+    }
+
+    @Test
+    void toSavingAccount_withEmptyMap_shouldReturnEmptyUser() {
+        var account = SavingAccountService.toSavingAccount(Map.of());
+        assertThat(account.getAccountNumber()).isNull();
+        assertThat(account.getBalance()).isZero();
+        assertThat(account.getMinimumBalance()).isZero();
+        assertThat(account.getInterestRate()).isZero();
+        assertThat(account.getInterestPeriod()).isNull();
+        assertThat(account.getAccountHolder().getUsername()).isNull();
+    }
+
+    @Test
+    void toSavingAccount_withNonNumeric_shouldReturnWithZero() {
+        var map = Map.of(
+                "account_number", new String[] { "test" },
+                "username", new String[] { "tester" },
+                "balance", new String[] { "test" },
+                "minimum_balance", new String[] { "test" },
+                "interest_rate", new String[] { "test" },
+                "interest_period", new String[] { "YEARLY" });
+
+        var account = SavingAccountService.toSavingAccount(map);
+        assertThat(account.getAccountNumber()).isEqualTo("test");
+        assertThat(account.getBalance()).isZero();
+        assertThat(account.getMinimumBalance()).isZero();
+        assertThat(account.getInterestRate()).isZero();
+        assertThat(account.getInterestPeriod()).isEqualTo(InterestPeriod.YEARLY);
+        assertThat(account.getAccountHolder().getUsername()).isEqualTo("tester");
+    }
+
+    @Test
+    void toSavingAccount_withInvalid_shouldReturnWithNull() {
+        var map = Map.of(
+                "account_number", new String[] { "test" },
+                "username", new String[] { "tester" },
+                "balance", new String[] { "15.0" },
+                "minimum_balance", new String[] { "5.0" },
+                "interest_rate", new String[] { "10.0" },
+                "interest_period", new String[] { "Invalid" });
+
+        var account = SavingAccountService.toSavingAccount(map);
+        assertThat(account.getAccountNumber()).isEqualTo("test");
+        assertThat(account.getBalance()).isEqualTo(15.0);
+        assertThat(account.getMinimumBalance()).isEqualTo(5.0);
+        assertThat(account.getInterestRate()).isEqualTo(10.0);
+        assertThat(account.getInterestPeriod()).isNull();
+        assertThat(account.getAccountHolder().getUsername()).isEqualTo("tester");
+    }
+
+    @Test
+    void toSavingAccount_withFull_shouldReturnAccount() {
+        var map = Map.of(
+                "account_number", new String[] { "test" },
+                "username", new String[] { "tester" },
+                "balance", new String[] { "15.0" },
+                "minimum_balance", new String[] { "5.0" },
+                "interest_rate", new String[] { "10.0" },
+                "interest_period", new String[] { "YEARLY" });
+
+        var account = SavingAccountService.toSavingAccount(map);
+        assertThat(account.getAccountNumber()).isEqualTo("test");
+        assertThat(account.getBalance()).isEqualTo(15.0);
+        assertThat(account.getMinimumBalance()).isEqualTo(5.0);
+        assertThat(account.getInterestRate()).isEqualTo(10.0);
+        assertThat(account.getInterestPeriod()).isEqualTo(InterestPeriod.YEARLY);
+        assertThat(account.getAccountHolder().getUsername()).isEqualTo("tester");
+    }
 }

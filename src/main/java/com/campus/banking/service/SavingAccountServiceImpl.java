@@ -7,7 +7,6 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import com.campus.banking.exception.InvalidTransactionException;
 import com.campus.banking.exception.NotFoundException;
-import com.campus.banking.model.BankAccount;
 import com.campus.banking.model.SavingAccount;
 import com.campus.banking.model.Transaction;
 import com.campus.banking.model.TransactionType;
@@ -43,9 +42,11 @@ class SavingAccountServiceImpl implements SavingAccountService {
 
     @Override
     public void add(@NotNull @Valid SavingAccount account) {
+        validateAccountInfo(account);
         var user = users.getByUsername(getUsername(account));
         dao.inTransaction(em -> {
             account.setAccountHolder(user);
+            account.setId(null);
             dao.transactionalPersist(em, account);
             if (account.getBalance() > 0.0d) {
                 insertTransaction(em, account, account.getBalance(), TransactionType.DEPOSIT);
@@ -53,7 +54,13 @@ class SavingAccountServiceImpl implements SavingAccountService {
         });
     }
 
-    private String getUsername(BankAccount account) {
+    private void validateAccountInfo(SavingAccount account) {
+        if (account.getBalance()<account.getMinimumBalance()){
+            throw new IllegalArgumentException();
+        }
+    }
+
+    private String getUsername(SavingAccount account) {
         if (account.getAccountHolder() == null
                 || account.getAccountHolder().getUsername() == null
                 || account.getAccountHolder().getUsername().isBlank()) {
@@ -80,9 +87,6 @@ class SavingAccountServiceImpl implements SavingAccountService {
 
     @Override
     public void deposit(@NotNull @NotBlank String accountNumber, @Positive double amount) {
-        if (amount < 0) {
-            throw new IllegalArgumentException("Can not withdraw negative amount");
-        }
         dao.inTransaction(em -> {
             var account = dao.findByAccountNumberForUpdate(em, accountNumber)
                     .orElseThrow(NotFoundException::new);
@@ -98,9 +102,6 @@ class SavingAccountServiceImpl implements SavingAccountService {
 
     @Override
     public void withdraw(@NotNull @NotBlank String accountNumber, @Positive double amount) {
-        if (amount < 0) {
-            throw new IllegalArgumentException("Can not withdraw negative amount");
-        }
         dao.inTransaction(em -> {
             var account = dao.findByAccountNumberForUpdate(em, accountNumber)
                     .orElseThrow(NotFoundException::new);

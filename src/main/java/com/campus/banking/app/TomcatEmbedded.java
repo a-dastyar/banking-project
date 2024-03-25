@@ -28,6 +28,8 @@ public class TomcatEmbedded implements Server {
 
     private Config config;
 
+    private Tomcat server;
+
     private static final String ADDITION_WEB_INF_CLASSES = "target/classes";
     private static final String WEB_APP_MOUNT = "/WEB-INF/classes";
     private static final String INTERNAL_PATH = "/";
@@ -51,8 +53,19 @@ public class TomcatEmbedded implements Server {
 
             var classLoader = (ParallelWebappClassLoader) context.getLoader().getClassLoader();
             classLoader.setDelegate(true);
+            server = tomcat;
 
             tomcat.getServer().await();
+        } catch (LifecycleException e) {
+            throw new ServerFailureException(e);
+        }
+    }
+
+    @Override
+    public void stop() throws ServerFailureException {
+        try {
+            server.stop();
+            server.destroy();
         } catch (LifecycleException e) {
             throw new ServerFailureException(e);
         }

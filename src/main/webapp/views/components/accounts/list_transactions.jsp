@@ -10,7 +10,7 @@
     </thead>
     <tbody>
         <c:forEach var="transaction" items="${transactions.list()}">
-            <fmt:parseDate  value="${transaction.date}"  type="both" pattern="yyyy-MM-dd'T'HH:mm:ss" var="parsedDate" />
+            <fmt:parseDate  value="${transaction.date}"  type="both" pattern="yyyy-MM-dd'T'HH:mm:ss" var="parsedDate" parseLocale="fa_IR" />
             <fmt:formatDate value="${parsedDate}" type="both" pattern="yyyy-MM-dd HH:mm:ss" var="date" />
             <tr>
                 <td>${transaction.getAmount()}</td>

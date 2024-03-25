@@ -23,7 +23,9 @@ import lombok.extern.slf4j.Slf4j;
 class UserServiceImpl implements UserService {
 
     private UserDAO dao;
+
     private HashService hashService;
+
     private int maxPageSize;
 
     @Inject
@@ -35,30 +37,12 @@ class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User getById(@Positive long id) {
-        var user = this.dao.find(id);
-        return user.orElseThrow(NotFoundException::new);
-    }
-
-    @Override
-    public User getByUsername(@NotNull @NotBlank String username) {
-        var user = this.dao.findBy("username", username).stream().findFirst();
-        log.debug("is present: {}",user.isPresent());
-        return user.orElseThrow(NotFoundException::new);
-    }
-
-    @Override
-    public void removeById(@Positive long id) {
-        var user = getById(id);
-        dao.inTransaction(em -> dao.transactionalRemove(em, user));
-    }
-
-    @Override
     public void add(@NotNull @Valid User user) {
         if (dao.exists(user)) {
             log.debug("User already exists!");
             throw new DuplicatedException();
         }
+        user.setId(null);
         user.setPassword(hashService.hashOf(user.getPassword()));
         dao.inTransaction(em -> dao.transactionalPersist(em, user));
     }
@@ -69,13 +53,20 @@ class UserServiceImpl implements UserService {
             log.debug("User already exists!");
             throw new DuplicatedException();
         }
+        user.setId(null);
         user.setRoles(Set.of(Role.MEMBER));
         user.setPassword(hashService.hashOf(user.getPassword()));
         dao.inTransaction(em -> dao.transactionalPersist(em, user));
     }
 
     @Override
-    public void updateUser(@NotNull @Valid User user) {
+    public User getByUsername(@NotNull @NotBlank String username) {
+        var user = this.dao.findBy("username", username).stream().findFirst();
+        return user.orElseThrow(NotFoundException::new);
+    }
+
+    @Override
+    public void update(@NotNull @Valid User user) {
         var found = getByUsername(user.getUsername());
         user.setId(found.getId());
         user.setPassword(found.getPassword());
@@ -88,4 +79,16 @@ class UserServiceImpl implements UserService {
         return dao.getAll(page, maxPageSize);
     }
 
+    @Override
+    public void setupAdminAccount() {
+        if (dao.countAll() == 0) {
+            var admin = User.builder()
+                    .username("admin")
+                    .password("admin")
+                    .email("admin@bank.co")
+                    .roles(Set.of(Role.ADMIN))
+                    .build();
+            add(admin);
+        }
+    }
 }

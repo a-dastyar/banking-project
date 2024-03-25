@@ -10,6 +10,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -34,15 +35,15 @@ import jakarta.persistence.EntityManager;
 public class CheckingAccountServiceTest {
 
     @Mock
-    BankAccountDAO<CheckingAccount> dao;
+    private BankAccountDAO<CheckingAccount> dao;
 
     @Mock
-    UserService users;
+    private UserService users;
 
     @Mock
-    TransactionDAO trxDao;
+    private TransactionDAO trxDao;
 
-    CheckingAccountService service;
+    private CheckingAccountService service;
 
     @BeforeEach
     void setup() {
@@ -91,6 +92,28 @@ public class CheckingAccountServiceTest {
                 .build();
         doAnswer(this::executeConsumer).when(dao).inTransaction(any());
         assertThatThrownBy(() -> service.add(account)).isInstanceOf(LessThanMinimumTransactionException.class);
+    }
+
+    @Test
+    void add_withBalanceWhileInDebt_shouldFail() {
+        var account = CheckingAccount.builder()
+                .accountHolder(User.builder().username("Tester").build())
+                .accountNumber("3000")
+                .balance(500.0)
+                .debt(100.0)
+                .build();
+        assertThatThrownBy(() -> service.add(account)).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void add_withDebtMoreThanOverdraftLimit_shouldFail() {
+        var account = CheckingAccount.builder()
+                .accountHolder(User.builder().username("Tester").build())
+                .accountNumber("3000")
+                .debt(1000.0)
+                .overdraftLimit(500.0)
+                .build();
+        assertThatThrownBy(() -> service.add(account)).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
@@ -249,6 +272,15 @@ public class CheckingAccountServiceTest {
     }
 
     @Test
+    void deposit_withLessThanTransactionFee_shouldDeposit() {
+        var account = CheckingAccount.builder()
+                .balance(500.0)
+                .build();
+        assertThatThrownBy(()->service.deposit(account.getAccountNumber(), CheckingAccount.TRANSACTION_FEE-1))
+        .isInstanceOf(LessThanMinimumTransactionException.class);
+    }
+
+    @Test
     void deposit_withLessThanDebt_shouldDeposit() {
         var account = CheckingAccount.builder()
                 .balance(0.0)
@@ -289,13 +321,121 @@ public class CheckingAccountServiceTest {
     @Test
     void deposit_withNoDebt_shouldDeposit() {
         var account = CheckingAccount.builder()
-                .balance(0.0)
+                .balance(CheckingAccount.TRANSACTION_FEE)
                 .debt(0.0)
                 .build();
         doAnswer(this::executeConsumer).when(dao).inTransaction(any());
         when(dao.findByAccountNumberForUpdate(any(), any())).thenReturn(Optional.of(account));
-        service.deposit(account.getAccountNumber(), 500.0 + CheckingAccount.TRANSACTION_FEE);
+        service.deposit(account.getAccountNumber(), 500.0);
         assertThat(account.getDebt()).isEqualTo(0.0);
         assertThat(account.getBalance()).isEqualTo(500.0);
     }
+
+    @Test
+    void getMinimumDeposit_shouldReturnConstant(){
+        var account = CheckingAccount.builder()
+                .accountHolder(User.builder().username("Tester").build())
+                .accountNumber("3000")
+                .balance(10.0)
+                .build();
+        var account2 = CheckingAccount.builder()
+                .accountHolder(User.builder().username("Tester2").build())
+                .accountNumber("4000")
+                .balance(500.0)
+                .build();
+        var first = service.getMinimumDeposit(account);
+        var second = service.getMinimumDeposit(account2);
+        assertThat(first).isEqualTo(second);
+    }
+
+    @Test
+    void getAllowedWithdraw_withOneTransactionFeeAsBalance_shouldReturnZero(){
+        var account = CheckingAccount.builder()
+                .accountHolder(User.builder().username("Tester").build())
+                .accountNumber("3000")
+                .balance(CheckingAccount.TRANSACTION_FEE)
+                .build();
+        var first = service.getAllowedWithdraw(account);
+        assertThat(first).isEqualTo(0.0);
+    }
+
+    @Test
+    void getAllowedWithdraw_withTowTransactionFeeAsBalance_shouldReturnZero(){
+        var account = CheckingAccount.builder()
+                .accountHolder(User.builder().username("Tester").build())
+                .accountNumber("3000")
+                .balance(CheckingAccount.TRANSACTION_FEE * 2)
+                .build();
+        var first = service.getAllowedWithdraw(account);
+        assertThat(first).isEqualTo(0.0);
+    }
+
+    @Test
+    void getAllowedWithdraw_withDebtAndOverdraft_shouldReturnAmount(){
+        var account = CheckingAccount.builder()
+                .accountHolder(User.builder().username("Tester").build())
+                .accountNumber("3000")
+                .balance(0.0)
+                .debt(500.0)
+                .overdraftLimit(1000.0)
+                .build();
+        var first = service.getAllowedWithdraw(account);
+        assertThat(first).isEqualTo(300.0);
+    }
+
+    @Test
+    void getAllowedWithdraw_withBalance_shouldReturnAmount(){
+        var account = CheckingAccount.builder()
+                .accountHolder(User.builder().username("Tester").build())
+                .accountNumber("3000")
+                .balance(CheckingAccount.TRANSACTION_FEE * 2 + 500.0)
+                .build();
+        var first = service.getAllowedWithdraw(account);
+        assertThat(first).isEqualTo(500.0);
+    }
+
+
+    @Test
+    void toCheckingAccount_withEmptyMap_shouldReturnEmptyUser() {
+        var account = CheckingAccountService.toCheckingAccount(Map.of());
+        assertThat(account.getAccountNumber()).isNull();
+        assertThat(account.getBalance()).isZero();
+        assertThat(account.getOverdraftLimit()).isZero();
+        assertThat(account.getDebt()).isZero();
+        assertThat(account.getAccountHolder().getUsername()).isNull();
+    }
+
+    @Test
+    void toCheckingAccount_withNonNumeric_shouldReturnWithZero() {
+        var map = Map.of(
+                "account_number", new String[] { "test" },
+                "username", new String[] { "tester" },
+                "balance", new String[] { "test" },
+                "overdraft_limit", new String[] { "test" },
+                "debt", new String[] { "test" });
+
+        var account = CheckingAccountService.toCheckingAccount(map);
+        assertThat(account.getAccountNumber()).isEqualTo("test");
+        assertThat(account.getBalance()).isZero();
+        assertThat(account.getOverdraftLimit()).isZero();
+        assertThat(account.getDebt()).isZero();
+        assertThat(account.getAccountHolder().getUsername()).isEqualTo("tester");
+    }
+
+    @Test
+    void toCheckingAccount_withFull_shouldReturnAccount() {
+        var map = Map.of(
+                "account_number", new String[] { "test" },
+                "username", new String[] { "tester" },
+                "balance", new String[] { "10.0" },
+                "overdraft_limit", new String[] { "12.0" },
+                "debt", new String[] { "9.0" });
+        var account = CheckingAccountService.toCheckingAccount(map);
+        assertThat(account.getAccountNumber()).isEqualTo("test");
+        assertThat(account.getBalance()).isEqualTo(10.0d);
+        assertThat(account.getOverdraftLimit()).isEqualTo(12.0d);
+        assertThat(account.getDebt()).isEqualTo(9.0d);
+        assertThat(account.getAccountHolder().getUsername()).isEqualTo("tester");
+    }
+
 }

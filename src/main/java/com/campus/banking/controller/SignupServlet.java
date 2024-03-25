@@ -14,7 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @WebServlet("/signup")
-public class SignupServlet  extends HttpServlet {
+public class SignupServlet extends HttpServlet {
 
     private UserService service;
 
@@ -22,21 +22,25 @@ public class SignupServlet  extends HttpServlet {
     public void initialize(UserService service) {
         this.service = service;
     }
-    
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         log.debug("GET");
-        if (req.getUserPrincipal() != null){
+        if (req.getUserPrincipal() != null) {
             resp.sendRedirect(req.getContextPath());
-        }else{
+        } else {
             req.getRequestDispatcher("/views/pages/singles/signup.jsp").forward(req, resp);
         }
     }
-    
+
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         log.debug("POST");
-        this.service.signup(UserService.toUser(req.getParameterMap()));
-        resp.sendRedirect(req.getContextPath() + "/login");
+        if (req.getUserPrincipal() != null) {
+            resp.sendRedirect(req.getContextPath());
+        } else {
+            this.service.signup(UserService.toUser(req.getParameterMap()));
+            resp.sendRedirect(req.getContextPath() + "/login");
+        }
     }
 }

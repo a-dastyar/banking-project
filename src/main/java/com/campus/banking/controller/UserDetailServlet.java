@@ -72,7 +72,7 @@ public class UserDetailServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         log.debug("POST");
         var user = UserService.toUser(req.getParameterMap());
-        this.service.updateUser(user);
+        this.service.update(user);
         resp.sendRedirect(req.getContextPath() + "/users/details?username=" + user.getUsername());
     }
 }

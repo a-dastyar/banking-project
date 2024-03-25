@@ -100,6 +100,23 @@ public abstract class AbstractDAO<T extends BaseModel<S>, S> implements DAO<T, S
 
     @Override
     @SuppressWarnings("unchecked")
+    public <U> long countBy(String fieldName, U fieldValue) {
+        return withEntityManager(em -> {
+            CriteriaBuilder builder = em.getCriteriaBuilder();
+            CriteriaQuery<Long> query = builder.createQuery(Long.class);
+            Root<T> select = query.from(getType());
+            query.select(builder.count(select));
+            query.where(builder.equal(select.type(), getType()));
+            ParameterExpression<U> parameter = builder.parameter((Class<U>) fieldValue.getClass());
+            query.where(builder.equal(select.get(fieldName), parameter));
+            TypedQuery<Long> typedQuery = em.createQuery(query);
+            typedQuery.setParameter(parameter, fieldValue);
+            return typedQuery.getSingleResult();
+        });
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
     public <U> List<T> findBy(String fieldName, U fieldValue) {
         return withEntityManager(em -> {
             CriteriaBuilder builder = em.getCriteriaBuilder();
@@ -129,7 +146,7 @@ public abstract class AbstractDAO<T extends BaseModel<S>, S> implements DAO<T, S
             typedQuery.setFirstResult((page - 1) * size);
             typedQuery.setMaxResults(size);
             List<T> list = typedQuery.getResultList();
-            long countAll = countAll();
+            long countAll = countBy(fieldName, fieldValue);
             return new Page<>(list, countAll, page, size);
         });
     }

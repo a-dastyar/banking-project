@@ -3,7 +3,6 @@ package com.campus.banking.service;
 import com.campus.banking.exception.InsufficientFundsException;
 import com.campus.banking.exception.LessThanMinimumTransactionException;
 import com.campus.banking.exception.NotFoundException;
-import com.campus.banking.model.BankAccount;
 import com.campus.banking.model.CheckingAccount;
 import com.campus.banking.model.Transaction;
 import com.campus.banking.model.TransactionType;
@@ -55,6 +54,7 @@ class CheckingAccountServiceImpl implements CheckingAccountService {
                 throw new LessThanMinimumTransactionException();
 
             account.setBalance(amount - CheckingAccount.TRANSACTION_FEE);
+            account.setId(null);
             dao.transactionalPersist(em, account);
             insertTransaction(em, account, amount, TransactionType.DEPOSIT);
             insertTransaction(em, account, CheckingAccount.TRANSACTION_FEE, TransactionType.TRANSACTION_FEE);
@@ -68,7 +68,7 @@ class CheckingAccountServiceImpl implements CheckingAccountService {
             throw new IllegalArgumentException("Can't have debt more than overdraft limit");
     }
 
-    private String getUsername(BankAccount account) {
+    private String getUsername(CheckingAccount account) {
         if (account.getAccountHolder() == null
                 || account.getAccountHolder().getUsername() == null
                 || account.getAccountHolder().getUsername().isBlank()) {
@@ -175,7 +175,7 @@ class CheckingAccountServiceImpl implements CheckingAccountService {
         // Don't allow to empty the account so that there is enough amount for
         // deposit transaction fee
         amount -= CheckingAccount.TRANSACTION_FEE * 2;
-        return amount;
+        return amount < 0.0d ? 0.0d : amount;
     }
 
     @Override

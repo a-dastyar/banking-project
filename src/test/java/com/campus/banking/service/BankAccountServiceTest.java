@@ -11,6 +11,7 @@ import static org.mockito.Mockito.only;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -34,17 +35,17 @@ import jakarta.persistence.EntityManager;
 public class BankAccountServiceTest {
 
     @Mock
-    BankAccountDAO<BankAccount> dao;
+    private BankAccountDAO<BankAccount> dao;
 
     @Mock
-    UserService users;
+    private UserService users;
 
     @Mock
-    TransactionDAO trxDao;
+    private TransactionDAO trxDao;
 
-    int maxPageSize = 10;
+    private int maxPageSize = 10;
 
-    BankAccountService<BankAccount> service;
+    private BankAccountService<BankAccount> service;
 
     @BeforeEach
     void setup() {
@@ -171,5 +172,76 @@ public class BankAccountServiceTest {
         when(dao.findByAccountNumberForUpdate(any(), any())).thenReturn(Optional.of(account));
         service.deposit(account.getAccountNumber(), 10.0);
         assertThat(account.getBalance()).isEqualTo(20.0);
+    }
+    
+    @Test
+    void getMinimumDeposit_shouldReturnConstant(){
+        var account = BankAccount.builder()
+                .accountHolder(User.builder().username("Tester").build())
+                .accountNumber("3000")
+                .balance(10.0)
+                .build();
+        var account2 = BankAccount.builder()
+                .accountHolder(User.builder().username("Tester2").build())
+                .accountNumber("4000")
+                .balance(500.0)
+                .build();
+        var first = service.getMinimumDeposit(account);
+        var second = service.getMinimumDeposit(account2);
+        assertThat(first).isEqualTo(second);
+    }
+
+    @Test
+    void getAllowedWithdraw_withNoBalance_shouldReturnZero(){
+        var account = BankAccount.builder()
+                .accountHolder(User.builder().username("Tester").build())
+                .accountNumber("3000")
+                .balance(0.0)
+                .build();
+        var first = service.getAllowedWithdraw(account);
+        assertThat(first).isEqualTo(0.0);
+    }
+
+    @Test
+    void getAllowedWithdraw_withBalance_shouldReturnBalance(){
+        var account = BankAccount.builder()
+                .accountHolder(User.builder().username("Tester").build())
+                .accountNumber("3000")
+                .balance(0.0)
+                .build();
+        var first = service.getAllowedWithdraw(account);
+        assertThat(first).isEqualTo(account.getBalance());
+    }
+
+    @Test
+    void toBankAccount_withEmptyMap_shouldReturnEmptyUser() {
+        var account = BankAccountService.toBankAccount(Map.of());
+        assertThat(account.getAccountNumber()).isNull();
+        assertThat(account.getBalance()).isZero();
+        assertThat(account.getAccountHolder().getUsername()).isNull();
+    }
+
+    @Test
+    void toBankAccount_withNonNumericBalance_shouldReturnZeroBalance() {
+        var map = Map.of(
+                "account_number", new String[] { "test" },
+                "username", new String[] { "tester" },
+                "balance", new String[] { "test" });
+        var account = BankAccountService.toBankAccount(map);
+        assertThat(account.getAccountNumber()).isEqualTo("test");
+        assertThat(account.getBalance()).isZero();
+        assertThat(account.getAccountHolder().getUsername()).isEqualTo("tester");
+    }
+
+    @Test
+    void toBankAccount_withFull_shouldReturnAccount() {
+        var map = Map.of(
+                "account_number", new String[] { "test" },
+                "username", new String[] { "tester" },
+                "balance", new String[] { "10.0" });
+        var account = BankAccountService.toBankAccount(map);
+        assertThat(account.getAccountNumber()).isEqualTo("test");
+        assertThat(account.getBalance()).isEqualTo(10.0);
+        assertThat(account.getAccountHolder().getUsername()).isEqualTo("tester");
     }
 }

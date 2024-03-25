@@ -1,2 +1,0 @@
-INSERT INTO users(username,email,created_at,password) SELECT 'admin','admin@bank.co', NOW(),'$argon2id$v=19$m=60000,t=10,p=1$0wOIf309LzcbGtAUUUoo3A$TnYY/+ML/xuFe322BbV8oQuIYHOWfEHhk/kCAKjStJ8' WHERE NOT EXISTS (SELECT * FROM users);
-INSERT INTO user_roles(username,name) SELECT 'admin','ADMIN' WHERE NOT EXISTS (SELECT * FROM user_roles);
