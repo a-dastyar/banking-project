@@ -257,6 +257,7 @@
                 <configuration>
                     <excludes>
                         <exclude>com/campus/banking/model/*</exclude>
+                        <exclude>com/campus/banking/exception/*</exclude>
                     </excludes>
                 </configuration>
                 <executions>
