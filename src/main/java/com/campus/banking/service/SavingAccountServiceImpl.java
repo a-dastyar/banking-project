@@ -1,16 +1,11 @@
 package com.campus.banking.service;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import com.campus.banking.exception.InvalidTransactionException;
 import com.campus.banking.exception.NotFoundException;
 import com.campus.banking.model.SavingAccount;
-import com.campus.banking.model.Transaction;
 import com.campus.banking.model.TransactionType;
-import com.campus.banking.persistence.Page;
 import com.campus.banking.persistence.SavingAccountDAO;
 import com.campus.banking.persistence.TransactionDAO;
 
@@ -21,23 +16,20 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.PositiveOrZero;
 
 @ApplicationScoped
-class SavingAccountServiceImpl implements SavingAccountService {
+class SavingAccountServiceImpl  extends AbstractAccountServiceImpl<SavingAccount> implements SavingAccountService{
 
     private SavingAccountDAO dao;
-    private TransactionDAO trxDao;
+
     private UserService users;
-    private int maxPageSize;
 
     @Inject
     public SavingAccountServiceImpl(SavingAccountDAO dao, TransactionDAO trxDao, UserService users,
             @ConfigProperty(name = "app.pagination.max_size") int maxPageSize) {
+        super(dao, trxDao, maxPageSize);
         this.dao = dao;
-        this.trxDao = trxDao;
         this.users = users;
-        this.maxPageSize = maxPageSize;
     }
 
     @Override
@@ -58,31 +50,6 @@ class SavingAccountServiceImpl implements SavingAccountService {
         if (account.getBalance()<account.getMinimumBalance()){
             throw new IllegalArgumentException();
         }
-    }
-
-    private String getUsername(SavingAccount account) {
-        if (account.getAccountHolder() == null
-                || account.getAccountHolder().getUsername() == null
-                || account.getAccountHolder().getUsername().isBlank()) {
-            throw new IllegalArgumentException();
-        }
-        return account.getAccountHolder().getUsername();
-    }
-
-    @Override
-    public SavingAccount getByAccountNumber(@NotNull @NotBlank String accountNumber) {
-        return dao.findByAccountNumber(accountNumber)
-                .orElseThrow(NotFoundException::new);
-    }
-
-    @Override
-    public List<SavingAccount> getByUsername(@NotNull @NotBlank String username) {
-        return dao.findByUsername(username);
-    }
-
-    @Override
-    public Page<SavingAccount> getPage(@Positive int page) {
-        return dao.getAll(page, maxPageSize);
     }
 
     @Override
@@ -124,11 +91,6 @@ class SavingAccountServiceImpl implements SavingAccountService {
     public double getAllowedWithdraw(@NotNull @Valid SavingAccount account) {
         return account.getBalance() - account.getMinimumBalance();
     }
-    
-    @Override
-    public double getMinimumDeposit(@NotNull @Valid SavingAccount account) {
-        return 10;
-    }
 
     @Override
     public void applyInterest(@NotNull @NotBlank String accountNumber) {
@@ -148,25 +110,5 @@ class SavingAccountServiceImpl implements SavingAccountService {
     @Override
     public void applyInterest() {
         dao.applyInterest();
-    }
-
-    @Override
-    public double sumBalanceHigherThan(@PositiveOrZero double min) {
-        return dao.sumBalanceHigherThan(min);
-    }
-
-    private void insertTransaction(EntityManager em, SavingAccount account, double amount, TransactionType type) {
-        var trx = Transaction.builder()
-                .account(account)
-                .amount(amount)
-                .date(LocalDateTime.now())
-                .type(type).build();
-        trxDao.transactionalPersist(em, trx);
-    }
-
-    @Override
-    public Page<Transaction> getTransactions(@NotNull @NotBlank String accountNumber, @Positive int page) {
-        var found = getByAccountNumber(accountNumber);
-        return trxDao.findBy("account", found, page, maxPageSize);
     }
 }
