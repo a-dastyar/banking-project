@@ -4,6 +4,9 @@
     
     <head>
         <%@ include file="/views/components/commons/meta.jsp" %>
+        <% 
+            response.setStatus(401);
+        %>
         <title>Login</title>
     </head>
 
