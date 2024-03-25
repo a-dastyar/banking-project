@@ -76,13 +76,16 @@ public class TransactionDAOIT extends AbstractDatabaseIT {
         assertThat(sum).isEqualTo(1000.0);
     }
 
+    @Test
     void exists_withExisting_shouldReturnTrue() {
         var trx = Transaction.builder()
                 .account(account)
                 .amount(100)
                 .build();
-        dao.persist(trx);
         var found = dao.exists(trx);
+        assertThat(found).isFalse();
+        dao.persist(trx);
+        found = dao.exists(trx);
         assertThat(found).isTrue();
 
     }

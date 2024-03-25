@@ -230,6 +230,22 @@ public class BankAccountDAOIT extends AbstractDatabaseIT {
     }
 
     @Test
+    void updateList_withAccount_shouldUpdate() {
+        var account = BankAccount.builder()
+                .accountHolder(user)
+                .accountNumber("3000")
+                .balance(10.0).build();
+        var secondAccount = BankAccount.builder()
+                .accountHolder(user)
+                .accountNumber("4000")
+                .balance(10.0).build();
+        dao.persist(List.of(account, secondAccount));
+        dao.update(List.of(account.withBalance(30.0), secondAccount.withBalance(40)));
+        var sum = dao.sumBalanceHigherThan(0);
+        assertThat(sum).isEqualTo(70.0);
+    }
+
+    @Test
     void findByAccountNumber_withNoAccount_shouldReturnEmpty() {
         var found = dao.findByAccountNumber("3000");
         assertThat(found).isEmpty();
@@ -341,6 +357,12 @@ public class BankAccountDAOIT extends AbstractDatabaseIT {
         dao.persist(secondAccount);
         var result = dao.findByUsername(user.getUsername());
         assertThat(result.size()).isEqualTo(1);
+    }
+
+    @Test
+    void removeBy_withInvalidField_shouldNotFail() {
+        assertThatThrownBy(() -> dao.removeBy("invalid", 10.0))
+                .isInstanceOf(RuntimeException.class);
     }
 
     @Test
