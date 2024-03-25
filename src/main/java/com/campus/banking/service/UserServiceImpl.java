@@ -22,11 +22,11 @@ import lombok.extern.slf4j.Slf4j;
 @ApplicationScoped
 class UserServiceImpl implements UserService {
 
-    private UserDAO dao;
+    private final UserDAO dao;
 
-    private HashService hashService;
+    private final HashService hashService;
 
-    private int maxPageSize;
+    private final int maxPageSize;
 
     @Inject
     public UserServiceImpl(UserDAO dao, HashService hashService,

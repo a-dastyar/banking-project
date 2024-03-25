@@ -23,11 +23,11 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public abstract class AbstractAccountServiceImpl<T extends BankAccount> implements BankAccountService<T>{
 
-    private BankAccountDAO<T> dao;
+    private final BankAccountDAO<T> dao;
 
-    protected TransactionDAO trxDao;
+    protected final TransactionDAO trxDao;
 
-    protected int maxPageSize;
+    protected final int maxPageSize;
 
 
     protected String getUsername(T account) {
