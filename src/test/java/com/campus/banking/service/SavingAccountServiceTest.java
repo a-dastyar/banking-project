@@ -6,7 +6,6 @@ import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.only;
 import static org.mockito.Mockito.verify;
@@ -14,15 +13,14 @@ import static org.mockito.Mockito.when;
 
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Consumer;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.stubbing.Answer;
 
 import com.campus.banking.exception.InvalidTransactionException;
 import com.campus.banking.model.InterestPeriod;
@@ -31,10 +29,8 @@ import com.campus.banking.model.User;
 import com.campus.banking.persistence.SavingAccountDAO;
 import com.campus.banking.persistence.TransactionDAO;
 
-import jakarta.persistence.EntityManager;
-
 @ExtendWith(MockitoExtension.class)
-public class SavingAccountServiceTest {
+public class SavingAccountServiceTest extends AbstractAccountServiceTest<SavingAccount> {
 
     @Mock
     private SavingAccountDAO dao;
@@ -50,39 +46,8 @@ public class SavingAccountServiceTest {
     @BeforeEach
     void setup() {
         service = new SavingAccountServiceImpl(dao, trxDao, users, 10);
-    }
-
-    @SuppressWarnings("unchecked")
-    private Answer<Object> executeConsumer(InvocationOnMock invocation) {
-        var consumer = (Consumer<EntityManager>) invocation.getArgument(0);
-        consumer.accept(mock(EntityManager.class));
-        return null;
-    }
-
-    @Test
-    void add_withNullUser_shouldFail() {
-        var account = SavingAccount.builder()
-                .accountNumber("3000")
-                .build();
-        assertThatThrownBy(() -> service.add(account)).isInstanceOf(IllegalArgumentException.class);
-    }
-
-    @Test
-    void add_withNullUsername_shouldFail() {
-        var account = SavingAccount.builder()
-                .accountHolder(User.builder().build())
-                .accountNumber("3000")
-                .build();
-        assertThatThrownBy(() -> service.add(account)).isInstanceOf(IllegalArgumentException.class);
-    }
-
-    @Test
-    void add_withBlankUsername_shouldFail() {
-        var account = SavingAccount.builder()
-                .accountHolder(User.builder().username("").build())
-                .accountNumber("3000")
-                .build();
-        assertThatThrownBy(() -> service.add(account)).isInstanceOf(IllegalArgumentException.class);
+        super.service = service;
+        super.dao = dao;
     }
 
     @Test
@@ -130,17 +95,6 @@ public class SavingAccountServiceTest {
                 .build();
         service.add(account);
         assertThatNoException();
-    }
-
-    @Test
-    void getByAccountNumber_withNullAccountNumber_shouldReturnAccount() {
-        var account = SavingAccount.builder()
-                .accountHolder(User.builder().username("Tester").build())
-                .accountNumber("3000")
-                .build();
-        when(dao.findByAccountNumber(any())).thenReturn(Optional.of(account));
-        var found = service.getByAccountNumber(account.getAccountNumber());
-        assertThat(found.getAccountNumber()).isEqualTo(account.getAccountNumber());
     }
 
     @Test
@@ -218,7 +172,7 @@ public class SavingAccountServiceTest {
     }
 
     @Test
-    void getMinimumDeposit_shouldReturnConstant(){
+    void getMinimumDeposit_shouldReturnConstant() {
         var account = SavingAccount.builder()
                 .accountHolder(User.builder().username("Tester").build())
                 .accountNumber("3000")
@@ -235,7 +189,7 @@ public class SavingAccountServiceTest {
     }
 
     @Test
-    void getAllowedWithdraw_withMinimumWithdraw_shouldReturnAmount(){
+    void getAllowedWithdraw_withMinimumWithdraw_shouldReturnAmount() {
         var account = SavingAccount.builder()
                 .accountHolder(User.builder().username("Tester").build())
                 .accountNumber("3000")
@@ -313,4 +267,19 @@ public class SavingAccountServiceTest {
         assertThat(account.getInterestPeriod()).isEqualTo(InterestPeriod.YEARLY);
         assertThat(account.getAccountHolder().getUsername()).isEqualTo("tester");
     }
+
+    @Override
+    Stream<SavingAccount> generate(int count) {
+        return IntStream.range(0, count)
+                .mapToObj(this::make);
+    }
+
+    SavingAccount make(int i) {
+        return SavingAccount.builder()
+                .accountHolder(User.builder().username("user" + i).build())
+                .accountNumber("4000" + i)
+                .balance(100.0 * i + 200)
+                .build();
+    }
+
 }
