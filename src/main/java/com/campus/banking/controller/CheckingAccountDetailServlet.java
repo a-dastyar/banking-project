@@ -5,6 +5,7 @@ import static com.campus.banking.util.ServletUtils.getPageNumber;
 import java.io.IOException;
 import java.util.Optional;
 
+import com.campus.banking.dto.AccountDetailDTO;
 import com.campus.banking.model.Role;
 import com.campus.banking.service.CheckingAccountService;
 
@@ -42,11 +43,17 @@ public class CheckingAccountDetailServlet extends HttpServlet {
 
         var account = service.getByAccountNumber(accountNumber);
         var transactions = service.getTransactions(accountNumber, trxPage);
-        
-        req.setAttribute("account", account);
-        req.setAttribute("maxWithdraw", service.getAllowedWithdraw(account));
-        req.setAttribute("minDeposit", service.getMinimumDeposit(account));
-        req.setAttribute("transactions", transactions);
+        var maxWithdraw = service.getAllowedWithdraw(account);
+        var minDeposit = service.getMinimumDeposit(account);
+
+        var accountDetails = AccountDetailDTO.builder()
+                .account(account)
+                .maxWithdraw(maxWithdraw)
+                .minDeposit(minDeposit)
+                .transactions(transactions)
+                .build();
+
+        req.setAttribute("accountDetails", accountDetails);
         req.getRequestDispatcher("/views/pages/accounts/checking_account_details.jsp").forward(req, resp);
     }
 }

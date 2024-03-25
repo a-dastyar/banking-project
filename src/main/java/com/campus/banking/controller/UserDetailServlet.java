@@ -1,9 +1,11 @@
 package com.campus.banking.controller;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.campus.banking.dto.UserDetailDTO;
 import com.campus.banking.model.BankAccount;
 import com.campus.banking.model.Role;
 import com.campus.banking.service.BankAccountService;
@@ -54,16 +56,19 @@ public class UserDetailServlet extends HttpServlet {
         var bankAccounts = account.getByUsername(username);
         var checkingAccounts = checking.getByUsername(username);
         var savingAccounts = saving.getByUsername(username);
-        
-        req.setAttribute("user", user);
-        req.setAttribute("bankAccounts", bankAccounts);
-        req.setAttribute("checkingAccounts", checkingAccounts);
-        req.setAttribute("savingAccounts", savingAccounts);
 
         var userRoles = user.getRoles().stream().collect(Collectors.toMap(Role::toString, r -> true));
 
-        req.setAttribute("roles", Role.values());
-        req.setAttribute("userRoles", userRoles);
+        var userDetails = UserDetailDTO.builder()
+                .user(user)
+                .bankAccounts(bankAccounts)
+                .checkingAccounts(checkingAccounts)
+                .savingAccounts(savingAccounts)
+                .userRoles(userRoles)
+                .availableRoles(Arrays.asList(Role.values()))
+                .build();
+
+        req.setAttribute("userDetails", userDetails);
 
         req.getRequestDispatcher("/views/pages/users/user_details.jsp").forward(req, resp);
     }

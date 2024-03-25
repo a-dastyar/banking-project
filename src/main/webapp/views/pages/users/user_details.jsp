@@ -17,10 +17,10 @@
         <%@ include file="/views/components/commons/header.jsp" %>
 
         <c:set var="endPoint" value="users" scope="request"/>
-        <c:set var="user" value="${user}" scope="request"/>
-        <c:set var="accountsList" value="${bankAccounts}" scope="request"/>
-        <c:set var="savingsList" value="${savingAccounts}" scope="request"/>
-        <c:set var="checkingsList" value="${checkingAccounts}" scope="request"/>
+        <c:set var="user" value="${userDetails.user()}" scope="request"/>
+        <c:set var="accountsList" value="${userDetails.bankAccounts()}" scope="request"/>
+        <c:set var="savingsList" value="${userDetails.savingAccounts()}" scope="request"/>
+        <c:set var="checkingsList" value="${userDetails.checkingAccounts()}" scope="request"/>
         <%
             pageContext.setAttribute("panelItems",new String[]{
                 "User info",

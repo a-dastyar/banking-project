@@ -16,9 +16,10 @@
         <%@ include file="/views/components/commons/header.jsp" %>
 
         <c:set var="endPoint" value="checking-accounts" scope="request"/>
-        <c:set var="account" value="${account}" scope="request"/>
-        <c:set var="maxWithdraw" value="${maxWithdraw}" scope="request"/>
-        <c:set var="minDeposit" value="${minDeposit}" scope="request"/>
+        <c:set var="account" value="${accountDetails.account()}" scope="request"/>
+        <c:set var="maxWithdraw" value="${accountDetails.maxWithdraw()}" scope="request"/>
+        <c:set var="minDeposit" value="${accountDetails.minDeposit()}" scope="request"/>
+        <c:set var="transactions" value="${accountDetails.transactions()}" scope="request"/>
         <%
             pageContext.setAttribute("panelItems",new String[]{
                 "Account info",
