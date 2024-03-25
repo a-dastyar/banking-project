@@ -11,6 +11,8 @@ import com.campus.banking.util.HttpUtils.Response.Status;
 
 public class LogoutServletIT extends AbstractHttpIT {
 
+    private String resource = "/logout";
+
     @Test
     void post_withLogin_shouldLogout() {
         var client = http.clientBuilder().build();
@@ -19,13 +21,13 @@ public class LogoutServletIT extends AbstractHttpIT {
         assertThat(loginRes.status()).isEqualTo(Status.Success);
         assertThat(loginRes.httpResponse().statusCode()).isEqualTo(303);
 
-        var request = http.requestBuilder(http.resourceURI("/logout"))
+        var request = http.GETRequestBuilder(http.resourceURI(resource))
                 .POST(BodyPublishers.noBody()).build();
         var response = http.sendRequest(client, request);
         assertThat(response.status()).isEqualTo(Status.Success);
         assertThat(response.httpResponse().statusCode()).isEqualTo(302);
 
-        var homeReq = http.requestBuilder(http.resourceURI("/"))
+        var homeReq = http.GETRequestBuilder(http.resourceURI("/"))
                 .GET().build();
         var homeRes = http.sendRequest(client, homeReq);
         assertThat(homeRes.status()).isEqualTo(Status.Success);

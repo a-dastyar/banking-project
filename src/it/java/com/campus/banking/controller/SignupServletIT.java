@@ -12,28 +12,33 @@ import com.campus.banking.util.HttpUtils.Response.Status;
 
 public class SignupServletIT extends AbstractHttpIT {
 
+    private String resource = "/signup";
+
     @Test
-    void get_withoutLogin_shouldReturnSignForm() {
+    void get_withoutLogin_shouldReturnSignupForm() {
         var client = http.clientBuilder().build();
 
-        var request = http.requestBuilder(http.resourceURI("/signup"))
+        var request = http.GETRequestBuilder(http.resourceURI(resource))
                 .GET().build();
         var response = http.sendRequest(client, request);
+
         assertThat(response.status()).isEqualTo(Status.Success);
         assertThat(response.httpResponse().body()).containsIgnoringCase("email");
     }
 
     @Test
-    void get_withLogin_shouldReturnSignForm() {
+    void get_withLogin_shouldReturnRedirectToHome() {
         var client = http.clientBuilder().build();
 
         var loginRes = http.login(client, "admin", "admin");
         assertThat(loginRes.status()).isEqualTo(Status.Success);
         assertThat(loginRes.httpResponse().statusCode()).isEqualTo(303);
 
-        var request = http.requestBuilder(http.resourceURI("/signup"), Duration.ofMinutes(2))
+        var request = http.GETRequestBuilder(http.resourceURI(resource))
+                .timeout(Duration.ofMinutes(2))
                 .GET().build();
         var response = http.sendRequest(client, request);
+
         assertThat(response.status()).isEqualTo(Status.Success);
         assertThat(response.httpResponse().statusCode()).isEqualTo(302);
     }
@@ -46,17 +51,15 @@ public class SignupServletIT extends AbstractHttpIT {
         assertThat(loginRes.status()).isEqualTo(Status.Success);
         assertThat(loginRes.httpResponse().statusCode()).isEqualTo(303);
 
-        var request = http.requestBuilder(http.resourceURI("/signup"), Duration.ofMinutes(2))
-                .POST(http.getFormDataBody(
-                        Map.of(
-                                "username", "test",
-                                "email", "test@test.test",
-                                "password", "test")))
-                .build();
-        var response = http.sendRequest(client, request);
-        assertThat(response.status()).isEqualTo(Status.Success);
-        assertThat(response.httpResponse().statusCode()).isEqualTo(302);
-        assertThat(response.httpResponse().headers().firstValue("location").get())
+        var form = Map.of(
+                "username", "test",
+                "email", "test@test.test",
+                "password", "test");
+        var signupRes = http.signup(client, form);
+
+        assertThat(signupRes.status()).isEqualTo(Status.Success);
+        assertThat(signupRes.httpResponse().statusCode()).isEqualTo(302);
+        assertThat(signupRes.httpResponse().headers().firstValue("location").get())
                 .isEqualTo(http.resourceURI("").getPath());
     }
 
@@ -64,18 +67,14 @@ public class SignupServletIT extends AbstractHttpIT {
     void post_withoutLogin_shouldSignup() {
         var client = http.clientBuilder().build();
 
-        var request = http.requestBuilder(http.resourceURI("/signup"), Duration.ofMinutes(2))
-                .header("Content-Type", "application/x-www-form-urlencoded")
-                .POST(http.getFormDataBody(
-                        Map.of(
-                                "username", "test",
-                                "email", "test@test.test",
-                                "password", "test")))
-                .build();
-        var response = http.sendRequest(client, request);
-        assertThat(response.status()).isEqualTo(Status.Success);
-        assertThat(response.httpResponse().statusCode()).isEqualTo(302);
-        assertThat(response.httpResponse().headers().firstValue("location").get())
+        var form = Map.of(
+                "username", "test",
+                "email", "test@test.test",
+                "password", "test");
+        var signupRes = http.signup(client, form);
+        assertThat(signupRes.status()).isEqualTo(Status.Success);
+        assertThat(signupRes.httpResponse().statusCode()).isEqualTo(302);
+        assertThat(signupRes.httpResponse().headers().firstValue("location").get())
                 .isEqualTo(http.resourceURI("/login").getPath());
 
         var loginRes = http.login(client, "test", "test");
@@ -87,50 +86,41 @@ public class SignupServletIT extends AbstractHttpIT {
     void post_withInvalidUsername_shouldReturn400() {
         var client = http.clientBuilder().build();
 
-        var request = http.requestBuilder(http.resourceURI("/signup"), Duration.ofMinutes(2))
-                .header("Content-Type", "application/x-www-form-urlencoded")
-                .POST(http.getFormDataBody(
-                        Map.of(
-                                "username", "t",
-                                "email", "test@test.test",
-                                "password", "test")))
-                .build();
-        var response = http.sendRequest(client, request);
-        assertThat(response.status()).isEqualTo(Status.Success);
-        assertThat(response.httpResponse().statusCode()).isEqualTo(400);
+        var form = Map.of(
+                "username", "t",
+                "email", "test@test.test",
+                "password", "test");
+
+        var signupRes = http.signup(client, form);
+        assertThat(signupRes.status()).isEqualTo(Status.Success);
+        assertThat(signupRes.httpResponse().statusCode()).isEqualTo(400);
     }
 
     @Test
     void post_withInvalidPassword_shouldReturn400() {
         var client = http.clientBuilder().build();
 
-        var request = http.requestBuilder(http.resourceURI("/signup"), Duration.ofMinutes(2))
-                .header("Content-Type", "application/x-www-form-urlencoded")
-                .POST(http.getFormDataBody(
-                        Map.of(
-                                "username", "test",
-                                "email", "test@test.test",
-                                "password", "123")))
-                .build();
-        var response = http.sendRequest(client, request);
-        assertThat(response.status()).isEqualTo(Status.Success);
-        assertThat(response.httpResponse().statusCode()).isEqualTo(400);
+        var form = Map.of(
+                "username", "test",
+                "email", "test@test.test",
+                "password", "123");
+
+        var signupRes = http.signup(client, form);
+        assertThat(signupRes.status()).isEqualTo(Status.Success);
+        assertThat(signupRes.httpResponse().statusCode()).isEqualTo(400);
     }
 
     @Test
     void post_withInvalidEmail_shouldReturn400() {
         var client = http.clientBuilder().build();
 
-        var request = http.requestBuilder(http.resourceURI("/signup"), Duration.ofMinutes(2))
-                .header("Content-Type", "application/x-www-form-urlencoded")
-                .POST(http.getFormDataBody(
-                        Map.of(
-                                "username", "test",
-                                "email", "test@test",
-                                "password", "123")))
-                .build();
-        var response = http.sendRequest(client, request);
-        assertThat(response.status()).isEqualTo(Status.Success);
-        assertThat(response.httpResponse().statusCode()).isEqualTo(400);
+        var form = Map.of(
+                "username", "test",
+                "email", "test@test",
+                "password", "123");
+        var signupRes = http.signup(client, form);
+
+        assertThat(signupRes.status()).isEqualTo(Status.Success);
+        assertThat(signupRes.httpResponse().statusCode()).isEqualTo(400);
     }
 }
