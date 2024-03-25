@@ -1,34 +1,44 @@
 package com.campus.banking;
 
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 
 import com.campus.banking.util.HttpUtils;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class AbstractHttpIT extends AbstractIT {
+public class AbstractHttpIT extends AbstractIT{
 
-    private static ServerManager server = new ServerManager();
+    private  ServerManager server = new ServerManager();
 
-    protected static HttpUtils http = new HttpUtils(server.port);
+    protected  HttpUtils http = new HttpUtils(server.port);
 
     @BeforeAll
     public static void beforeAll() {
+    }
+    
+    @AfterAll
+    public static void afterAll() {
+    }
+    
+    @BeforeEach
+    void beforeEach(){
         log.debug("Starting application...");
         setDatabaseConfig();
         server.startServer();
         log.debug("READY");
     }
-
-    @AfterAll
-    public static void afterAll() {
+    
+    @AfterEach
+    void afterEach(){
         log.debug("Shuting down application...");
         server.stopServer();
     }
 
-    private static void setDatabaseConfig() {
+    private void setDatabaseConfig() {
         log.debug("Setting database configs");
         log.debug("URL[{}], Username[{}], Password[{}]", mysql.getJdbcUrl(), mysql.getUsername(), mysql.getPassword());
         System.setProperty("server.port", String.valueOf(server.port));
