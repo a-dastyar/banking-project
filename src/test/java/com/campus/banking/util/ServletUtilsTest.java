@@ -5,30 +5,27 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.Test;
 
-
 public class ServletUtilsTest {
 
     @Test
-    void getPageNumber_withNull_shouldReturnOne() {
+    void getPageNumber_withNull_shouldReturnReturnEmpty() {
         var val = ServletUtils.getPositiveInt(null);
-        assertThat(val).isEqualTo(1);
+        assertThat(val).isEmpty();
     }
 
     @Test
-    void getPageNumber_withZero_shouldFail() {
-        assertThatThrownBy(() -> ServletUtils.getPositiveInt("0"))
-                .isInstanceOf(IllegalArgumentException.class);
+    void getPageNumber_withZero_shouldReturnEmpty() {
+        assertThat(ServletUtils.getPositiveInt("0")).isEmpty();
     }
 
     @Test
-    void getPageNumber_withNegativeNumber_shouldFail() {
-        assertThatThrownBy(() -> ServletUtils.getPositiveInt("-1"))
-                .isInstanceOf(IllegalArgumentException.class);
+    void getPageNumber_withNegativeNumber_shouldReturnEmpty() {
+        assertThat(ServletUtils.getPositiveInt("-1")).isEmpty();
     }
 
     @Test
-    void getPageNumber_withPositive_shouldReturnOne() {
-        var val = ServletUtils.getPositiveInt("2");
+    void getPageNumber_withPositive_shouldReturnTow() {
+        var val = ServletUtils.getPositiveInt("2").get();
         assertThat(val).isEqualTo(2);
     }
 
