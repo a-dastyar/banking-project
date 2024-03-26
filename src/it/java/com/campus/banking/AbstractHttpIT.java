@@ -45,6 +45,7 @@ public class AbstractHttpIT extends AbstractIT{
         System.setProperty("datasource.url", mysql.getJdbcUrl());
         System.setProperty("datasource.user", mysql.getUsername());
         System.setProperty("datasource.password", mysql.getPassword());
+        System.setProperty("datasource.schema.generation.strategy", "drop-and-create");
     }
 
 }
