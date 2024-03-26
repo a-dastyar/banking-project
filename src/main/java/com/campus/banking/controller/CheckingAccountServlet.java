@@ -1,13 +1,13 @@
 package com.campus.banking.controller;
 
 import static com.campus.banking.util.ServletUtils.getDoubleValue;
-import static com.campus.banking.util.ServletUtils.getPageNumber;
 
 import java.io.IOException;
 import java.util.Optional;
 
 import com.campus.banking.model.Role;
 import com.campus.banking.service.CheckingAccountService;
+import com.campus.banking.util.ServletUtils;
 
 import jakarta.inject.Inject;
 import jakarta.servlet.ServletException;
@@ -37,8 +37,9 @@ public class CheckingAccountServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         log.debug("GET");
-        var page = getPageNumber(req.getParameter("page"));
-        var result = service.getPage(page);
+        var page = ServletUtils.getPositiveIntWithDefault(req.getParameter("page"),"1").orElseThrow(IllegalArgumentException::new);
+        var size = ServletUtils.getPositiveInt(req.getParameter("size"));
+        var result = service.getPage(page, size);
         req.setAttribute("accounts", result);
 
         var min = Optional.ofNullable(req.getParameter("sum_min"));

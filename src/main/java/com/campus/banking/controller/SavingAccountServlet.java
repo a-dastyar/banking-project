@@ -35,8 +35,10 @@ public class SavingAccountServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         log.debug("GET");
-        var page = ServletUtils.getPageNumber(req.getParameter("page"));
-        var result = service.getPage(page);
+        var page = ServletUtils.getPositiveIntWithDefault(req.getParameter("page"), "1")
+                .orElseThrow(IllegalArgumentException::new);
+        var size = ServletUtils.getPositiveInt(req.getParameter("size"));
+        var result = service.getPage(page, size);
         req.setAttribute("accounts", result);
 
         var min = Optional.ofNullable(req.getParameter("sum_min"));
@@ -56,6 +58,7 @@ public class SavingAccountServlet extends HttpServlet {
         var account = SavingAccountService.toSavingAccount(req.getParameterMap());
         this.service.add(account);
 
-        resp.sendRedirect(req.getContextPath() + "/saving-accounts/details?account_number=" + account.getAccountNumber());
+        resp.sendRedirect(
+                req.getContextPath() + "/saving-accounts/details?account_number=" + account.getAccountNumber());
     }
 }

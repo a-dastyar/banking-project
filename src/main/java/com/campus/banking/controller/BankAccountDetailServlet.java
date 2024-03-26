@@ -39,7 +39,8 @@ public class BankAccountDetailServlet extends HttpServlet {
         log.debug("GET");
         var accountNumber = Optional.ofNullable(req.getParameter("account_number"))
                 .orElseThrow(IllegalArgumentException::new);
-        var trxPage = ServletUtils.getPageNumber(req.getParameter("transaction_page"));
+        var trxPage = ServletUtils.getPositiveIntWithDefault(req.getParameter("transaction_page"),"1")
+                .orElseThrow(IllegalArgumentException::new);
 
         var account = service.getByAccountNumber(accountNumber);
         var transactions = service.getTransactions(accountNumber, trxPage);

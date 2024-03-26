@@ -1,6 +1,6 @@
 package com.campus.banking.controller;
 
-import static com.campus.banking.util.ServletUtils.getPageNumber;
+import static com.campus.banking.util.ServletUtils.getPositiveIntWithDefault;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -39,7 +39,8 @@ public class CheckingAccountDetailServlet extends HttpServlet {
         log.debug("GET");
         var accountNumber = Optional.ofNullable(req.getParameter("account_number"))
                 .orElseThrow(IllegalArgumentException::new);
-        var trxPage = getPageNumber(req.getParameter("transaction_page"));
+        var trxPage = getPositiveIntWithDefault(req.getParameter("transaction_page"),"1")
+                .orElseThrow(IllegalArgumentException::new);
 
         var account = service.getByAccountNumber(accountNumber);
         var transactions = service.getTransactions(accountNumber, trxPage);
