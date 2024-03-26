@@ -2,7 +2,7 @@
     <div class="col rounded m-3 p-3 border">
         <div id="bank_account_deposit" class="" data-bs-parent="#accordionExample">
             <div class="accordion-body">
-                <form method="POST" action="${pageContext.request.contextPath}/${endPoint}/balance" class="needs-validation" novalidate>
+                <form method="POST" action="${pageContext.request.contextPath}/${endpoint}/balance" class="needs-validation" novalidate>
                     <div class="mb-3">
                         <label for="deposit-amount" class="form-label">Amount</label>
                         <div class="has-validation" >
@@ -22,7 +22,7 @@
     <div class="col rounded m-3 p-3 border">
         <div id="bank_account_withdraw" class="" data-bs-parent="#accordionExample">
             <div class="accordion-body">
-                <form method="POST" action="${pageContext.request.contextPath}/${endPoint}/balance" class="needs-validation" id="withdraw-form" novalidate>
+                <form method="POST" action="${pageContext.request.contextPath}/${endpoint}/balance" class="needs-validation" id="withdraw-form" novalidate>
                     <div class="mb-3">
                         <label for="withdraw-amount" class="form-label">Amount</label>
                         <div class="has-validation" >

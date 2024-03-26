@@ -1,7 +1,7 @@
 package com.campus.banking.service;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.Optional;
 
 import com.campus.banking.exception.NotFoundException;
 import com.campus.banking.model.BankAccount;
@@ -21,7 +21,7 @@ import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
-public abstract class AbstractAccountServiceImpl<T extends BankAccount> implements BankAccountService<T>{
+public abstract class AbstractAccountServiceImpl<T extends BankAccount> implements BankAccountService<T> {
 
     private final BankAccountDAO<T> dao;
 
@@ -29,6 +29,7 @@ public abstract class AbstractAccountServiceImpl<T extends BankAccount> implemen
 
     protected final int maxPageSize;
 
+    protected final int defaultPageSize;
 
     protected String getUsername(T account) {
         if (account.getAccountHolder() == null
@@ -43,7 +44,7 @@ public abstract class AbstractAccountServiceImpl<T extends BankAccount> implemen
     public double getAllowedWithdraw(@NotNull @Valid T account) {
         return account.getBalance();
     }
-    
+
     @Override
     public T getByAccountNumber(@NotNull @NotBlank String accountNumber) {
         return dao.findByAccountNumber(accountNumber)
@@ -51,13 +52,15 @@ public abstract class AbstractAccountServiceImpl<T extends BankAccount> implemen
     }
 
     @Override
-    public List<T> getByUsername(@NotNull @NotBlank String username) {
-        return dao.findByUsername(username);
+    public Page<T> getByUsername(@NotNull @NotBlank String username, @Positive int page, Optional<Integer> size) {
+        var pageSize = size.filter(i -> i <= maxPageSize).orElse(defaultPageSize);
+        return dao.findByUsername(username, page, pageSize);
     }
 
     @Override
-    public Page<T> getPage(@Positive int page) {
-        return dao.getAll(page, maxPageSize);
+    public Page<T> getPage(@Positive int page, Optional<Integer> size) {
+        var pageSize = size.filter(i -> i <= maxPageSize).orElse(defaultPageSize);
+        return dao.getAll(page, pageSize);
     }
 
     @Override

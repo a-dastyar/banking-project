@@ -1,5 +1,6 @@
 package com.campus.banking.service;
 
+import java.util.Optional;
 import java.util.Set;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -28,12 +29,16 @@ class UserServiceImpl implements UserService {
 
     private final int maxPageSize;
 
+    private final int defaultPageSize;
+
     @Inject
     public UserServiceImpl(UserDAO dao, HashService hashService,
-            @ConfigProperty(name = "app.pagination.max_size") int maxPageSize) {
+            @ConfigProperty(name = "app.pagination.max_size") int maxPageSize,
+            @ConfigProperty(name = "app.pagination.default_size") int defaultPageSize) {
         this.dao = dao;
         this.hashService = hashService;
         this.maxPageSize = maxPageSize;
+        this.defaultPageSize = defaultPageSize;
     }
 
     @Override
@@ -74,11 +79,10 @@ class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Page<User> getAll(@Positive int page) {
-        log.debug("GetAll for page[{}]", page);
-        return dao.getAll(page, maxPageSize);
+    public Page<User> getAll(@Positive int page, Optional<Integer> size) {
+        var pageSize = size.filter(i -> i <= maxPageSize).orElse(defaultPageSize);
+        return dao.getAll(page, pageSize);
     }
-
     @Override
     public void setupAdminAccount() {
         if (dao.countAll() == 0) {

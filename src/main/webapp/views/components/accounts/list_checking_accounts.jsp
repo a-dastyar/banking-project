@@ -1,5 +1,5 @@
 <%@ include file="/views/components/commons/imports.jsp" %>
-<c:if test="${checkingsList.size() > 0}">
+<c:if test="${checkings.list().size() > 0}">
     <table class="table border-dark">
         <thead>
             <tr>
@@ -13,7 +13,7 @@
             </tr>
         </thead>
         <tbody>
-            <c:forEach var="account" items="${checkingsList}">
+            <c:forEach var="account" items="${checkings.list()}">
                 <fmt:parseDate  value="${account.getCreatedAt()}"  type="both" pattern="yyyy-MM-dd'T'HH:mm:ss" var="parsedDate" parseLocale="fa_IR" />
                 <fmt:formatDate value="${parsedDate}" type="both" pattern="yyyy-MM-dd HH:mm:ss" var="date" />
                 <tr>
@@ -31,7 +31,12 @@
         </tbody>
     </table>
 </c:if>
-<c:if test="${checkingsList == null || checkingsList.size() == 0}">
+<c:if test="${isTypeParamRequired}">
+    <c:set var="typeParam" value="&account_type=CHECKING" scope="request" />
+</c:if>
+<c:set var="page" value="${checkings}"/>
+<%@ include file="/views/components/commons/pagination.jsp" %>
+<c:if test="${checkings.list() == null || checkings.list().size() == 0}">
     <div class="container-sm row text-center justify-content-center" role="alert">
         <div class="col-auto mt-4 mx-auto alert alert-dark">
             There is no checking account yet!

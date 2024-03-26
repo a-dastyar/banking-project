@@ -50,7 +50,7 @@ public interface UserService {
 
     void update(@NotNull @Valid User user);
 
-    Page<User> getAll(@Positive int page);
+    Page<User> getAll(@Positive int page, Optional<Integer> size);
 
     void setupAdminAccount();
 }

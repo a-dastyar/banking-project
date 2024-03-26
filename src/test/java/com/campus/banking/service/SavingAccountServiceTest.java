@@ -48,7 +48,7 @@ public class SavingAccountServiceTest extends AbstractAccountServiceTest<SavingA
 
     @BeforeEach
     void setup() {
-        service = new SavingAccountServiceImpl(dao, trxDao, generator, users, 10);
+        service = new SavingAccountServiceImpl(dao, trxDao, generator, users, 50, 10);
         super.service = service;
         super.dao = dao;
     }

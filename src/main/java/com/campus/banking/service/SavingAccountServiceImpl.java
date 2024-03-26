@@ -4,11 +4,11 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import com.campus.banking.exception.InvalidTransactionException;
 import com.campus.banking.exception.NotFoundException;
+import com.campus.banking.model.AccountType;
 import com.campus.banking.model.SavingAccount;
 import com.campus.banking.model.TransactionType;
 import com.campus.banking.persistence.SavingAccountDAO;
 import com.campus.banking.persistence.TransactionDAO;
-import com.campus.banking.service.AccountNumberGenerator.AccountType;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -30,8 +30,9 @@ class SavingAccountServiceImpl extends AbstractAccountServiceImpl<SavingAccount>
     @Inject
     public SavingAccountServiceImpl(SavingAccountDAO dao, TransactionDAO trxDao, AccountNumberGenerator generator,
             UserService users,
-            @ConfigProperty(name = "app.pagination.max_size") int maxPageSize) {
-        super(dao, trxDao, maxPageSize);
+            @ConfigProperty(name = "app.pagination.max_size") int maxPageSize,
+            @ConfigProperty(name = "app.pagination.default_size") int defaultPageSize)  {
+        super(dao, trxDao, maxPageSize, defaultPageSize);
         this.dao = dao;
         this.users = users;
         this.generator = generator;

@@ -10,25 +10,25 @@ public class ServletUtilsTest {
 
     @Test
     void getPageNumber_withNull_shouldReturnOne() {
-        var val = ServletUtils.getPageNumber(null);
+        var val = ServletUtils.getPositiveInt(null);
         assertThat(val).isEqualTo(1);
     }
 
     @Test
     void getPageNumber_withZero_shouldFail() {
-        assertThatThrownBy(() -> ServletUtils.getPageNumber("0"))
+        assertThatThrownBy(() -> ServletUtils.getPositiveInt("0"))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void getPageNumber_withNegativeNumber_shouldFail() {
-        assertThatThrownBy(() -> ServletUtils.getPageNumber("-1"))
+        assertThatThrownBy(() -> ServletUtils.getPositiveInt("-1"))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void getPageNumber_withPositive_shouldReturnOne() {
-        var val = ServletUtils.getPageNumber("2");
+        var val = ServletUtils.getPositiveInt("2");
         assertThat(val).isEqualTo(2);
     }
 

@@ -1,6 +1,6 @@
 <%@ include file="/views/components/commons/imports.jsp" %>
 <div class="container-sm w-75 mt-3 p-3 border rounded">
-    <form method="POST" action="${pageContext.request.contextPath}/users" class="needs-validation" novalidate>
+    <form method="POST" action="${pageContext.request.contextPath}/${endpoint}" class="needs-validation" novalidate>
         <div class="mb-3 row offset-sm-2">
             <label class="col-form-label col-sm-3" for="username">Username</label>
             <div class="col-sm-6" >

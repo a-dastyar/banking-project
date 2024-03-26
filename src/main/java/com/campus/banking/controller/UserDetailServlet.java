@@ -6,12 +6,14 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.campus.banking.dto.UserDetailDTO;
+import com.campus.banking.model.AccountType;
 import com.campus.banking.model.BankAccount;
 import com.campus.banking.model.Role;
 import com.campus.banking.service.BankAccountService;
 import com.campus.banking.service.CheckingAccountService;
 import com.campus.banking.service.SavingAccountService;
 import com.campus.banking.service.UserService;
+import com.campus.banking.util.ServletUtils;
 
 import jakarta.inject.Inject;
 import jakarta.servlet.ServletException;
@@ -52,10 +54,19 @@ public class UserDetailServlet extends HttpServlet {
         var username = Optional.ofNullable(req.getParameter("username"))
                 .orElseThrow(IllegalArgumentException::new);
 
+        var page = ServletUtils.getPositiveIntWithDefault(req.getParameter("page"), "1")
+                .orElseThrow(IllegalArgumentException::new);
+        var accountType = ServletUtils.getAccountType(req.getParameter("account_type"));
+        var size = ServletUtils.getPositiveInt(req.getParameter("size"));
+
+        var accountPage = accountType.filter(AccountType.BANK::equals).map(i -> page).orElse(1);
+        var checkingPage = accountType.filter(AccountType.CHECKING::equals).map(i -> page).orElse(1);
+        var savingPage = accountType.filter(AccountType.SAVING::equals).map(i -> page).orElse(1);
+
         var user = service.getByUsername(username);
-        var bankAccounts = account.getByUsername(username);
-        var checkingAccounts = checking.getByUsername(username);
-        var savingAccounts = saving.getByUsername(username);
+        var bankAccounts = account.getByUsername(username, accountPage, size);
+        var checkingAccounts = checking.getByUsername(username, checkingPage, size);
+        var savingAccounts = saving.getByUsername(username, savingPage, size);
 
         var userRoles = user.getRoles().stream().collect(Collectors.toMap(Role::toString, r -> true));
 
@@ -66,6 +77,7 @@ public class UserDetailServlet extends HttpServlet {
                 .savingAccounts(savingAccounts)
                 .userRoles(userRoles)
                 .availableRoles(Arrays.asList(Role.values()))
+                .activeTab(accountType.map(AccountType::toString).orElse(null))
                 .build();
 
         req.setAttribute("userDetails", userDetails);

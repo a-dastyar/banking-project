@@ -9,7 +9,7 @@
         </tr>
     </thead>
     <tbody>
-        <c:forEach var="user" items="${usersList}">
+        <c:forEach var="user" items="${users.list()}">
             <fmt:parseDate  value="${user.getCreatedAt()}"  type="both" pattern="yyyy-MM-dd'T'HH:mm:ss" var="parsedDate" parseLocale="fa_IR" />
             <fmt:formatDate value="${parsedDate}" type="both" pattern="yyyy-MM-dd HH:mm:ss" var="date" />
             <tr>
@@ -23,3 +23,6 @@
         </c:forEach>
     </tbody>
 </table>
+<c:set var="page" value="${users}"/>
+<c:set var="pageParamName" value="page"/>
+<%@ include file="/views/components/commons/pagination.jsp" %>

@@ -20,8 +20,8 @@
             <c:set var="activePanel" value="2" scope="request"/>
         </c:if>
 
-        <c:set var="endPoint" value="bank-accounts" scope="request"/>
-        <c:set var="accountsList" value="${accounts.list()}" scope="request"/>
+        <c:set var="endpoint" value="bank-accounts" scope="request"/>
+        <c:set var="accounts" value="${accounts}" scope="request"/>
         <%
             pageContext.setAttribute("panelItems",new String[]{
                 "List accounts",

@@ -42,13 +42,15 @@ public class BankAccountServiceTest extends AbstractAccountServiceTest<BankAccou
     @Mock
     private TransactionDAO trxDao;
 
-    private int maxPageSize = 10;
+    private int maxPageSize = 50;
+
+    private int defaultPagesize = 10;
 
     private BankAccountService<BankAccount> service;
 
     @BeforeEach
     void setup() {
-        service = new BankAccountServiceImpl(dao, trxDao, generator, users, maxPageSize);
+        service = new BankAccountServiceImpl(dao, trxDao, generator, users, maxPageSize, defaultPagesize);
         super.service = service;
         super.dao = dao;
     }

@@ -15,7 +15,7 @@
         <c:set var="urls" value="${['saving-accounts','details']}" scope="request" />
         <%@ include file="/views/components/commons/header.jsp" %>
 
-        <c:set var="endPoint" value="saving-accounts" scope="request"/>
+        <c:set var="endpoint" value="saving-accounts" scope="request"/>
         <c:set var="account" value="${accountDetails.account()}" scope="request"/>
         <c:set var="maxWithdraw" value="${accountDetails.maxWithdraw()}" scope="request"/>
         <c:set var="minDeposit" value="${accountDetails.minDeposit()}" scope="request"/>

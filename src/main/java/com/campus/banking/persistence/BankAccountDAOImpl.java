@@ -36,14 +36,39 @@ class BankAccountDAOImpl extends AbstractDAO<BankAccount, Long> implements BankA
     }
 
     @Override
-    public List<BankAccount> findByUsername(String username) {
+    public long countByUsername(String username) {
+        return withEntityManager(em->{
+            var query="""
+                    SELECT COUNT(*) 
+                      FROM BankAccount account 
+                      JOIN account.accountHolder user 
+                     WHERE user.username = :username 
+                       AND TYPE(account) = :type
+                    """;
+            var typedQuery = em.createQuery(query, Long.class);
+            typedQuery.setParameter("username", username);
+            typedQuery.setParameter("type", getType());
+            return typedQuery.getSingleResult();
+        });
+    }
+
+    @Override
+    public Page<BankAccount> findByUsername(String username, int page, int size) {
         return withEntityManager(em -> {
-            var query = em.createQuery(
-                    "FROM BankAccount account JOIN account.accountHolder user where user.username = :username and TYPE(account) = :type",
-                    BankAccount.class);
-            query.setParameter("username", username);
-            query.setParameter("type", getType());
-            return query.getResultList();
+            var query = """
+                    FROM BankAccount account
+                    JOIN account.accountHolder user
+                   WHERE user.username = :username
+                     AND TYPE(account) = :type
+                    """;
+            var typedQuery = em.createQuery(query, BankAccount.class);
+            typedQuery.setFirstResult((page - 1) * size);
+            typedQuery.setMaxResults(size);
+            typedQuery.setParameter("username", username);
+            typedQuery.setParameter("type", getType());
+            List<BankAccount> list = typedQuery.getResultList();
+            long countAll = countByUsername(username);
+            return new Page<>(list, countAll, page, size);
         });
     }
 
@@ -55,11 +80,10 @@ class BankAccountDAOImpl extends AbstractDAO<BankAccount, Long> implements BankA
             Root<BankAccount> select = query.from(getType());
             query.select(builder.count(select));
             query.where(builder.and(
-                builder.or(
-                    builder.equal(select.get("id"), entity.getId()),
-                    builder.equal(select.get("accountNumber"), entity.getAccountNumber())),
-                    builder.equal(select.type(), getType()))
-            );
+                    builder.or(
+                            builder.equal(select.get("id"), entity.getId()),
+                            builder.equal(select.get("accountNumber"), entity.getAccountNumber())),
+                    builder.equal(select.type(), getType())));
             return em.createQuery(query).getSingleResult() > 0;
         });
     }

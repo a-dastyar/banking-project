@@ -3,11 +3,11 @@ package com.campus.banking.service;
 import com.campus.banking.exception.InsufficientFundsException;
 import com.campus.banking.exception.LessThanMinimumTransactionException;
 import com.campus.banking.exception.NotFoundException;
+import com.campus.banking.model.AccountType;
 import com.campus.banking.model.CheckingAccount;
 import com.campus.banking.model.TransactionType;
 import com.campus.banking.persistence.BankAccountDAO;
 import com.campus.banking.persistence.TransactionDAO;
-import com.campus.banking.service.AccountNumberGenerator.AccountType;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
@@ -33,8 +33,9 @@ class CheckingAccountServiceImpl extends AbstractAccountServiceImpl<CheckingAcco
     @Inject
     public CheckingAccountServiceImpl(BankAccountDAO<CheckingAccount> dao, TransactionDAO trxDao,
             AccountNumberGenerator generator, UserService users,
-            @ConfigProperty(name = "app.pagination.max_size") int maxPageSize) {
-        super(dao, trxDao, maxPageSize);
+            @ConfigProperty(name = "app.pagination.max_size") int maxPageSize,
+            @ConfigProperty(name = "app.pagination.default_size") int defaultPageSize) {
+        super(dao, trxDao, maxPageSize, defaultPageSize);
         this.dao = dao;
         this.users = users;
         this.generator = generator;

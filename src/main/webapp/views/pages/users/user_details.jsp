@@ -10,17 +10,34 @@
 
     <body>
         <div class="background blurred"></div>
+        <c:choose>
+            <c:when test="${userDetails.activeTab()=='BANK'}">
+                <c:set var="active" value="2" />
+            </c:when>
+            <c:when test="${userDetails.activeTab()=='SAVING'}">
+                <c:set var="active" value="3" />
+            </c:when>
+            <c:when test="${userDetails.activeTab()=='CHECKING'}">
+                <c:set var="active" value="4" />
+            </c:when>
+            <c:otherwise>
+                <c:set var="active" value="0" />
+            </c:otherwise>
+        </c:choose>
+        <c:set var="activePanel" value="${active}" scope="request"/>
 
         <c:set var="menu" value="users" scope="request"/>
         <c:set var="paths" value="${['Users','Details']}" scope="request" />
         <c:set var="urls" value="${['users','details']}" scope="request" />
         <%@ include file="/views/components/commons/header.jsp" %>
 
-        <c:set var="endPoint" value="users" scope="request"/>
+        <c:set var="endpoint" value="users/details" scope="request"/>
         <c:set var="user" value="${userDetails.user()}" scope="request"/>
-        <c:set var="accountsList" value="${userDetails.bankAccounts()}" scope="request"/>
-        <c:set var="savingsList" value="${userDetails.savingAccounts()}" scope="request"/>
-        <c:set var="checkingsList" value="${userDetails.checkingAccounts()}" scope="request"/>
+        <c:set var="accounts" value="${userDetails.bankAccounts()}" scope="request"/>
+        <c:set var="savings" value="${userDetails.savingAccounts()}" scope="request"/>
+        <c:set var="checkings" value="${userDetails.checkingAccounts()}" scope="request"/>
+        <c:set var="additionalParam" value="&username=${userDetails.user().getUsername()}" scope="request"/>
+        <c:set var="isTypeParamRequired" value="true" scope="request"/>
         <%
             pageContext.setAttribute("panelItems",new String[]{
                 "User info",

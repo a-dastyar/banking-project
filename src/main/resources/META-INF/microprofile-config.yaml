@@ -13,6 +13,7 @@ datasource:
 app:
     pagination:
         max_size: 50
+        default_size: 17
     path: /banking
 server:
     host: localhost

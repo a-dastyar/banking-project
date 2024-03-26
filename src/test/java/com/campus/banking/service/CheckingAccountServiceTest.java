@@ -46,7 +46,7 @@ public class CheckingAccountServiceTest extends AbstractAccountServiceTest<Check
 
     @BeforeEach
     void setup() {
-        service = new CheckingAccountServiceImpl(dao, trxDao, generator, users, 10);
+        service = new CheckingAccountServiceImpl(dao, trxDao, generator, users, 50,10);
         super.service = service;
         super.dao = dao;
     }

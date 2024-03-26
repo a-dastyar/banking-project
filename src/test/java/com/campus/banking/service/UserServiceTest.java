@@ -43,7 +43,7 @@ public class UserServiceTest {
 
     @BeforeEach
     void setup() {
-        service = new UserServiceImpl(dao, hash, 10);
+        service = new UserServiceImpl(dao, hash, 50, 10);
     }
 
     @SuppressWarnings("unchecked")
