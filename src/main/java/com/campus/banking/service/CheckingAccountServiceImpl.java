@@ -7,6 +7,7 @@ import com.campus.banking.model.CheckingAccount;
 import com.campus.banking.model.TransactionType;
 import com.campus.banking.persistence.BankAccountDAO;
 import com.campus.banking.persistence.TransactionDAO;
+import com.campus.banking.service.AccountNumberGenerator.AccountType;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
@@ -51,7 +52,7 @@ class CheckingAccountServiceImpl extends AbstractAccountServiceImpl<CheckingAcco
 
             account.setBalance(amount - CheckingAccount.TRANSACTION_FEE);
             account.setId(null);
-            account.setAccountNumber(generator.transactionalGenerate(em));
+            account.setAccountNumber(generator.transactionalGenerate(em, AccountType.CHECKING));
             dao.transactionalPersist(em, account);
             insertTransaction(em, account, amount, TransactionType.DEPOSIT);
             insertTransaction(em, account, CheckingAccount.TRANSACTION_FEE, TransactionType.TRANSACTION_FEE);

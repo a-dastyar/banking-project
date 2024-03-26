@@ -8,6 +8,7 @@ import com.campus.banking.model.SavingAccount;
 import com.campus.banking.model.TransactionType;
 import com.campus.banking.persistence.SavingAccountDAO;
 import com.campus.banking.persistence.TransactionDAO;
+import com.campus.banking.service.AccountNumberGenerator.AccountType;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -43,7 +44,7 @@ class SavingAccountServiceImpl extends AbstractAccountServiceImpl<SavingAccount>
         dao.inTransaction(em -> {
             account.setAccountHolder(user);
             account.setId(null);
-            account.setAccountNumber(generator.transactionalGenerate(em));
+            account.setAccountNumber(generator.transactionalGenerate(em, AccountType.SAVING));
             dao.transactionalPersist(em, account);
             if (account.getBalance() > 0.0d) {
                 insertTransaction(em, account, account.getBalance(), TransactionType.DEPOSIT);
