@@ -471,8 +471,8 @@ public class SavingAccountDAOIT extends AbstractDatabaseIT {
                 .balance(10).build();
         dao.persist(account);
         dao.persist(secondAccount);
-        var result = dao.findByUsername(user.getUsername());
-        assertThat(result.size()).isEqualTo(1);
+        var result = dao.findByUsername(user.getUsername(), 1, 50);
+        assertThat(result.list().size()).isEqualTo(1);
     }
 
     @Test
