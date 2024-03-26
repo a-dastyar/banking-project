@@ -3,6 +3,7 @@ package com.campus.banking.service;
 import java.time.LocalDate;
 
 import com.campus.banking.model.AccountNumberSequence;
+import com.campus.banking.model.AccountType;
 import com.campus.banking.persistence.AccountNumberSequenceDAO;
 
 import jakarta.enterprise.context.ApplicationScoped;
