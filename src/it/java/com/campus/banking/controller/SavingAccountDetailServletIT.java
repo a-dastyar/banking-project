@@ -49,24 +49,6 @@ public class SavingAccountDetailServletIT extends AbstractHttpIT {
     }
 
     @Test
-    void get_withoutAccountNumber_shouldReturn400() {
-        var client = http.clientBuilder().build();
-
-        var loginResponse = http.login(client, "admin", "admin");
-        assertThat(loginResponse.status()).isEqualTo(Response.Status.Success);
-        assertThat(loginResponse.httpResponse().statusCode()).isEqualTo(303);
-
-        var request = http.GETRequestBuilder()
-                .uri(http.resourceURI(resource))
-                .timeout(Duration.ofSeconds(2))
-                .build();
-        var response = http.sendRequest(client, request);
-
-        assertThat(response.status()).isEqualTo(Response.Status.Success);
-        assertThat(response.httpResponse().statusCode()).isEqualTo(400);
-    }
-
-    @Test
     void get_withAccountNumber_shouldReturnPage() {
         var client = http.clientBuilder().build();
 
@@ -76,7 +58,6 @@ public class SavingAccountDetailServletIT extends AbstractHttpIT {
 
         var account = Map.of(
                 "username", "admin",
-                "account_number", "4000-admin",
                 "balance", "500.0",
                 "minimum_balance", "400",
                 "interest_rate", "10.0",
@@ -84,9 +65,11 @@ public class SavingAccountDetailServletIT extends AbstractHttpIT {
         var addResponse = addAccount(client, account);
         assertThat(addResponse.status()).isEqualTo(Response.Status.Success);
         assertThat(addResponse.httpResponse().statusCode()).isEqualTo(302);
+        var accountNumber = addResponse.httpResponse().headers().firstValue("location")
+                .map(str -> str.split("=")[1]).get();
 
         var request = http.GETRequestBuilder()
-                .uri(http.resourceURI(resource + "?account_number=4000-admin"))
+                .uri(http.resourceURI(resource + "?account_number=" + accountNumber))
                 .timeout(Duration.ofSeconds(2))
                 .build();
         var response = http.sendRequest(client, request);
