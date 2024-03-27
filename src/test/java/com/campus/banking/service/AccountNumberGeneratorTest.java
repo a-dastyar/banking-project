@@ -5,6 +5,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.function.Consumer;
@@ -53,9 +56,9 @@ public class AccountNumberGeneratorTest {
                 .build();
         when(dao.findForUpdate(any())).thenReturn(sequence);
         doAnswer(this::executeConsumer).when(dao).inTransaction(any());
-        var list= new ArrayList<String>();
+        var list = new ArrayList<String>();
         dao.inTransaction(em -> list.add(service.transactionalGenerate(em, AccountType.BANK)));
-        assertThat(list.getFirst()).isEqualTo(LocalDate.now().getYear()+"00100000001");
+        assertThat(list.getFirst()).isEqualTo(LocalDate.now().getYear() + "00100000001");
     }
 
     @Test
@@ -66,9 +69,9 @@ public class AccountNumberGeneratorTest {
                 .build();
         when(dao.findForUpdate(any())).thenReturn(sequence);
         doAnswer(this::executeConsumer).when(dao).inTransaction(any());
-        var list= new ArrayList<String>();
+        var list = new ArrayList<String>();
         dao.inTransaction(em -> list.add(service.transactionalGenerate(em, AccountType.SAVING)));
-        assertThat(list.getFirst()).isEqualTo(LocalDate.now().getYear()+"00200000001");
+        assertThat(list.getFirst()).isEqualTo(LocalDate.now().getYear() + "00200000001");
     }
 
     @Test
@@ -79,9 +82,9 @@ public class AccountNumberGeneratorTest {
                 .build();
         when(dao.findForUpdate(any())).thenReturn(sequence);
         doAnswer(this::executeConsumer).when(dao).inTransaction(any());
-        var list= new ArrayList<String>();
+        var list = new ArrayList<String>();
         dao.inTransaction(em -> list.add(service.transactionalGenerate(em, AccountType.CHECKING)));
-        assertThat(list.getFirst()).isEqualTo(LocalDate.now().getYear()+"00300000001");
+        assertThat(list.getFirst()).isEqualTo(LocalDate.now().getYear() + "00300000001");
     }
 
     @Test
@@ -92,9 +95,9 @@ public class AccountNumberGeneratorTest {
                 .build();
         when(dao.findForUpdate(any())).thenReturn(sequence);
         doAnswer(this::executeConsumer).when(dao).inTransaction(any());
-        var list= new ArrayList<String>();
+        var list = new ArrayList<String>();
         dao.inTransaction(em -> list.add(service.transactionalGenerate(em, AccountType.BANK)));
-        assertThat(list.getFirst()).isEqualTo(LocalDate.now().getYear()+"00100000556");
+        assertThat(list.getFirst()).isEqualTo(LocalDate.now().getYear() + "00100000556");
     }
 
     @Test
@@ -105,9 +108,22 @@ public class AccountNumberGeneratorTest {
                 .build();
         when(dao.findForUpdate(any())).thenReturn(sequence);
         doAnswer(this::executeConsumer).when(dao).inTransaction(any());
-        var list= new ArrayList<String>();
+        var list = new ArrayList<String>();
         dao.inTransaction(em -> list.add(service.transactionalGenerate(em, AccountType.BANK)));
-        assertThat(list.getFirst()).isEqualTo(LocalDate.now().getYear()+"00100000001");
+        assertThat(list.getFirst()).isEqualTo(LocalDate.now().getYear() + "00100000001");
     }
 
+    @Test
+    void setup_withNoSeq_shouldInsert() {
+        when(dao.exists()).thenReturn(false);
+        service.setupNumberGenerator();
+        verify(dao, times(1)).persist(any());
+    }
+
+    @Test
+    void setup_withSeq_shouldInsert() {
+        when(dao.exists()).thenReturn(true);
+        service.setupNumberGenerator();
+        verify(dao, never()).persist(any());
+    }
 }
