@@ -1,8 +1,10 @@
 package com.campus.banking.persistence;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.util.List;
+import java.util.stream.Stream;
+import java.util.stream.IntStream;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import com.campus.banking.AbstractDatabaseIT;
 import com.campus.banking.model.BankAccount;
 import com.campus.banking.model.Transaction;
+import com.campus.banking.model.TransactionType;
 import com.campus.banking.model.User;
 
 import jakarta.persistence.EntityManager;
@@ -50,43 +53,73 @@ public class TransactionDAOIT extends AbstractDatabaseIT {
     }
 
     @Test
-    void persist_withValidAccount_shouldSave() {
-        var trx = Transaction.builder()
-                .account(account)
-                .amount(100)
-                .build();
-        dao.persist(trx);
-        var found = dao.find(trx.getId());
-        assertThat(found.get().getAmount()).isEqualTo(trx.getAmount());
+    void transactionalPersist_withSuccessfulTransaction_shouldSave() {
+        var trx = generateTransactions().findFirst().get();
+        dao.inTransaction(em -> dao.transactionalPersist(em, trx));
+        assertThat(trx.getId()).isNotNull();
     }
 
     @Test
-    void persistList_withValidAccount_shouldSave() {
-        var trx = Transaction.builder()
-                .account(account)
-                .amount(100)
-                .build();
-        var list = List.of(
-                trx,
-                trx.withAmount(200),
-                trx.withAmount(300),
-                trx.withAmount(400));
-        dao.persist(list);
-        var sum = dao.getAll().stream().mapToDouble(Transaction::getAmount).sum();
-        assertThat(sum).isEqualTo(1000.0);
+    void findByOrdered_withOrderByAmountASC_shouldReturnPage() {
+        var accounts = generateTransactions()
+                .peek(acc -> acc.setAmount(10.0))
+                .limit(5)
+                .toList();
+        accounts.getLast().setAmount(15.0);
+        dao.inTransaction(em->accounts.forEach(em::persist));
+        var page = dao.findByOrdered("amount", 10.0, 1, 2,"date",Order.ASC);
+        assertThat(page.total()).isEqualTo(4);
+        assertThat(page.list().size()).isEqualTo(2);
+        assertThat(page.list().getFirst().getDate()).isEqualTo(accounts.getFirst().getDate());
     }
 
     @Test
-    void exists_withExisting_shouldReturnTrue() {
-        var trx = Transaction.builder()
-                .account(account)
-                .amount(100)
-                .build();
-        var found = dao.exists(trx);
-        assertThat(found).isFalse();
-        dao.persist(trx);
-        found = dao.exists(trx);
-        assertThat(found).isTrue();
+    void findByOrdered_withOrderByAmountDESC_shouldReturnPage() {
+        var accounts = generateTransactions()
+                .peek(acc -> acc.setAmount(10.0))
+                .limit(5)
+                .toList();
+        accounts.getLast().setAmount(15.0);
+        dao.inTransaction(em->accounts.forEach(em::persist));
+        var page = dao.findByOrdered("amount", 10.0, 1, 2,"date",Order.DESC);
+        assertThat(page.total()).isEqualTo(4);
+        assertThat(page.list().size()).isEqualTo(2);
+        assertThat(page.list().getFirst().getDate()).isEqualTo(accounts.get(3).getDate());
+    }
 
+    @Test
+    void countBy_withMultipleTransactions_shouldReturnCount() {
+        var accounts = generateTransactions()
+                .peek(acc -> acc.setAmount(10.0))
+                .limit(5)
+                .toList();
+        accounts.getLast().setAmount(15.0);
+        dao.inTransaction(em->accounts.forEach(em::persist));
+        var page = dao.countBy("amount", 10.0);
+        assertThat(page).isEqualTo(4);
+    }
+
+    @Test
+    void inTransaction_withException_shouldRollBack() {
+        var account = generateTransactions().findFirst().get();
+        assertThatThrownBy(() -> {
+            dao.inTransaction(em -> {
+                em.persist(account);
+                throw new RuntimeException();
+            });
+        }).isInstanceOf(RuntimeException.class);
+    }
+
+    protected Stream<Transaction> generateTransactions() {
+        return IntStream.range(0, 1_000_000)
+                .mapToObj(this::createAccount);
+    }
+
+    private Transaction createAccount(int i) {
+        return Transaction.builder()
+                .account(account)
+                .amount(i * 10 + 400)
+                .type(TransactionType.DEPOSIT)
+                .build();
     }
 }
