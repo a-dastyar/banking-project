@@ -1,5 +1,8 @@
 package com.campus.banking.persistence;
 
+import java.util.function.Consumer;
+import java.util.function.Function;
+
 import com.campus.banking.model.AccountNumberSequence;
 
 import jakarta.enterprise.context.Dependent;
@@ -46,6 +49,27 @@ class AccountNumberSequenceDAOImpl implements AccountNumberSequenceDAO {
     public boolean exists() {
         var query = em.createQuery("SELECT COUNT(*) FROM AccountNumberSequence", Long.class);
         return query.getSingleResult() > 0;
+    }
+
+
+    @Override
+    public void inTransaction(Consumer<EntityManager> action) {
+        withEntityManager(em -> {
+            var trx = em.getTransaction();
+            try {
+                trx.begin();
+                action.accept(em);
+                trx.commit();
+            } catch (RuntimeException e) {
+                trx.rollback();
+                throw e;
+            }
+            return null;
+        });
+    }   
+    
+    private <U> U withEntityManager(Function<EntityManager, U> action) {
+        return action.apply(em);
     }
 
 }
