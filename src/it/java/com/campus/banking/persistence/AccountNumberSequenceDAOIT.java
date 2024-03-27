@@ -100,6 +100,13 @@ public class AccountNumberSequenceDAOIT extends AbstractDatabaseIT {
     }
 
     @Test
+    void exists_withNoSequence_shouldUpdate() {
+        var exists = dao.exists();
+
+        assertThat(exists).isFalse();
+    }
+
+    @Test
     void inTransaction_withException_shouldRollBack() {
         var seq = AccountNumberSequence.builder()
                 .sequence(0L)
