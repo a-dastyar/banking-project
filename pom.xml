@@ -293,7 +293,7 @@
                                 ${project.build.directory}/jacoco-output/jacoco-unit-tests.exec
                             </dataFile>
                             <outputDirectory>
-                                ${project.basedir}/coverage/unit-test-report
+                                ${project.build.directory}/jacoco-report/unit-test-report
                             </outputDirectory>
                         </configuration>
                     </execution>
@@ -321,7 +321,7 @@
                                 ${project.build.directory}/jacoco-output/jacoco-integration-tests.exec
                             </dataFile>
                             <outputDirectory>
-                                ${project.basedir}/coverage/integration-test-report
+                                ${project.build.directory}/jacoco-report/integration-test-report
                             </outputDirectory>
                         </configuration>
                     </execution>
@@ -352,7 +352,7 @@
                         <configuration>
                             <dataFile>${project.build.directory}/jacoco-output/merged.exec</dataFile>
                             <outputDirectory>
-                                ${project.basedir}/coverage/full-test-report
+                                ${project.build.directory}/jacoco-report/full-test-report
                             </outputDirectory>
                         </configuration>
                     </execution>
