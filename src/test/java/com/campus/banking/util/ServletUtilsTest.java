@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.Test;
 
+import com.campus.banking.model.AccountType;
+
 public class ServletUtilsTest {
 
     @Test
@@ -58,5 +60,24 @@ public class ServletUtilsTest {
         var val = ServletUtils.getTransactionType("WITHDRAW");
         assertThat(val).isEqualTo(ServletUtils.TransactionType.WITHDRAW);
     }
+
+    @Test
+    void getAccountType_withNull_shouldReturnEmpty() {
+        var result = ServletUtils.getAccountType(null);
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void getAccountType_withInvalidType_shouldReturnEmpty() {
+        var result = ServletUtils.getAccountType("Invalid");
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void getAccountType_withValidType_shouldReturnType() {
+        var val = ServletUtils.getAccountType("BANK").get();
+        assertThat(val).isEqualTo(AccountType.BANK);
+    }
+
 
 }
