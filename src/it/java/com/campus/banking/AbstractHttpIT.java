@@ -10,7 +10,7 @@ import com.campus.banking.util.HttpUtils;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class AbstractHttpIT extends AbstractIT{
+public abstract class AbstractHttpIT extends AbstractIT{
 
     private  ServerManager server = new ServerManager();
 
