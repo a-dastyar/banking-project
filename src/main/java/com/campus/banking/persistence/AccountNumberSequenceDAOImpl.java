@@ -17,15 +17,7 @@ class AccountNumberSequenceDAOImpl implements AccountNumberSequenceDAO {
 
     @Override
     public void persist(AccountNumberSequence accountNumberSequence) {
-        var trx = em.getTransaction();
-        try {
-            trx.begin();
-            em.persist(accountNumberSequence);
-            trx.commit();
-        } catch (RuntimeException e) {
-            trx.rollback();
-            throw e;
-        }
+        inTransaction(em -> em.persist(accountNumberSequence));
     }
 
     @Inject
@@ -51,7 +43,6 @@ class AccountNumberSequenceDAOImpl implements AccountNumberSequenceDAO {
         return query.getSingleResult() > 0;
     }
 
-
     @Override
     public void inTransaction(Consumer<EntityManager> action) {
         withEntityManager(em -> {
@@ -66,8 +57,8 @@ class AccountNumberSequenceDAOImpl implements AccountNumberSequenceDAO {
             }
             return null;
         });
-    }   
-    
+    }
+
     private <U> U withEntityManager(Function<EntityManager, U> action) {
         return action.apply(em);
     }
