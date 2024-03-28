@@ -20,7 +20,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.campus.banking.exception.InsufficientFundsException;
+import com.campus.banking.exception.IllegalBalanceStateException;
+import com.campus.banking.exception.InvalidTransactionException;
 import com.campus.banking.exception.LessThanMinimumTransactionException;
 import com.campus.banking.model.CheckingAccount;
 import com.campus.banking.model.User;
@@ -70,7 +71,7 @@ public class CheckingAccountServiceTest extends AbstractAccountServiceTest<Check
                 .balance(500.0)
                 .debt(100.0)
                 .build();
-        assertThatThrownBy(() -> service.add(account)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> service.add(account)).isInstanceOf(IllegalBalanceStateException.class);
     }
 
     @Test
@@ -81,7 +82,7 @@ public class CheckingAccountServiceTest extends AbstractAccountServiceTest<Check
                 .debt(1000.0)
                 .overdraftLimit(500.0)
                 .build();
-        assertThatThrownBy(() -> service.add(account)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> service.add(account)).isInstanceOf(IllegalBalanceStateException.class);
     }
 
     @Test
@@ -125,7 +126,7 @@ public class CheckingAccountServiceTest extends AbstractAccountServiceTest<Check
         doAnswer(this::executeConsumer).when(dao).inTransaction(any());
         when(dao.findByAccountNumberForUpdate(any(), any())).thenReturn(Optional.of(account));
         assertThatThrownBy(() -> service.withdraw(account.getAccountNumber(), 200.0))
-                .isInstanceOf(InsufficientFundsException.class);
+                .isInstanceOf(InvalidTransactionException.class);
     }
 
     @Test
@@ -137,7 +138,7 @@ public class CheckingAccountServiceTest extends AbstractAccountServiceTest<Check
         doAnswer(this::executeConsumer).when(dao).inTransaction(any());
         when(dao.findByAccountNumberForUpdate(any(), any())).thenReturn(Optional.of(account));
         assertThatThrownBy(() -> service.withdraw(account.getAccountNumber(), 1000.0))
-                .isInstanceOf(InsufficientFundsException.class);
+                .isInstanceOf(InvalidTransactionException.class);
     }
 
     @Test
@@ -149,7 +150,7 @@ public class CheckingAccountServiceTest extends AbstractAccountServiceTest<Check
         doAnswer(this::executeConsumer).when(dao).inTransaction(any());
         when(dao.findByAccountNumberForUpdate(any(), any())).thenReturn(Optional.of(account));
         assertThatThrownBy(() -> service.withdraw(account.getAccountNumber(), 1000.0))
-                .isInstanceOf(InsufficientFundsException.class);
+                .isInstanceOf(InvalidTransactionException.class);
     }
 
     @Test
@@ -161,7 +162,7 @@ public class CheckingAccountServiceTest extends AbstractAccountServiceTest<Check
         doAnswer(this::executeConsumer).when(dao).inTransaction(any());
         when(dao.findByAccountNumberForUpdate(any(), any())).thenReturn(Optional.of(account));
         assertThatThrownBy(() -> service.withdraw(account.getAccountNumber(), 2000.0))
-                .isInstanceOf(InsufficientFundsException.class);
+                .isInstanceOf(InvalidTransactionException.class);
     }
 
     @Test
@@ -173,7 +174,7 @@ public class CheckingAccountServiceTest extends AbstractAccountServiceTest<Check
         doAnswer(this::executeConsumer).when(dao).inTransaction(any());
         when(dao.findByAccountNumberForUpdate(any(), any())).thenReturn(Optional.of(account));
         assertThatThrownBy(() -> service.withdraw(account.getAccountNumber(), 1000.0))
-                .isInstanceOf(InsufficientFundsException.class);
+                .isInstanceOf(InvalidTransactionException.class);
     }
 
     @Test
@@ -185,7 +186,7 @@ public class CheckingAccountServiceTest extends AbstractAccountServiceTest<Check
         doAnswer(this::executeConsumer).when(dao).inTransaction(any());
         when(dao.findByAccountNumberForUpdate(any(), any())).thenReturn(Optional.of(account));
         assertThatThrownBy(() -> service.withdraw(account.getAccountNumber(), 400.0))
-                .isInstanceOf(InsufficientFundsException.class);
+                .isInstanceOf(InvalidTransactionException.class);
     }
 
     @Test

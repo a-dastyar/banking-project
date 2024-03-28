@@ -21,7 +21,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.campus.banking.exception.InsufficientFundsException;
+import com.campus.banking.exception.InvalidTransactionException;
 import com.campus.banking.model.BankAccount;
 import com.campus.banking.model.User;
 import com.campus.banking.persistence.BankAccountDAO;
@@ -102,7 +102,7 @@ public class BankAccountServiceTest extends AbstractAccountServiceTest<BankAccou
         doAnswer(this::executeConsumer).when(dao).inTransaction(any());
         when(dao.findByAccountNumberForUpdate(any(), any())).thenReturn(Optional.of(account));
         assertThatThrownBy(() -> service.withdraw(account.getAccountNumber(), 11.0))
-                .isInstanceOf(InsufficientFundsException.class);
+                .isInstanceOf(InvalidTransactionException.class);
     }
 
     @Test

@@ -22,6 +22,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.campus.banking.exception.IllegalBalanceStateException;
 import com.campus.banking.exception.InvalidTransactionException;
 import com.campus.banking.model.InterestPeriod;
 import com.campus.banking.model.SavingAccount;
@@ -61,7 +62,7 @@ public class SavingAccountServiceTest extends AbstractAccountServiceTest<SavingA
                 .balance(100.0)
                 .minimumBalance(200.0)
                 .build();
-        assertThatThrownBy(() -> service.add(account)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> service.add(account)).isInstanceOf(IllegalBalanceStateException.class);
     }
 
     @Test

@@ -16,6 +16,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
 
+import com.campus.banking.exception.InvalidArgumentException;
 import com.campus.banking.model.BankAccount;
 import com.campus.banking.model.User;
 import com.campus.banking.persistence.BankAccountDAO;
@@ -49,21 +50,21 @@ public abstract class AbstractAccountServiceTest<T extends BankAccount> {
     void add_withNullUser_shouldFail() {
         var account = generate(1).findFirst().get();
         account.setAccountHolder(null);
-        assertThatThrownBy(() -> service.add((T) account)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> service.add((T) account)).isInstanceOf(InvalidArgumentException.class);
     }
 
     @Test
     void add_withNullUsername_shouldFail() {
         var account = generate(1).findFirst().get();
         account.setAccountHolder(User.builder().build());
-        assertThatThrownBy(() -> service.add(account)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> service.add(account)).isInstanceOf(InvalidArgumentException.class);
     }
 
     @Test
     void add_withBlankUsername_shouldFail() {
         var account = generate(1).findFirst().get();
         account.setAccountHolder(User.builder().username("").build());
-        assertThatThrownBy(() -> service.add(account)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> service.add(account)).isInstanceOf(InvalidArgumentException.class);
     }
 
     abstract Stream<T> generate(int count);

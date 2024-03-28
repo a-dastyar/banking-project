@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.Test;
 
+import com.campus.banking.exception.InvalidArgumentException;
 import com.campus.banking.model.AccountType;
 
 public class ServletUtilsTest {
@@ -40,19 +41,19 @@ public class ServletUtilsTest {
     @Test
     void getDoubleValue_withInvalidDouble_shouldReturnDouble() {
         assertThatThrownBy(() -> ServletUtils.getDoubleValue("test"))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(InvalidArgumentException.class);
     }
 
     @Test
     void getTransactionType_withNull_shouldFail() {
         assertThatThrownBy(() -> ServletUtils.getTransactionType(null))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(InvalidArgumentException.class);
     }
 
     @Test
     void getTransactionType_withInvalidType_shouldFail() {
         assertThatThrownBy(() -> ServletUtils.getTransactionType("Invalid"))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(InvalidArgumentException.class);
     }
 
     @Test
