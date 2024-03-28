@@ -252,7 +252,7 @@ public class CheckingAccountBalanceServletIT extends AbstractHttpIT {
 
         var balanceChange = Map.of(
                 "account_number", accountNumber,
-                "amount", "150.0",
+                "amount", "250.0",
                 "type", "DEPOSIT");
         var request = http.POSTRequestBuilder()
                 .uri(http.resourceURI(resource))
