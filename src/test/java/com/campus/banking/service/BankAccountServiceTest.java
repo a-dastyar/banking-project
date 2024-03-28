@@ -25,7 +25,6 @@ import com.campus.banking.exception.InvalidTransactionException;
 import com.campus.banking.model.BankAccount;
 import com.campus.banking.model.User;
 import com.campus.banking.persistence.BankAccountDAO;
-import com.campus.banking.persistence.TransactionDAO;
 
 @ExtendWith(MockitoExtension.class)
 public class BankAccountServiceTest extends AbstractAccountServiceTest<BankAccount> {
@@ -38,9 +37,6 @@ public class BankAccountServiceTest extends AbstractAccountServiceTest<BankAccou
 
     @Mock
     private AccountNumberGenerator generator;
-
-    @Mock
-    private TransactionDAO trxDao;
 
     private int maxPageSize = 50;
 

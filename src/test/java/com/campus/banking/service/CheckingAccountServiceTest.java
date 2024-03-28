@@ -26,7 +26,6 @@ import com.campus.banking.exception.LessThanMinimumTransactionException;
 import com.campus.banking.model.CheckingAccount;
 import com.campus.banking.model.User;
 import com.campus.banking.persistence.BankAccountDAO;
-import com.campus.banking.persistence.TransactionDAO;
 
 @ExtendWith(MockitoExtension.class)
 public class CheckingAccountServiceTest extends AbstractAccountServiceTest<CheckingAccount> {
@@ -39,9 +38,6 @@ public class CheckingAccountServiceTest extends AbstractAccountServiceTest<Check
 
     @Mock
     private AccountNumberGenerator generator;
-
-    @Mock
-    private TransactionDAO trxDao;
 
     private CheckingAccountService service;
 

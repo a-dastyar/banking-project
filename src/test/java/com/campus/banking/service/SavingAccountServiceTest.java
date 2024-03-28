@@ -28,7 +28,6 @@ import com.campus.banking.model.InterestPeriod;
 import com.campus.banking.model.SavingAccount;
 import com.campus.banking.model.User;
 import com.campus.banking.persistence.SavingAccountDAO;
-import com.campus.banking.persistence.TransactionDAO;
 
 @ExtendWith(MockitoExtension.class)
 public class SavingAccountServiceTest extends AbstractAccountServiceTest<SavingAccount> {
@@ -41,9 +40,6 @@ public class SavingAccountServiceTest extends AbstractAccountServiceTest<SavingA
 
     @Mock
     private AccountNumberGenerator generator;
-
-    @Mock
-    private TransactionDAO trxDao;
 
     private SavingAccountService service;
 
