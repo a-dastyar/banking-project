@@ -100,7 +100,6 @@ public class ErrorHandlerServlet extends HttpServlet {
                 .map(line->line.replace("<", "&lt"))
                 .map(line->line.replace(">", "&gt"))
                 .collect(Collectors.joining("\n"));
-        log.debug(stackTrace);
         var message = "%s\n%s".formatted(e.getMessage(), stackTrace);
         return message;
     }
