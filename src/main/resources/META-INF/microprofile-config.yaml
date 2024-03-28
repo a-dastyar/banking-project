@@ -9,8 +9,9 @@ datasource:
     schema:
         generation:
             strategy: drop-and-create
-    show_sql: true
 app:
+    mode:
+      debug: true
     pagination:
         max_size: 50
         default_size: 17
