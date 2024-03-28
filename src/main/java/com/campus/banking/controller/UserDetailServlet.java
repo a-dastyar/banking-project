@@ -6,6 +6,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.campus.banking.dto.UserDetailDTO;
+import com.campus.banking.exception.InvalidArgumentException;
+import com.campus.banking.exception.RequiredParamException;
 import com.campus.banking.model.AccountType;
 import com.campus.banking.model.BankAccount;
 import com.campus.banking.model.Role;
@@ -52,10 +54,10 @@ public class UserDetailServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         log.debug("GET");
         var username = Optional.ofNullable(req.getParameter("username"))
-                .orElseThrow(IllegalArgumentException::new);
+                .orElseThrow(() -> RequiredParamException.getException("username"));
 
         var page = ServletUtils.getPositiveIntWithDefault(req.getParameter("page"), "1")
-                .orElseThrow(IllegalArgumentException::new);
+                .orElseThrow(() -> InvalidArgumentException.NON_POSITIVE_INTEGER);
         var accountType = ServletUtils.getAccountType(req.getParameter("account_type"));
         var size = ServletUtils.getPositiveInt(req.getParameter("size"));
 

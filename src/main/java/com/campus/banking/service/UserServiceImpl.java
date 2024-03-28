@@ -45,7 +45,7 @@ class UserServiceImpl implements UserService {
     public void add(@NotNull @Valid User user) {
         if (dao.exists(user)) {
             log.debug("User already exists!");
-            throw new DuplicatedException();
+            throw DuplicatedException.DUPLICATED_USER;
         }
         user.setId(null);
         user.setPassword(hashService.hashOf(user.getPassword()));
@@ -56,7 +56,7 @@ class UserServiceImpl implements UserService {
     public void signup(@NotNull @Valid User user) {
         if (dao.exists(user)) {
             log.debug("User already exists!");
-            throw new DuplicatedException();
+            throw DuplicatedException.DUPLICATED_USER;
         }
         user.setId(null);
         user.setRoles(Set.of(Role.MEMBER));
@@ -67,7 +67,7 @@ class UserServiceImpl implements UserService {
     @Override
     public User getByUsername(@NotNull @NotBlank String username) {
         var user = this.dao.findBy("username", username).stream().findFirst();
-        return user.orElseThrow(NotFoundException::new);
+        return user.orElseThrow(() -> NotFoundException.USERNAME_NOT_FOUND);
     }
 
     @Override
@@ -83,6 +83,7 @@ class UserServiceImpl implements UserService {
         var pageSize = size.filter(i -> i <= maxPageSize).orElse(defaultPageSize);
         return dao.getAll(page, pageSize);
     }
+
     @Override
     public void setupAdminAccount() {
         if (dao.countAll() == 0) {
@@ -98,11 +99,11 @@ class UserServiceImpl implements UserService {
 
     @Override
     public boolean isUsernameAvailable(@NotNull @NotBlank String username) {
-        return dao.findBy("username", username).size()==0;
+        return dao.findBy("username", username).size() == 0;
     }
-    
+
     @Override
     public boolean isEmailAvailable(@NotNull @NotBlank String email) {
-        return dao.findBy("email", email).size()==0;
+        return dao.findBy("email", email).size() == 0;
     }
 }

@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.util.Optional;
 
 import com.campus.banking.dto.AccountDetailDTO;
+import com.campus.banking.exception.InvalidArgumentException;
+import com.campus.banking.exception.RequiredParamException;
 import com.campus.banking.model.Role;
 import com.campus.banking.service.CheckingAccountService;
 
@@ -38,9 +40,9 @@ public class CheckingAccountDetailServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         log.debug("GET");
         var accountNumber = Optional.ofNullable(req.getParameter("account_number"))
-                .orElseThrow(IllegalArgumentException::new);
+                .orElseThrow(() -> RequiredParamException.getException("account_number"));
         var trxPage = getPositiveIntWithDefault(req.getParameter("transaction_page"),"1")
-                .orElseThrow(IllegalArgumentException::new);
+                .orElseThrow(() -> InvalidArgumentException.NON_POSITIVE_INTEGER);
 
         var account = service.getByAccountNumber(accountNumber);
         var transactions = service.getTransactions(accountNumber, trxPage);

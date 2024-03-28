@@ -3,6 +3,8 @@ package com.campus.banking.service;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import com.campus.banking.exception.InsufficientFundsException;
+import com.campus.banking.exception.InvalidTransactionException;
+import com.campus.banking.exception.LessThanMinimumTransactionException;
 import com.campus.banking.exception.NotFoundException;
 import com.campus.banking.model.AccountType;
 import com.campus.banking.model.BankAccount;
@@ -32,7 +34,7 @@ class BankAccountServiceImpl extends AbstractAccountServiceImpl<BankAccount> {
             AccountNumberGenerator generator, UserService users,
             @ConfigProperty(name = "app.pagination.max_size") int maxPageSize,
             @ConfigProperty(name = "app.pagination.default_size") int defaultPageSize) {
-        super(dao, trxDao, maxPageSize,defaultPageSize);
+        super(dao, trxDao, maxPageSize, defaultPageSize);
         this.dao = dao;
         this.generator = generator;
         this.users = users;
@@ -56,7 +58,10 @@ class BankAccountServiceImpl extends AbstractAccountServiceImpl<BankAccount> {
     public void deposit(@NotNull @NotBlank String accountNumber, @Positive double amount) {
         dao.inTransaction(em -> {
             var account = dao.findByAccountNumberForUpdate(em, accountNumber)
-                    .orElseThrow(NotFoundException::new);
+                    .orElseThrow(() -> NotFoundException.ACCOUNT_NOT_FOUND);
+            if (amount < getMinimumDeposit(account)) {
+                throw LessThanMinimumTransactionException.EXCEPTION;
+            }
             doDeposit(em, account, amount);
             insertTransaction(em, account, amount, TransactionType.DEPOSIT);
         });
@@ -71,9 +76,12 @@ class BankAccountServiceImpl extends AbstractAccountServiceImpl<BankAccount> {
     public void withdraw(@NotNull @NotBlank String accountNumber, @Positive double amount) {
         dao.inTransaction(em -> {
             var account = dao.findByAccountNumberForUpdate(em, accountNumber)
-                    .orElseThrow(NotFoundException::new);
+                    .orElseThrow(() -> NotFoundException.ACCOUNT_NOT_FOUND);
+            if (amount > getAllowedWithdraw(account)) {
+                throw InvalidTransactionException.WITHDRAW_MORE_THAN_ALLOWED;
+            }
             if (amount > account.getBalance()) {
-                throw new InsufficientFundsException();
+                throw InsufficientFundsException.EXCEPTION;
             }
             doWithdraw(em, account, amount);
             insertTransaction(em, account, amount, TransactionType.WITHDRAW);

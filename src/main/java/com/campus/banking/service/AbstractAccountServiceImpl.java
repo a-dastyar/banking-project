@@ -3,6 +3,7 @@ package com.campus.banking.service;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+import com.campus.banking.exception.InvalidArgumentException;
 import com.campus.banking.exception.NotFoundException;
 import com.campus.banking.model.BankAccount;
 import com.campus.banking.model.Transaction;
@@ -35,7 +36,7 @@ public abstract class AbstractAccountServiceImpl<T extends BankAccount> implemen
         if (account.getAccountHolder() == null
                 || account.getAccountHolder().getUsername() == null
                 || account.getAccountHolder().getUsername().isBlank()) {
-            throw new IllegalArgumentException();
+            throw InvalidArgumentException.BLANK_USERNAME;
         }
         return account.getAccountHolder().getUsername();
     }
@@ -48,7 +49,7 @@ public abstract class AbstractAccountServiceImpl<T extends BankAccount> implemen
     @Override
     public T getByAccountNumber(@NotNull @NotBlank String accountNumber) {
         return dao.findByAccountNumber(accountNumber)
-                .orElseThrow(NotFoundException::new);
+                .orElseThrow(() -> NotFoundException.ACCOUNT_NOT_FOUND);
     }
 
     @Override

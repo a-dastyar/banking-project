@@ -5,6 +5,7 @@ import static com.campus.banking.util.ServletUtils.getDoubleValue;
 import java.io.IOException;
 import java.util.Optional;
 
+import com.campus.banking.exception.InvalidArgumentException;
 import com.campus.banking.model.Role;
 import com.campus.banking.service.CheckingAccountService;
 import com.campus.banking.util.ServletUtils;
@@ -37,7 +38,8 @@ public class CheckingAccountServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         log.debug("GET");
-        var page = ServletUtils.getPositiveIntWithDefault(req.getParameter("page"),"1").orElseThrow(IllegalArgumentException::new);
+        var page = ServletUtils.getPositiveIntWithDefault(req.getParameter("page"),"1")
+                .orElseThrow(() -> InvalidArgumentException.NON_POSITIVE_INTEGER);
         var size = ServletUtils.getPositiveInt(req.getParameter("size"));
         var result = service.getPage(page, size);
         req.setAttribute("accounts", result);

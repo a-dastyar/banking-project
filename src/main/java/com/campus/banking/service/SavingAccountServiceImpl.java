@@ -2,7 +2,9 @@ package com.campus.banking.service;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
+import com.campus.banking.exception.IllegalBalanceStateException;
 import com.campus.banking.exception.InvalidTransactionException;
+import com.campus.banking.exception.LessThanMinimumTransactionException;
 import com.campus.banking.exception.NotFoundException;
 import com.campus.banking.model.AccountType;
 import com.campus.banking.model.SavingAccount;
@@ -31,7 +33,7 @@ class SavingAccountServiceImpl extends AbstractAccountServiceImpl<SavingAccount>
     public SavingAccountServiceImpl(SavingAccountDAO dao, TransactionDAO trxDao, AccountNumberGenerator generator,
             UserService users,
             @ConfigProperty(name = "app.pagination.max_size") int maxPageSize,
-            @ConfigProperty(name = "app.pagination.default_size") int defaultPageSize)  {
+            @ConfigProperty(name = "app.pagination.default_size") int defaultPageSize) {
         super(dao, trxDao, maxPageSize, defaultPageSize);
         this.dao = dao;
         this.users = users;
@@ -55,7 +57,7 @@ class SavingAccountServiceImpl extends AbstractAccountServiceImpl<SavingAccount>
 
     private void validateAccountInfo(SavingAccount account) {
         if (account.getBalance() < account.getMinimumBalance()) {
-            throw new IllegalArgumentException();
+            throw IllegalBalanceStateException.BALANCE_LESS_THAN_MINIMUM;
         }
     }
 
@@ -63,7 +65,12 @@ class SavingAccountServiceImpl extends AbstractAccountServiceImpl<SavingAccount>
     public void deposit(@NotNull @NotBlank String accountNumber, @Positive double amount) {
         dao.inTransaction(em -> {
             var account = dao.findByAccountNumberForUpdate(em, accountNumber)
-                    .orElseThrow(NotFoundException::new);
+                    .orElseThrow(() -> NotFoundException.ACCOUNT_NOT_FOUND);
+
+            if (amount < getMinimumDeposit(account)) {
+                throw LessThanMinimumTransactionException.EXCEPTION;
+            }
+            
             doDeposit(em, account, amount);
             insertTransaction(em, account, amount, TransactionType.DEPOSIT);
         });
@@ -78,7 +85,7 @@ class SavingAccountServiceImpl extends AbstractAccountServiceImpl<SavingAccount>
     public void withdraw(@NotNull @NotBlank String accountNumber, @Positive double amount) {
         dao.inTransaction(em -> {
             var account = dao.findByAccountNumberForUpdate(em, accountNumber)
-                    .orElseThrow(NotFoundException::new);
+                    .orElseThrow(() -> NotFoundException.ACCOUNT_NOT_FOUND);
             doWithdraw(em, account, amount);
             insertTransaction(em, account, amount, TransactionType.WITHDRAW);
         });
@@ -86,9 +93,8 @@ class SavingAccountServiceImpl extends AbstractAccountServiceImpl<SavingAccount>
     }
 
     private void doWithdraw(EntityManager em, SavingAccount account, double amount) {
-        double maximum_withdraw = getAllowedWithdraw(account);
-        if (amount > maximum_withdraw) {
-            throw new InvalidTransactionException("Can not withdraw more than " + maximum_withdraw);
+        if (amount > getAllowedWithdraw(account)) {
+            throw InvalidTransactionException.WITHDRAW_MORE_THAN_ALLOWED;
         }
         account.setBalance(account.getBalance() - amount);
         dao.transactionalUpdate(em, account);
@@ -103,7 +109,7 @@ class SavingAccountServiceImpl extends AbstractAccountServiceImpl<SavingAccount>
     public void applyInterest(@NotNull @NotBlank String accountNumber) {
         dao.inTransaction(em -> {
             var account = dao.findByAccountNumberForUpdate(em, accountNumber)
-                    .orElseThrow(NotFoundException::new);
+                    .orElseThrow(() -> NotFoundException.ACCOUNT_NOT_FOUND);
 
             var interest = account.getBalance() * account.getInterestRate() / 100.0;
             account.setBalance(account.getBalance() + interest);

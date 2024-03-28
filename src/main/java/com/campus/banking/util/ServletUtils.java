@@ -4,6 +4,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import com.campus.banking.exception.InvalidArgumentException;
 import com.campus.banking.model.AccountType;
 
 public interface ServletUtils {
@@ -32,19 +33,19 @@ public interface ServletUtils {
             try {
                 return Double.valueOf(str);
             } catch (Exception e) {
-                throw new IllegalArgumentException();
+                throw InvalidArgumentException.NON_NUMERIC_VALUE;
             }
         };
         return Optional.ofNullable(number)
                 .map(toDouble)
-                .orElseThrow(IllegalArgumentException::new);
+                .orElseThrow(() -> InvalidArgumentException.NON_NUMERIC_VALUE);
     }
 
     public static TransactionType getTransactionType(String type) {
         return Optional.ofNullable(type)
                 .filter(t -> ServletUtils.TransactionType.stream().anyMatch(t::equals))
                 .map(ServletUtils.TransactionType::valueOf)
-                .orElseThrow(IllegalArgumentException::new);
+                .orElseThrow(() -> InvalidArgumentException.INVALID_TRANSACTION_TYPE);
     }
 
     public static Optional<AccountType> getAccountType(String type) {

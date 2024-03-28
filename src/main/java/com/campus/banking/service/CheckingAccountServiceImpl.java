@@ -1,6 +1,7 @@
 package com.campus.banking.service;
 
-import com.campus.banking.exception.InsufficientFundsException;
+import com.campus.banking.exception.IllegalBalanceStateException;
+import com.campus.banking.exception.InvalidTransactionException;
 import com.campus.banking.exception.LessThanMinimumTransactionException;
 import com.campus.banking.exception.NotFoundException;
 import com.campus.banking.model.AccountType;
@@ -49,7 +50,7 @@ class CheckingAccountServiceImpl extends AbstractAccountServiceImpl<CheckingAcco
         dao.inTransaction(em -> {
             var amount = account.getBalance();
             if (amount <= CheckingAccount.TRANSACTION_FEE)
-                throw new LessThanMinimumTransactionException();
+                throw LessThanMinimumTransactionException.EXCEPTION;
 
             account.setBalance(amount - CheckingAccount.TRANSACTION_FEE);
             account.setId(null);
@@ -62,9 +63,9 @@ class CheckingAccountServiceImpl extends AbstractAccountServiceImpl<CheckingAcco
 
     private void validateAccountInfo(CheckingAccount account) {
         if (account.getBalance() > 0.0d && account.getDebt() > 0.0d)
-            throw new IllegalArgumentException("Can't have balance while in debt");
+            throw IllegalBalanceStateException.IN_DEBT_WHILE_HAS_BALANCE;
         if (account.getDebt() > account.getOverdraftLimit())
-            throw new IllegalArgumentException("Can't have debt more than overdraft limit");
+            throw IllegalBalanceStateException.DEBT_MORE_THAN_OVERDRAFT_LIMIT;
     }
 
     @Override
@@ -74,7 +75,12 @@ class CheckingAccountServiceImpl extends AbstractAccountServiceImpl<CheckingAcco
             throw new LessThanMinimumTransactionException();
         dao.inTransaction(em -> {
             var account = dao.findByAccountNumberForUpdate(em, accountNumber)
-                    .orElseThrow(NotFoundException::new);
+                    .orElseThrow(() -> NotFoundException.ACCOUNT_NOT_FOUND);
+
+            if (amount < getMinimumDeposit(account)) {
+                throw LessThanMinimumTransactionException.EXCEPTION;
+            }
+
             doWithdraw(em, account, CheckingAccount.TRANSACTION_FEE);
             insertTransaction(em, account, CheckingAccount.TRANSACTION_FEE, TransactionType.TRANSACTION_FEE);
             doDeposit(em, account, amount);
@@ -108,12 +114,10 @@ class CheckingAccountServiceImpl extends AbstractAccountServiceImpl<CheckingAcco
 
         dao.inTransaction(em -> {
             var account = dao.findByAccountNumberForUpdate(em, accountNumber)
-                    .orElseThrow(NotFoundException::new);
+                    .orElseThrow(() -> NotFoundException.ACCOUNT_NOT_FOUND);
 
-            var allowedWithdrawAmount = getAllowedWithdraw(account);
-
-            if (amount > allowedWithdrawAmount) {
-                throw new InsufficientFundsException();
+            if (amount > getAllowedWithdraw(account)) {
+                throw InvalidTransactionException.WITHDRAW_MORE_THAN_ALLOWED;
             }
 
             doWithdraw(em, account, CheckingAccount.TRANSACTION_FEE);

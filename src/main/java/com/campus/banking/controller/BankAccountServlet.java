@@ -3,6 +3,7 @@ package com.campus.banking.controller;
 import java.io.IOException;
 import java.util.Optional;
 
+import com.campus.banking.exception.InvalidArgumentException;
 import com.campus.banking.model.BankAccount;
 import com.campus.banking.model.Role;
 import com.campus.banking.service.BankAccountService;
@@ -37,7 +38,7 @@ public class BankAccountServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         log.debug("GET");
         var page = ServletUtils.getPositiveIntWithDefault(req.getParameter("page"), "1")
-                .orElseThrow(IllegalArgumentException::new);
+                .orElseThrow(() -> InvalidArgumentException.NON_POSITIVE_INTEGER);
         var size = ServletUtils.getPositiveInt(req.getParameter("size"));
         var result = service.getPage(page, size);
         req.setAttribute("accounts", result);
