@@ -95,4 +95,14 @@ class UserServiceImpl implements UserService {
             add(admin);
         }
     }
+
+    @Override
+    public boolean isUsernameAvailable(@NotNull @NotBlank String username) {
+        return dao.findBy("username", username).size()==0;
+    }
+    
+    @Override
+    public boolean isEmailAvailable(@NotNull @NotBlank String email) {
+        return dao.findBy("email", email).size()==0;
+    }
 }

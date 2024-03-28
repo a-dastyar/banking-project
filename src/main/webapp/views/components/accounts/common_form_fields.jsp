@@ -2,7 +2,7 @@
     <label class="col-form-label col-md-4" for="username" >Holder username</label>
     <div class="col-sm-6 has-validation" >
         <input type="text" class="form-control" id="username" name="username" required>
-        <div class="invalid-feedback">
+        <div class="invalid-feedback" id="username-feedback">
             Please enter a username.
         </div>
     </div>      
