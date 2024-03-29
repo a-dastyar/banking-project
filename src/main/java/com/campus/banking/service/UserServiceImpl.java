@@ -82,11 +82,13 @@ class UserServiceImpl implements UserService {
     @Override
     public void updateEmail(@NotNull @Valid User user) {
         var found = getByUsername(user.getUsername());
-        if (!isEmailAvailable(user.getEmail())){
-            throw DuplicatedException.DUPLICATED_USER;
+        if(!user.getEmail().equals(found.getEmail())){
+            if (!isEmailAvailable(user.getEmail())){
+                throw DuplicatedException.DUPLICATED_USER;
+            }
+            found.setEmail(user.getEmail());
+            dao.inTransaction(em -> dao.transactionalUpdate(em, found));
         }
-        found.setEmail(user.getEmail());
-        dao.inTransaction(em -> dao.transactionalUpdate(em, found));
     }
 
     @Override
