@@ -2,6 +2,9 @@ package com.campus.banking.config;
 
 import java.util.Arrays;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+
+import com.campus.banking.persistence.DatabaseSchemaMigrator;
 import com.campus.banking.service.AccountNumberGenerator;
 import com.campus.banking.service.UserService;
 
@@ -26,9 +29,20 @@ public class ApplicationLifecycle implements ServletContextListener {
     @Inject
     private AccountNumberGenerator generator;
 
+    @Inject
+    private DatabaseSchemaMigrator migrator;
+
+    @Inject
+    @ConfigProperty(name = "datasource.schema.migration")
+    private boolean migration;
+
     @Override
     public void contextInitialized(ServletContextEvent sce) {
         log.debug("Setting up database");
+        if (migration) {
+            log.debug("Migrating database schema");
+            migrator.migrate();
+        }
         inRequestScope(
                 users::setupAdminAccount,
                 generator::setupNumberGenerator);

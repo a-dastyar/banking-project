@@ -7,8 +7,9 @@ datasource:
     driver: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://${datasource.host}:${datasource.port}/${datasource.database}
     schema:
+        migration: true
         generation:
-            strategy: drop-and-create
+            strategy: none #update #drop-and-create
 app:
     mode:
       debug: true
