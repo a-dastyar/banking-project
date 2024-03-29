@@ -10,6 +10,7 @@ import com.campus.banking.exception.InvalidArgumentException;
 import com.campus.banking.exception.RequiredParamException;
 import com.campus.banking.model.Role;
 import com.campus.banking.service.CheckingAccountService;
+import com.campus.banking.util.ServletUtils;
 
 import jakarta.inject.Inject;
 import jakarta.servlet.ServletException;
@@ -43,19 +44,22 @@ public class CheckingAccountDetailServlet extends HttpServlet {
                 .orElseThrow(() -> RequiredParamException.getException("account_number"));
         var trxPage = getPositiveIntWithDefault(req.getParameter("transaction_page"),"1")
                 .orElseThrow(() -> InvalidArgumentException.NON_POSITIVE_INTEGER);
+        var size = ServletUtils.getPositiveInt(req.getParameter("size"));
 
         var account = service.getByAccountNumber(accountNumber);
-        var transactions = service.getTransactions(accountNumber, trxPage);
+        var transactions = service.getTransactions(accountNumber, trxPage, size);
         var maxWithdraw = service.getAllowedWithdraw(account);
+        var minWithdraw = service.getMinimumWithdraw(account);
         var minDeposit = service.getMinimumDeposit(account);
 
         var accountDetails = AccountDetailDTO.builder()
                 .account(account)
                 .maxWithdraw(maxWithdraw)
+                .minWithdraw(minWithdraw)
                 .minDeposit(minDeposit)
                 .transactions(transactions)
                 .build();
-
+                
         req.setAttribute("accountDetails", accountDetails);
         req.getRequestDispatcher("/views/pages/accounts/checking_account_details.jsp").forward(req, resp);
     }

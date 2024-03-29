@@ -42,15 +42,18 @@ public class SavingAccountDetailServlet extends HttpServlet {
                 .orElseThrow(() -> RequiredParamException.getException("account_number"));
         var trxPage = ServletUtils.getPositiveIntWithDefault(req.getParameter("transaction_page"),"1")
                 .orElseThrow(() -> InvalidArgumentException.NON_POSITIVE_INTEGER);
+        var size = ServletUtils.getPositiveInt(req.getParameter("size"));
 
         var account = service.getByAccountNumber(accountNumber);
-        var transactions = service.getTransactions(accountNumber, trxPage);
+        var transactions = service.getTransactions(accountNumber, trxPage, size);
         var maxWithdraw = service.getAllowedWithdraw(account);
+        var minWithdraw = service.getMinimumWithdraw(account);
         var minDeposit = service.getMinimumDeposit(account);
 
         var accountDetails = AccountDetailDTO.builder()
                 .account(account)
                 .maxWithdraw(maxWithdraw)
+                .minWithdraw(minWithdraw)
                 .minDeposit(minDeposit)
                 .transactions(transactions)
                 .build();

@@ -10,6 +10,7 @@ import lombok.Builder;
 public record AccountDetailDTO<T extends BankAccount>(
         T account,
         double maxWithdraw,
+        double minWithdraw,
         double minDeposit,
         Page<Transaction> transactions) {
 
