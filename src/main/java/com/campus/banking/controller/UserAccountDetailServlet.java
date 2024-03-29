@@ -11,7 +11,6 @@ import com.campus.banking.model.Role;
 import com.campus.banking.service.BankAccountService;
 import com.campus.banking.service.CheckingAccountService;
 import com.campus.banking.service.SavingAccountService;
-import com.campus.banking.service.UserService;
 import com.campus.banking.util.ServletUtils;
 
 import jakarta.inject.Inject;
@@ -27,23 +26,18 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @WebServlet("/dashboard/account-details")
 @ServletSecurity(httpMethodConstraints = {
-        @HttpMethodConstraint(value = "GET", rolesAllowed = { Role.CONST.MEMBER, Role.CONST.MANAGER,
-                Role.CONST.ADMIN }),
-        @HttpMethodConstraint(value = "POST", rolesAllowed = { Role.CONST.MEMBER, Role.CONST.MANAGER,
-                Role.CONST.ADMIN })
+        @HttpMethodConstraint(value = "GET", rolesAllowed = { Role.CONST.MEMBER, Role.CONST.MANAGER, Role.CONST.ADMIN })
 })
 public class UserAccountDetailServlet extends HttpServlet {
 
-    private UserService service;
     private BankAccountService<BankAccount> account;
     private CheckingAccountService checking;
     private SavingAccountService saving;
 
     @Inject
-    public void initialize(UserService service, BankAccountService<BankAccount> account,
+    public void initialize(BankAccountService<BankAccount> account,
             CheckingAccountService checking,
             SavingAccountService saving) {
-        this.service = service;
         this.account = account;
         this.checking = checking;
         this.saving = saving;
@@ -80,14 +74,4 @@ public class UserAccountDetailServlet extends HttpServlet {
         req.setAttribute("accountDetails", accountDetails);
         req.getRequestDispatcher("/views/pages/users/user_account_details.jsp").forward(req, resp);
     }
-
-    @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        log.debug("POST");
-        var user = UserService.toUser(req.getParameterMap());
-        user.setUsername(req.getUserPrincipal().getName());
-        this.service.updateEmail(user);
-        resp.sendRedirect(req.getContextPath() + "/dashboard");
-    }
-
 }
