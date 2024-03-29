@@ -104,7 +104,7 @@ public abstract class AbstractAccountServiceTest<T extends BankAccount> {
     @Test
     void getTransactions_withNonExistingAccount_shouldTransactions() {
         when(dao.findByAccountNumber(any())).thenReturn(Optional.empty());
-        assertThatThrownBy(() -> service.getTransactions("", 1))
+        assertThatThrownBy(() -> service.getTransactions("", 1, Optional.empty()))
                 .isInstanceOf(NotFoundException.class);
     }
 
@@ -113,7 +113,7 @@ public abstract class AbstractAccountServiceTest<T extends BankAccount> {
         var page = new Page<Transaction>(List.of(), 0, 0, 0);
         when(dao.findByAccountNumber(any())).thenReturn(generate(1).findFirst());
         when(trxDao.findByOrdered(any(), any(), anyInt(), anyInt(), any(), any())).thenReturn(page);
-        var transactions=service.getTransactions("", 1);
+        var transactions=service.getTransactions("", 1, Optional.empty());
         assertThat(transactions.list()).isEmpty();
     }
 
