@@ -4,3 +4,4 @@
     integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
 <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/main.css">
 <script>const ctx = "${pageContext.request.contextPath}"</script>
+<link rel="icon" type="image/x-icon" href="${pageContext.request.contextPath}/assets/favicon.png">
