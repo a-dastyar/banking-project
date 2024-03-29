@@ -20,3 +20,6 @@
         </c:forEach>
     </tbody>
 </table>
+<c:set var="page" value="${transactions}"/>
+<c:set var="pageParamName" value="transaction_page"/>
+<%@ include file="/views/components/commons/pagination.jsp" %>
