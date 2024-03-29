@@ -131,7 +131,6 @@ public class UserServiceTest {
                 .username("tester").build();
         when(dao.findBy("username", user.getUsername())).thenReturn(List.of(user));
         when(dao.findBy("email", "test2@test.test")).thenReturn(List.of(user));
-        // doAnswer(this::executeConsumer).when(dao).inTransaction(any());
         assertThatThrownBy(() -> service.updateEmail(user.withEmail("test2@test.test")))
                 .isInstanceOf(DuplicatedException.class);
         verify(dao, never()).transactionalUpdate(any(), any());
