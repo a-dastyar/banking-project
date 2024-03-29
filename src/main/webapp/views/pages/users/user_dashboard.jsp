@@ -5,7 +5,7 @@
     <head>
         <%@ include file="/views/components/commons/meta.jsp" %>
         
-        <title>Users | ${userDetails.user().getUsername()}</title>
+        <title>Dashboard | ${userDetails.user().getUsername()}</title>
     </head>
 
     <body>
@@ -26,12 +26,13 @@
         </c:choose>
         <c:set var="activePanel" value="${active}" scope="request"/>
 
-        <c:set var="menu" value="users" scope="request"/>
-        <c:set var="paths" value="${['Users','Details']}" scope="request" />
-        <c:set var="urls" value="${['users','details']}" scope="request" />
+        <c:set var="menu" value="home" scope="request"/>
+        <c:set var="paths" value="${['Dashboard']}" scope="request" />
+        <c:set var="urls" value="${['dashboard']}" scope="request" />
         <%@ include file="/views/components/commons/header.jsp" %>
 
-        <c:set var="endpoint" value="users/details" scope="request"/>
+        <c:set var="endpoint" value="dashboard" scope="request"/>
+        <c:set var="accountDetailEndpoint" value="dashboard/account-details" scope="request"/>
         <c:set var="user" value="${userDetails.user()}" scope="request"/>
         <c:set var="roles" value="${userDetails.availableRoles()}" scope="request"/>
         <c:set var="userDashboard" value="${userDashboard}" scope="request"/>
