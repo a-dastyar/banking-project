@@ -1,7 +1,7 @@
 CREATE TABLE
   `users` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `created_at` datetime(6) DEFAULT NULL,
+    `created_at` datetime(6) NOT NULL,
     `updated_at` datetime(6) DEFAULT NULL,
     `email` varchar(255) DEFAULT NULL,
     `password` varchar(255) DEFAULT NULL,
@@ -23,7 +23,7 @@ CREATE TABLE
 CREATE TABLE
   `account_number_sequence` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `created_at` datetime(6) DEFAULT NULL,
+    `created_at` datetime(6) NOT NULL,
     `updated_at` datetime(6) DEFAULT NULL,
     `sequence` bigint DEFAULT NULL,
     `year` int DEFAULT NULL,
@@ -34,7 +34,7 @@ CREATE TABLE
   `bank_accounts` (
     `type` varchar(50) NOT NULL,
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `created_at` datetime(6) DEFAULT NULL,
+    `created_at` datetime(6) NOT NULL,
     `updated_at` datetime(6) DEFAULT NULL,
     `account_number` varchar(255) NOT NULL,
     `balance` double DEFAULT NULL,
@@ -67,7 +67,7 @@ CREATE TABLE
 CREATE TABLE
   `transactions` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `created_at` datetime(6) DEFAULT NULL,
+    `created_at` datetime(6) NOT NULL,
     `updated_at` datetime(6) DEFAULT NULL,
     `amount` double DEFAULT NULL,
     `date` datetime(6) DEFAULT NULL,
