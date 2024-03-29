@@ -103,10 +103,12 @@ class SavingAccountDAOImpl extends AbstractDAO<SavingAccount, Long> implements S
                     type,
                     amount,
                     bank_account_id,
-                    date)
+                    date,
+                    created_at)
                 SELECT 'INTEREST',
                         account.balance * saving.interest_rate / 100.0,
                         account.id,
+                        NOW(),
                         NOW()
                   FROM saving_accounts saving
                   JOIN bank_accounts account

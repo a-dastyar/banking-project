@@ -75,6 +75,7 @@ class UserServiceImpl implements UserService {
         var found = getByUsername(user.getUsername());
         user.setId(found.getId());
         user.setPassword(found.getPassword());
+        user.setCreatedAt(found.getCreatedAt());
         dao.inTransaction(em -> dao.transactionalUpdate(em, user));
     }
 
