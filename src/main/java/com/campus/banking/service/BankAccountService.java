@@ -52,6 +52,8 @@ public interface BankAccountService<T extends BankAccount> {
 
     double getAllowedWithdraw(@NotNull @Valid T account);
 
+    double getMinimumWithdraw(@NotNull @Valid T account);
+
     double getMinimumDeposit(@NotNull @Valid T account);
 
 }

@@ -72,7 +72,7 @@ class CheckingAccountServiceImpl extends AbstractAccountServiceImpl<CheckingAcco
     public void deposit(@NotNull @NotBlank String accountNumber, @Positive double amount) {
         log.debug("Deposit {} to Account[{}]", amount, accountNumber);
         if (amount <= CheckingAccount.TRANSACTION_FEE)
-            throw new LessThanMinimumTransactionException();
+            throw LessThanMinimumTransactionException.EXCEPTION;
         dao.inTransaction(em -> {
             var account = dao.findByAccountNumberForUpdate(em, accountNumber)
                     .orElseThrow(() -> NotFoundException.ACCOUNT_NOT_FOUND);
@@ -110,7 +110,7 @@ class CheckingAccountServiceImpl extends AbstractAccountServiceImpl<CheckingAcco
     @Override
     public void withdraw(@NotNull @NotBlank String accountNumber, @Positive double amount) {
         if (amount <= CheckingAccount.TRANSACTION_FEE)
-            throw new LessThanMinimumTransactionException();
+            throw LessThanMinimumTransactionException.EXCEPTION;
 
         dao.inTransaction(em -> {
             var account = dao.findByAccountNumberForUpdate(em, accountNumber)
@@ -154,6 +154,11 @@ class CheckingAccountServiceImpl extends AbstractAccountServiceImpl<CheckingAcco
         // deposit transaction fee
         amount -= CheckingAccount.TRANSACTION_FEE * 2;
         return amount < 0.0d ? 0.0d : amount;
+    }
+
+    @Override
+    public double getMinimumWithdraw(@NotNull @Valid CheckingAccount account) {
+        return CheckingAccount.TRANSACTION_FEE * 2;
     }
 
     @Override
