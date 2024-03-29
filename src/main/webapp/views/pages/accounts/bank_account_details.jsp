@@ -4,7 +4,7 @@
 
     <head>
         <%@ include file="/views/components/commons/meta.jsp" %>
-            <title>Bank account | ${account.getAccountNumber()}</title>
+            <title>Bank account | ${accountDetails.account().getAccountNumber()}</title>
     </head>
 
     <body>
@@ -15,9 +15,12 @@
         <c:set var="urls" value="${['bank-accounts','details']}" scope="request" />
         <%@ include file="/views/components/commons/header.jsp" %>
 
-        <c:set var="endpoint" value="bank-accounts" scope="request"/>
+        <c:set var="endpoint" value="bank-accounts/details" scope="request"/>
+        <c:set var="balanceEndpoint" value="bank-accounts/balance" scope="request"/>
+        <c:set var="additionalParam" value="&account_number=${accountDetails.account().getAccountNumber()}" scope="request"/>
         <c:set var="account" value="${accountDetails.account()}" scope="request"/>
         <c:set var="maxWithdraw" value="${accountDetails.maxWithdraw()}" scope="request"/>
+        <c:set var="minWithdraw" value="${accountDetails.minWithdraw()}" scope="request"/>
         <c:set var="minDeposit" value="${accountDetails.minDeposit()}" scope="request"/>
         <c:set var="minDeposit" value="${accountDetails.minDeposit()}" scope="request"/>
         <c:set var="transactions" value="${accountDetails.transactions()}" scope="request"/>
