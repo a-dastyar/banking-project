@@ -75,9 +75,10 @@ public abstract class AbstractAccountServiceImpl<T extends BankAccount> implemen
     }
 
     @Override
-    public Page<Transaction> getTransactions(@NotNull @NotBlank String accountNumber, @Positive int page) {
+    public Page<Transaction> getTransactions(@NotNull @NotBlank String accountNumber, @Positive int page, Optional<Integer> size) {
+        var pageSize = size.filter(i -> i <= maxPageSize).orElse(defaultPageSize);
         var found = getByAccountNumber(accountNumber);
-        return trxDao.findByOrdered("account", found, page, maxPageSize, "date", Order.DESC);
+        return trxDao.findByOrdered("account", found, page, pageSize, "date", Order.DESC);
     }
 
     protected void insertTransaction(EntityManager em, T account, double amount, TransactionType type) {

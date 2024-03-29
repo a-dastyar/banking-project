@@ -38,7 +38,7 @@ public interface BankAccountService<T extends BankAccount> {
 
     Page<T> getPage(@Positive int page, Optional<Integer> size);
 
-    Page<Transaction> getTransactions(@NotNull @NotBlank String accountNumber, @Positive int page);
+    Page<Transaction> getTransactions(@NotNull @NotBlank String accountNumber, @Positive int page, Optional<Integer> size);
 
     T getByAccountNumber(@NotNull @NotBlank String accountNumber);
 
