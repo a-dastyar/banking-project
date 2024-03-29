@@ -12,3 +12,5 @@ Alternatively you can use `docker compose` to only setup the database:
 ```bash
 docker compose up -d database
 ```
+> [!NOTE]  
+> To manage accounts you need a user with `ADMIN` or `MANAGER` roles, The default username and password for `ADMIN` role is `username=admin, password=admin`
