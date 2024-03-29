@@ -79,6 +79,16 @@ class UserServiceImpl implements UserService {
     }
 
     @Override
+    public void updateEmail(@NotNull @Valid User user) {
+        var found = getByUsername(user.getUsername());
+        if (!isEmailAvailable(user.getEmail())){
+            throw DuplicatedException.DUPLICATED_USER;
+        }
+        found.setEmail(user.getEmail());
+        dao.inTransaction(em -> dao.transactionalUpdate(em, found));
+    }
+
+    @Override
     public Page<User> getAll(@Positive int page, Optional<Integer> size) {
         var pageSize = size.filter(i -> i <= maxPageSize).orElse(defaultPageSize);
         return dao.getAll(page, pageSize);

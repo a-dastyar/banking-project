@@ -54,6 +54,8 @@ public interface UserService {
 
     void update(@NotNull @Valid User user);
 
+    void updateEmail(@NotNull @Valid User user);
+
     Page<User> getAll(@Positive int page, Optional<Integer> size);
 
     void setupAdminAccount();
