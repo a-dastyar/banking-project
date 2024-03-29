@@ -23,7 +23,8 @@ function checkCustomValidation(form) {
         validateCheckingAccountForm(form)
         && validateSavingAccountForm(form)
         && validateUsernameOfAccount(form)
-        && validateUsernameForSignup(form)
+        && validateUserForSignup(form)
+        && validateUserForUpdate(form)
     );
 }
 
@@ -98,7 +99,7 @@ function validateUsernameOfAccount(form) {
     return true;
 }
 
-function validateUsernameForSignup(form) {
+function validateUserForSignup(form) {
     if (form["id"] == "signup") {
 
         const username = form["username"].value;
@@ -116,11 +117,31 @@ function validateUsernameForSignup(form) {
     }
     return true;
 }
+
+function validateUserForUpdate(form) {
+    if (form["id"] == "update-user") {
+
+        const username = form["username"].value;
+        const email = form["email"].value;
+
+        const isAvailable = httpGet(`${ctx}/users/available?username=${username}&email=${email}`);
+
+        if (!isAvailable.username && username != form["username"].getAttribute("original")) {
+            showInvalidMessage("Username is taken!", ['username']);
+            return false;
+        }
+
+        if (!isAvailable.email && email != form["email"].getAttribute("original")) {
+            showInvalidMessage("This email is already registered with another user.", ['email']);
+            return false;
+        }
+    }
+    return true;
+}
+
 function httpGet(url) {
     var request = new XMLHttpRequest();
-    console.log("::",url)
     request.open("GET", url, false);
     request.send(null);
-    console.log(">>",request.responseText)
     return JSON.parse(request.responseText);
 }
