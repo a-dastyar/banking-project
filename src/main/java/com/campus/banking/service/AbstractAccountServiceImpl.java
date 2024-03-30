@@ -66,12 +66,17 @@ public abstract class AbstractAccountServiceImpl<T extends BankAccount> implemen
 
     @Override
     public double getMinimumWithdraw(@NotNull @Valid T account) {
-        return 10;
+        return Math.min(account.getBalance(), 1);
     }
 
     @Override
     public double getMinimumDeposit(@NotNull @Valid T account) {
-        return 10;
+        return 1;
+    }
+
+    @Override
+    public double getMinimumInitialBalance() {
+        return 0;
     }
 
     @Override

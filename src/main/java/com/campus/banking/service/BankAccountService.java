@@ -56,4 +56,6 @@ public interface BankAccountService<T extends BankAccount> {
 
     double getMinimumDeposit(@NotNull @Valid T account);
 
+    double getMinimumInitialBalance();
+
 }

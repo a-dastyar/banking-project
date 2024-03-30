@@ -22,6 +22,7 @@
 
         <c:set var="endpoint" value="bank-accounts" scope="request"/>
         <c:set var="accounts" value="${accounts}" scope="request"/>
+        <c:set var="minBalance" value="${minInitialBalance}" scope="request"/>
         <%
             pageContext.setAttribute("panelItems",new String[]{
                 "List accounts",

@@ -162,6 +162,11 @@ class CheckingAccountServiceImpl extends AbstractAccountServiceImpl<CheckingAcco
     }
 
     @Override
+    public double getMinimumInitialBalance() {
+        return CheckingAccount.TRANSACTION_FEE * 2;
+    }
+    
+    @Override
     public double getMinimumDeposit(@NotNull @Valid CheckingAccount account) {
         return CheckingAccount.TRANSACTION_FEE * 2;
     }

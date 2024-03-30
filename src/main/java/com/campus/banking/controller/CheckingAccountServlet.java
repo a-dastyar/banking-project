@@ -41,9 +41,10 @@ public class CheckingAccountServlet extends HttpServlet {
         var page = ServletUtils.getPositiveIntWithDefault(req.getParameter("page"),"1")
                 .orElseThrow(() -> InvalidArgumentException.NON_POSITIVE_INTEGER);
         var size = ServletUtils.getPositiveInt(req.getParameter("size"));
-        var result = service.getPage(page, size);
-        req.setAttribute("accounts", result);
 
+        var result = service.getPage(page, size);
+        var minInitialBalance = service.getMinimumInitialBalance();
+        
         var min = Optional.ofNullable(req.getParameter("sum_min"));
         if (min.isPresent()) {
             var val = getDoubleValue(min.get());
@@ -51,6 +52,9 @@ public class CheckingAccountServlet extends HttpServlet {
             req.setAttribute("min", val);
             req.setAttribute("sum", sum);
         }
+
+        req.setAttribute("accounts", result);
+        req.setAttribute("minInitialBalance", minInitialBalance);
         req.getRequestDispatcher("/views/pages/accounts/checking_accounts.jsp").forward(req, resp);
     }
 
