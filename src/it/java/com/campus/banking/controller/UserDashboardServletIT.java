@@ -36,7 +36,9 @@ public class UserDashboardServletIT extends AbstractHttpIT {
         assertThat(loginResponse.status()).isEqualTo(Response.Status.Success);
         assertThat(loginResponse.httpResponse().statusCode()).isEqualTo(303);
 
-        var request = http.GETRequestBuilder(http.resourceURI(resource)).build();
+        var request = http.GETRequestBuilder(http.resourceURI(resource))
+                .timeout(Duration.ofSeconds(2))
+                .build();
         var response = http.sendRequest(client, request);
 
         assertThat(response.status()).isEqualTo(Response.Status.Success);
