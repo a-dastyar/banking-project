@@ -14,3 +14,9 @@ docker compose up -d database
 ```
 > [!NOTE]  
 > To manage accounts you need a user with `ADMIN` or `MANAGER` roles, The default username and password for `ADMIN` role is `username=admin, password=admin`
+
+### Local
+Since the application is using `TomcatEmbedded` there is no need to deploy the application to a tomcat server.  
+To run the app without docker you just need to run the main class `com.campus.banking.app.Main`.  
+
+Also note the config file for database is located at `src/main/resource/META-INF/microprofile-config.yaml`.
