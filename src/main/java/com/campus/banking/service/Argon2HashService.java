@@ -7,7 +7,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public class Argon2HashService implements HashService {
 
-    private Argon2PasswordEncoder argon2 = new Argon2PasswordEncoder(16, 32, 1, 32768, 1);
+    private final Argon2PasswordEncoder argon2 = new Argon2PasswordEncoder(16, 32, 1, 32768, 1);
 
     @Override
     public String hashOf(String str) {

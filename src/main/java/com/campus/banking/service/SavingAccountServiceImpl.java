@@ -1,16 +1,14 @@
 package com.campus.banking.service;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
+import com.campus.banking.exception.IllegalBalanceStateException;
 import com.campus.banking.exception.InvalidTransactionException;
+import com.campus.banking.exception.LessThanMinimumTransactionException;
 import com.campus.banking.exception.NotFoundException;
+import com.campus.banking.model.AccountType;
 import com.campus.banking.model.SavingAccount;
-import com.campus.banking.model.Transaction;
 import com.campus.banking.model.TransactionType;
-import com.campus.banking.persistence.Page;
 import com.campus.banking.persistence.SavingAccountDAO;
 import com.campus.banking.persistence.TransactionDAO;
 
@@ -21,23 +19,25 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.PositiveOrZero;
 
 @ApplicationScoped
-class SavingAccountServiceImpl implements SavingAccountService {
+class SavingAccountServiceImpl extends AbstractAccountServiceImpl<SavingAccount> implements SavingAccountService {
 
-    private SavingAccountDAO dao;
-    private TransactionDAO trxDao;
-    private UserService users;
-    private int maxPageSize;
+    private final SavingAccountDAO dao;
+
+    private final AccountNumberGenerator generator;
+
+    private final UserService users;
 
     @Inject
-    public SavingAccountServiceImpl(SavingAccountDAO dao, TransactionDAO trxDao, UserService users,
-            @ConfigProperty(name = "app.pagination.max_size") int maxPageSize) {
+    public SavingAccountServiceImpl(SavingAccountDAO dao, TransactionDAO trxDao, AccountNumberGenerator generator,
+            UserService users,
+            @ConfigProperty(name = "app.pagination.max_size") int maxPageSize,
+            @ConfigProperty(name = "app.pagination.default_size") int defaultPageSize) {
+        super(dao, trxDao, maxPageSize, defaultPageSize);
         this.dao = dao;
-        this.trxDao = trxDao;
         this.users = users;
-        this.maxPageSize = maxPageSize;
+        this.generator = generator;
     }
 
     @Override
@@ -47,6 +47,7 @@ class SavingAccountServiceImpl implements SavingAccountService {
         dao.inTransaction(em -> {
             account.setAccountHolder(user);
             account.setId(null);
+            account.setAccountNumber(generator.transactionalGenerate(em, AccountType.SAVING));
             dao.transactionalPersist(em, account);
             if (account.getBalance() > 0.0d) {
                 insertTransaction(em, account, account.getBalance(), TransactionType.DEPOSIT);
@@ -55,41 +56,21 @@ class SavingAccountServiceImpl implements SavingAccountService {
     }
 
     private void validateAccountInfo(SavingAccount account) {
-        if (account.getBalance()<account.getMinimumBalance()){
-            throw new IllegalArgumentException();
+        if (account.getBalance() < account.getMinimumBalance()) {
+            throw IllegalBalanceStateException.BALANCE_LESS_THAN_MINIMUM;
         }
-    }
-
-    private String getUsername(SavingAccount account) {
-        if (account.getAccountHolder() == null
-                || account.getAccountHolder().getUsername() == null
-                || account.getAccountHolder().getUsername().isBlank()) {
-            throw new IllegalArgumentException();
-        }
-        return account.getAccountHolder().getUsername();
-    }
-
-    @Override
-    public SavingAccount getByAccountNumber(@NotNull @NotBlank String accountNumber) {
-        return dao.findByAccountNumber(accountNumber)
-                .orElseThrow(NotFoundException::new);
-    }
-
-    @Override
-    public List<SavingAccount> getByUsername(@NotNull @NotBlank String username) {
-        return dao.findByUsername(username);
-    }
-
-    @Override
-    public Page<SavingAccount> getPage(@Positive int page) {
-        return dao.getAll(page, maxPageSize);
     }
 
     @Override
     public void deposit(@NotNull @NotBlank String accountNumber, @Positive double amount) {
         dao.inTransaction(em -> {
             var account = dao.findByAccountNumberForUpdate(em, accountNumber)
-                    .orElseThrow(NotFoundException::new);
+                    .orElseThrow(() -> NotFoundException.ACCOUNT_NOT_FOUND);
+
+            if (amount < getMinimumDeposit(account)) {
+                throw LessThanMinimumTransactionException.EXCEPTION;
+            }
+            
             doDeposit(em, account, amount);
             insertTransaction(em, account, amount, TransactionType.DEPOSIT);
         });
@@ -104,7 +85,7 @@ class SavingAccountServiceImpl implements SavingAccountService {
     public void withdraw(@NotNull @NotBlank String accountNumber, @Positive double amount) {
         dao.inTransaction(em -> {
             var account = dao.findByAccountNumberForUpdate(em, accountNumber)
-                    .orElseThrow(NotFoundException::new);
+                    .orElseThrow(() -> NotFoundException.ACCOUNT_NOT_FOUND);
             doWithdraw(em, account, amount);
             insertTransaction(em, account, amount, TransactionType.WITHDRAW);
         });
@@ -112,9 +93,8 @@ class SavingAccountServiceImpl implements SavingAccountService {
     }
 
     private void doWithdraw(EntityManager em, SavingAccount account, double amount) {
-        double maximum_withdraw = getAllowedWithdraw(account);
-        if (amount > maximum_withdraw) {
-            throw new InvalidTransactionException("Can not withdraw more than " + maximum_withdraw);
+        if (amount > getAllowedWithdraw(account)) {
+            throw InvalidTransactionException.WITHDRAW_MORE_THAN_ALLOWED;
         }
         account.setBalance(account.getBalance() - amount);
         dao.transactionalUpdate(em, account);
@@ -124,17 +104,12 @@ class SavingAccountServiceImpl implements SavingAccountService {
     public double getAllowedWithdraw(@NotNull @Valid SavingAccount account) {
         return account.getBalance() - account.getMinimumBalance();
     }
-    
-    @Override
-    public double getMinimumDeposit(@NotNull @Valid SavingAccount account) {
-        return 10;
-    }
 
     @Override
     public void applyInterest(@NotNull @NotBlank String accountNumber) {
         dao.inTransaction(em -> {
             var account = dao.findByAccountNumberForUpdate(em, accountNumber)
-                    .orElseThrow(NotFoundException::new);
+                    .orElseThrow(() -> NotFoundException.ACCOUNT_NOT_FOUND);
 
             var interest = account.getBalance() * account.getInterestRate() / 100.0;
             account.setBalance(account.getBalance() + interest);
@@ -148,25 +123,5 @@ class SavingAccountServiceImpl implements SavingAccountService {
     @Override
     public void applyInterest() {
         dao.applyInterest();
-    }
-
-    @Override
-    public double sumBalanceHigherThan(@PositiveOrZero double min) {
-        return dao.sumBalanceHigherThan(min);
-    }
-
-    private void insertTransaction(EntityManager em, SavingAccount account, double amount, TransactionType type) {
-        var trx = Transaction.builder()
-                .account(account)
-                .amount(amount)
-                .date(LocalDateTime.now())
-                .type(type).build();
-        trxDao.transactionalPersist(em, trx);
-    }
-
-    @Override
-    public Page<Transaction> getTransactions(@NotNull @NotBlank String accountNumber, @Positive int page) {
-        var found = getByAccountNumber(accountNumber);
-        return trxDao.findBy("account", found, page, maxPageSize);
     }
 }

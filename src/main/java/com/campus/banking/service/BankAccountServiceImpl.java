@@ -1,17 +1,15 @@
 package com.campus.banking.service;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import com.campus.banking.exception.InsufficientFundsException;
+import com.campus.banking.exception.InvalidTransactionException;
+import com.campus.banking.exception.LessThanMinimumTransactionException;
 import com.campus.banking.exception.NotFoundException;
+import com.campus.banking.model.AccountType;
 import com.campus.banking.model.BankAccount;
-import com.campus.banking.model.Transaction;
 import com.campus.banking.model.TransactionType;
 import com.campus.banking.persistence.BankAccountDAO;
-import com.campus.banking.persistence.Page;
 import com.campus.banking.persistence.TransactionDAO;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -21,23 +19,25 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.PositiveOrZero;
 
 @ApplicationScoped
-class BankAccountServiceImpl implements BankAccountService<BankAccount> {
+class BankAccountServiceImpl extends AbstractAccountServiceImpl<BankAccount> {
 
-    private BankAccountDAO<BankAccount> dao;
-    private TransactionDAO trxDao;
-    private UserService users;
-    private int maxPageSize;
+    private final BankAccountDAO<BankAccount> dao;
+
+    private final AccountNumberGenerator generator;
+
+    private final UserService users;
 
     @Inject
-    public BankAccountServiceImpl(BankAccountDAO<BankAccount> dao, TransactionDAO trxDao, UserService users,
-            @ConfigProperty(name = "app.pagination.max_size") int maxPageSize) {
+    public BankAccountServiceImpl(BankAccountDAO<BankAccount> dao, TransactionDAO trxDao,
+            AccountNumberGenerator generator, UserService users,
+            @ConfigProperty(name = "app.pagination.max_size") int maxPageSize,
+            @ConfigProperty(name = "app.pagination.default_size") int defaultPageSize) {
+        super(dao, trxDao, maxPageSize, defaultPageSize);
         this.dao = dao;
-        this.trxDao = trxDao;
+        this.generator = generator;
         this.users = users;
-        this.maxPageSize = maxPageSize;
     }
 
     @Override
@@ -46,6 +46,7 @@ class BankAccountServiceImpl implements BankAccountService<BankAccount> {
         account.setAccountHolder(user);
         dao.inTransaction(em -> {
             account.setId(null);
+            account.setAccountNumber(generator.transactionalGenerate(em, AccountType.BANK));
             dao.transactionalPersist(em, account);
             if (account.getBalance() > 0.0d) {
                 insertTransaction(em, account, account.getBalance(), TransactionType.DEPOSIT);
@@ -53,36 +54,14 @@ class BankAccountServiceImpl implements BankAccountService<BankAccount> {
         });
     }
 
-    private String getUsername(BankAccount account) {
-        if (account.getAccountHolder() == null
-                || account.getAccountHolder().getUsername() == null
-                || account.getAccountHolder().getUsername().isBlank()) {
-            throw new IllegalArgumentException();
-        }
-        return account.getAccountHolder().getUsername();
-    }
-
-    @Override
-    public BankAccount getByAccountNumber(@NotNull @NotBlank String accountNumber) {
-        return dao.findByAccountNumber(accountNumber)
-                .orElseThrow(NotFoundException::new);
-    }
-
-    @Override
-    public List<BankAccount> getByUsername(@NotNull @NotBlank String username) {
-        return dao.findByUsername(username);
-    }
-
-    @Override
-    public Page<BankAccount> getPage(@Positive int page) {
-        return dao.getAll(page, maxPageSize);
-    }
-
     @Override
     public void deposit(@NotNull @NotBlank String accountNumber, @Positive double amount) {
         dao.inTransaction(em -> {
             var account = dao.findByAccountNumberForUpdate(em, accountNumber)
-                    .orElseThrow(NotFoundException::new);
+                    .orElseThrow(() -> NotFoundException.ACCOUNT_NOT_FOUND);
+            if (amount < getMinimumDeposit(account)) {
+                throw LessThanMinimumTransactionException.EXCEPTION;
+            }
             doDeposit(em, account, amount);
             insertTransaction(em, account, amount, TransactionType.DEPOSIT);
         });
@@ -97,9 +76,12 @@ class BankAccountServiceImpl implements BankAccountService<BankAccount> {
     public void withdraw(@NotNull @NotBlank String accountNumber, @Positive double amount) {
         dao.inTransaction(em -> {
             var account = dao.findByAccountNumberForUpdate(em, accountNumber)
-                    .orElseThrow(NotFoundException::new);
+                    .orElseThrow(() -> NotFoundException.ACCOUNT_NOT_FOUND);
+            if (amount > getAllowedWithdraw(account)) {
+                throw InvalidTransactionException.WITHDRAW_MORE_THAN_ALLOWED;
+            }
             if (amount > account.getBalance()) {
-                throw new InsufficientFundsException();
+                throw InsufficientFundsException.EXCEPTION;
             }
             doWithdraw(em, account, amount);
             insertTransaction(em, account, amount, TransactionType.WITHDRAW);
@@ -111,33 +93,4 @@ class BankAccountServiceImpl implements BankAccountService<BankAccount> {
         dao.transactionalUpdate(em, account);
     }
 
-    @Override
-    public double getAllowedWithdraw(@NotNull @Valid BankAccount account) {
-        return account.getBalance();
-    }
-
-    @Override
-    public double getMinimumDeposit(@NotNull @Valid BankAccount account) {
-        return 10;
-    }
-
-    @Override
-    public double sumBalanceHigherThan(@PositiveOrZero double min) {
-        return dao.sumBalanceHigherThan(min);
-    }
-
-    private void insertTransaction(EntityManager em, BankAccount account, double amount, TransactionType type) {
-        var trx = Transaction.builder()
-                .account(account)
-                .amount(amount)
-                .date(LocalDateTime.now())
-                .type(type).build();
-        trxDao.transactionalPersist(em, trx);
-    }
-
-    @Override
-    public Page<Transaction> getTransactions(@NotNull @NotBlank String accountNumber, @Positive int page) {
-        var found = getByAccountNumber(accountNumber);
-        return trxDao.findBy("account", found, page, maxPageSize);
-    }
 }

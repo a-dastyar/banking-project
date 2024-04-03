@@ -3,6 +3,7 @@ package com.campus.banking.controller;
 import java.io.IOException;
 import java.util.Optional;
 
+import com.campus.banking.exception.RequiredParamException;
 import com.campus.banking.model.Role;
 import com.campus.banking.service.SavingAccountService;
 import com.campus.banking.util.ServletUtils;
@@ -36,7 +37,7 @@ public class SavingAccountBalanceServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         log.debug("POST");
         var account_number = Optional.ofNullable(req.getParameter("account_number"))
-                .orElseThrow(IllegalArgumentException::new);
+                .orElseThrow(() -> RequiredParamException.getException("account_number"));
         var amount = ServletUtils.getDoubleValue(req.getParameter("amount"));
         var type = ServletUtils.getTransactionType(req.getParameter("type"));
 

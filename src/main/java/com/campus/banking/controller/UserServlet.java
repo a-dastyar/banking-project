@@ -2,6 +2,7 @@ package com.campus.banking.controller;
 
 import java.io.IOException;
 
+import com.campus.banking.exception.InvalidArgumentException;
 import com.campus.banking.model.Role;
 import com.campus.banking.service.UserService;
 import com.campus.banking.util.ServletUtils;
@@ -34,8 +35,10 @@ public class UserServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         log.debug("GET");
-        var page = ServletUtils.getPageNumber(req.getParameter("page"));
-        var userList = service.getAll(page);
+        var page = ServletUtils.getPositiveIntWithDefault(req.getParameter("page"),"1")
+                .orElseThrow(() -> InvalidArgumentException.NON_POSITIVE_INTEGER);
+        var size = ServletUtils.getPositiveInt(req.getParameter("size"));
+        var userList = service.getAll(page,size);
         req.setAttribute("users", userList);
         req.setAttribute("roles", Role.values());
         req.getRequestDispatcher("/views/pages/users/users.jsp").forward(req, resp);

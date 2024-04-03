@@ -1,7 +1,7 @@
 package com.campus.banking.service;
 
-import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import com.campus.banking.model.BankAccount;
 import com.campus.banking.model.Transaction;
@@ -36,9 +36,9 @@ public interface BankAccountService<T extends BankAccount> {
 
     void add(@NotNull @Valid T account);
 
-    Page<T> getPage(@Positive int page);
+    Page<T> getPage(@Positive int page, Optional<Integer> size);
 
-    Page<Transaction> getTransactions(@NotNull @NotBlank String accountNumber, @Positive int page);
+    Page<Transaction> getTransactions(@NotNull @NotBlank String accountNumber, @Positive int page, Optional<Integer> size);
 
     T getByAccountNumber(@NotNull @NotBlank String accountNumber);
 
@@ -48,10 +48,14 @@ public interface BankAccountService<T extends BankAccount> {
 
     double sumBalanceHigherThan(@PositiveOrZero double min);
 
-    List<T> getByUsername(@NotNull @NotBlank String username);
+    Page<T> getByUsername(@NotNull @NotBlank String username, @Positive int page, Optional<Integer> size);
 
     double getAllowedWithdraw(@NotNull @Valid T account);
 
+    double getMinimumWithdraw(@NotNull @Valid T account);
+
     double getMinimumDeposit(@NotNull @Valid T account);
+
+    double getMinimumInitialBalance();
 
 }

@@ -43,7 +43,7 @@ public class UserServiceTest {
 
     @BeforeEach
     void setup() {
-        service = new UserServiceImpl(dao, hash, 10);
+        service = new UserServiceImpl(dao, hash, 50, 10);
     }
 
     @SuppressWarnings("unchecked")
@@ -109,6 +109,43 @@ public class UserServiceTest {
         when(dao.findBy(any(), any())).thenReturn(List.of(user));
         doAnswer(this::executeConsumer).when(dao).inTransaction(any());
         service.update(user);
+        verify(dao, times(1)).transactionalUpdate(any(), any());
+    }
+
+    @Test
+    void updateEmail_withSameEmail_shouldNotUpdate() {
+        var user = User.builder()
+                .id(12L)
+                .email("test@test.test")
+                .username("tester").build();
+        when(dao.findBy(any(), any())).thenReturn(List.of(user));
+        service.updateEmail(user);
+        verify(dao, never()).transactionalUpdate(any(), any());
+    }
+
+    @Test
+    void updateEmail_withExistingEmail_shouldFail() {
+        var user = User.builder()
+                .id(12L)
+                .email("test@test.test")
+                .username("tester").build();
+        when(dao.findBy("username", user.getUsername())).thenReturn(List.of(user));
+        when(dao.findBy("email", "test2@test.test")).thenReturn(List.of(user));
+        assertThatThrownBy(() -> service.updateEmail(user.withEmail("test2@test.test")))
+                .isInstanceOf(DuplicatedException.class);
+        verify(dao, never()).transactionalUpdate(any(), any());
+    }
+
+    @Test
+    void updateEmail_withNewEmail_shouldUpdate() {
+        var user = User.builder()
+                .id(12L)
+                .email("test@test.test")
+                .username("tester").build();
+        when(dao.findBy("username", user.getUsername())).thenReturn(List.of(user));
+        when(dao.findBy("email", "test2@test.test")).thenReturn(List.of());
+        doAnswer(this::executeConsumer).when(dao).inTransaction(any());
+        service.updateEmail(user.withEmail("test2@test.test"));
         verify(dao, times(1)).transactionalUpdate(any(), any());
     }
 

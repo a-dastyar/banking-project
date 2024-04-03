@@ -1,5 +1,6 @@
 package com.campus.banking.service;
 
+import java.util.Optional;
 import java.util.Set;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -22,25 +23,29 @@ import lombok.extern.slf4j.Slf4j;
 @ApplicationScoped
 class UserServiceImpl implements UserService {
 
-    private UserDAO dao;
+    private final UserDAO dao;
 
-    private HashService hashService;
+    private final HashService hashService;
 
-    private int maxPageSize;
+    private final int maxPageSize;
+
+    private final int defaultPageSize;
 
     @Inject
     public UserServiceImpl(UserDAO dao, HashService hashService,
-            @ConfigProperty(name = "app.pagination.max_size") int maxPageSize) {
+            @ConfigProperty(name = "app.pagination.max_size") int maxPageSize,
+            @ConfigProperty(name = "app.pagination.default_size") int defaultPageSize) {
         this.dao = dao;
         this.hashService = hashService;
         this.maxPageSize = maxPageSize;
+        this.defaultPageSize = defaultPageSize;
     }
 
     @Override
     public void add(@NotNull @Valid User user) {
         if (dao.exists(user)) {
             log.debug("User already exists!");
-            throw new DuplicatedException();
+            throw DuplicatedException.DUPLICATED_USER;
         }
         user.setId(null);
         user.setPassword(hashService.hashOf(user.getPassword()));
@@ -51,7 +56,7 @@ class UserServiceImpl implements UserService {
     public void signup(@NotNull @Valid User user) {
         if (dao.exists(user)) {
             log.debug("User already exists!");
-            throw new DuplicatedException();
+            throw DuplicatedException.DUPLICATED_USER;
         }
         user.setId(null);
         user.setRoles(Set.of(Role.MEMBER));
@@ -62,7 +67,7 @@ class UserServiceImpl implements UserService {
     @Override
     public User getByUsername(@NotNull @NotBlank String username) {
         var user = this.dao.findBy("username", username).stream().findFirst();
-        return user.orElseThrow(NotFoundException::new);
+        return user.orElseThrow(() -> NotFoundException.USERNAME_NOT_FOUND);
     }
 
     @Override
@@ -70,13 +75,26 @@ class UserServiceImpl implements UserService {
         var found = getByUsername(user.getUsername());
         user.setId(found.getId());
         user.setPassword(found.getPassword());
+        user.setCreatedAt(found.getCreatedAt());
         dao.inTransaction(em -> dao.transactionalUpdate(em, user));
     }
 
     @Override
-    public Page<User> getAll(@Positive int page) {
-        log.debug("GetAll for page[{}]", page);
-        return dao.getAll(page, maxPageSize);
+    public void updateEmail(@NotNull @Valid User user) {
+        var found = getByUsername(user.getUsername());
+        if(!user.getEmail().equals(found.getEmail())){
+            if (!isEmailAvailable(user.getEmail())){
+                throw DuplicatedException.DUPLICATED_USER;
+            }
+            found.setEmail(user.getEmail());
+            dao.inTransaction(em -> dao.transactionalUpdate(em, found));
+        }
+    }
+
+    @Override
+    public Page<User> getAll(@Positive int page, Optional<Integer> size) {
+        var pageSize = size.filter(i -> i <= maxPageSize).orElse(defaultPageSize);
+        return dao.getAll(page, pageSize);
     }
 
     @Override
@@ -90,5 +108,15 @@ class UserServiceImpl implements UserService {
                     .build();
             add(admin);
         }
+    }
+
+    @Override
+    public boolean isUsernameAvailable(@NotNull @NotBlank String username) {
+        return dao.findBy("username", username).size() == 0;
+    }
+
+    @Override
+    public boolean isEmailAvailable(@NotNull @NotBlank String email) {
+        return dao.findBy("email", email).size() == 0;
     }
 }

@@ -10,7 +10,7 @@ import com.campus.banking.util.HttpUtils;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class AbstractHttpIT extends AbstractIT{
+public abstract class AbstractHttpIT extends AbstractIT{
 
     private  ServerManager server = new ServerManager();
 
@@ -45,6 +45,7 @@ public class AbstractHttpIT extends AbstractIT{
         System.setProperty("datasource.url", mysql.getJdbcUrl());
         System.setProperty("datasource.user", mysql.getUsername());
         System.setProperty("datasource.password", mysql.getPassword());
+        System.setProperty("datasource.schema.generation.strategy", "drop-and-create");
     }
 
 }

@@ -17,8 +17,8 @@
         <%@ include file="/views/components/commons/header.jsp" %>
 
 
-        <c:set var="endPoint" value="bank-accounts" scope="request"/>
-        <c:set var="usersList" value="${users.list()}" scope="request"/>
+        <c:set var="endpoint" value="users" scope="request"/>
+        <c:set var="users" value="${users}" scope="request"/>
         <%
             pageContext.setAttribute("panelItems",new String[]{
                 "List users",

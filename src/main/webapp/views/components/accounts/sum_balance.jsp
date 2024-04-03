@@ -1,6 +1,6 @@
 <%@ include file="/views/components/commons/imports.jsp" %>
 <div class="container-sm w-75 mt-3 mb-3 p-3 border rounded">
-    <form method="GET" action="${pageContext.request.contextPath}/${endPoint}" class="needs-validation" novalidate>
+    <form method="GET" action="${pageContext.request.contextPath}/${endpoint}" class="needs-validation" novalidate>
         <div class="row mb-3">
             <label for="sum_min" class="col-sm-auto col-form-label">Min balance:</label>
             <div class="col-sm">

@@ -1,18 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <%@ include file="/views/components/commons/meta.jsp" %> 
-    <title>500 | Internal Server Error</title>
-</head>
-<body>
-    <div class="d-flex flex-column min-vh-100 justify-content-center align-items-center">
-        <div class="container-sm shadow-lg p-3 mb-5 bg-body-tertiary rounded" style="max-width: 400px;">
-            <h1 class="mr-3 pr-3 align-top border-right inline-block align-content-center">500</h1>
-            <div class="inline-block align-middle">
-                <h2 class="font-weight-normal lead" id="desc">Internal server error.</h2>
-                <a href="${pageContext.request.contextPath}" class="link-primary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">Home</a>
-            </div>
-        </div>
-    </div>
-</body>
+    <html lang="en">
+    <head>
+        <%@ include file="/views/components/commons/imports.jsp" %> 
+        <%@ include file="/views/components/commons/meta.jsp" %> 
+        <title>500 | Internal Server Error</title>
+    </head>
+    <body>
+        <c:set var="code" value="500" scope="request"/>
+        <c:set var="message" value="Internal server error." scope="request"/>
+        <%@ include file="/views/components/commons/message_box.jsp" %> 
+        <%@ include file="/views/components/commons/debug_box.jsp" %> 
+    </body>
 </html>

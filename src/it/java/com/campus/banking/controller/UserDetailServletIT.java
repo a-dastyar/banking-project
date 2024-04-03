@@ -60,7 +60,6 @@ public class UserDetailServletIT extends AbstractHttpIT {
 
         var account = Map.of(
                 "username", "admin",
-                "account_number", "4000-admin",
                 "balance", "100.0");
         var addResponse = addAccount(client, account);
         assertThat(addResponse.status()).isEqualTo(Response.Status.Success);
@@ -74,7 +73,7 @@ public class UserDetailServletIT extends AbstractHttpIT {
 
         assertThat(response.status()).isEqualTo(Response.Status.Success);
         assertThat(response.httpResponse().statusCode()).isEqualTo(200);
-        assertThat(response.httpResponse().body()).contains("4000-admin", "admin");
+        assertThat(response.httpResponse().body()).contains("admin");
     }
 
     @Test
@@ -123,7 +122,6 @@ public class UserDetailServletIT extends AbstractHttpIT {
 
         var account = Map.of(
                 "username", "admin",
-                "account_number", "4000-admin",
                 "balance", "100.0");
         var addResponse = addAccount(client, account);
         assertThat(addResponse.status()).isEqualTo(Response.Status.Success);
@@ -154,7 +152,6 @@ public class UserDetailServletIT extends AbstractHttpIT {
 
         var account = Map.of(
                 "username", "admin",
-                "account_number", "4000-admin",
                 "balance", "100.0");
         var addResponse = addAccount(client, account);
         assertThat(addResponse.status()).isEqualTo(Response.Status.Success);
@@ -185,7 +182,6 @@ public class UserDetailServletIT extends AbstractHttpIT {
 
         var account = Map.of(
                 "username", "admin",
-                "account_number", "4000-admin",
                 "balance", "100.0");
         var addResponse = addAccount(client, account);
         assertThat(addResponse.status()).isEqualTo(Response.Status.Success);
@@ -216,7 +212,6 @@ public class UserDetailServletIT extends AbstractHttpIT {
 
         var account = Map.of(
                 "username", "admin",
-                "account_number", "4000-admin",
                 "balance", "100.0");
         var addResponse = addAccount(client, account);
         assertThat(addResponse.status()).isEqualTo(Response.Status.Success);

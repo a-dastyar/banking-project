@@ -7,12 +7,15 @@ datasource:
     driver: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://${datasource.host}:${datasource.port}/${datasource.database}
     schema:
+        migration: true
         generation:
-            strategy: drop-and-create
-    show_sql: true
+            strategy: none #update #drop-and-create
 app:
+    mode:
+      debug: true
     pagination:
         max_size: 50
+        default_size: 17
     path: /banking
 server:
     host: localhost

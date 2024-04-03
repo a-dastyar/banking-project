@@ -2,7 +2,7 @@
     <div class="col rounded m-3 p-3 border">
         <div id="bank_account_deposit" class="" data-bs-parent="#accordionExample">
             <div class="accordion-body">
-                <form method="POST" action="${pageContext.request.contextPath}/${endPoint}/balance" class="needs-validation" novalidate>
+                <form method="POST" action="${pageContext.request.contextPath}/${balanceEndpoint}" class="needs-validation" novalidate>
                     <div class="mb-3">
                         <label for="deposit-amount" class="form-label">Amount</label>
                         <div class="has-validation" >
@@ -22,13 +22,13 @@
     <div class="col rounded m-3 p-3 border">
         <div id="bank_account_withdraw" class="" data-bs-parent="#accordionExample">
             <div class="accordion-body">
-                <form method="POST" action="${pageContext.request.contextPath}/${endPoint}/balance" class="needs-validation" id="withdraw-form" novalidate>
+                <form method="POST" action="${pageContext.request.contextPath}/${balanceEndpoint}" class="needs-validation" id="withdraw-form" novalidate>
                     <div class="mb-3">
                         <label for="withdraw-amount" class="form-label">Amount</label>
                         <div class="has-validation" >
-                            <input type="number" class="form-control" id="withdraw-amount" name="amount" min="1" max="${maxWithdraw}" required>
+                            <input type="number" class="form-control" id="withdraw-amount" name="amount" min="${minWithdraw}" max="${maxWithdraw}" required>
                             <div class="invalid-feedback" id="withdraw-amount-feedback">
-                                Maximum withdraw amount is ${maxWithdraw}.
+                                Allowed withdraw amount is range [${minWithdraw}, ${maxWithdraw}].
                             </div>
                         </div>
                         <input hidden class="form-control" id="account_number" name="account_number" value="${account.accountNumber}">

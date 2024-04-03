@@ -30,7 +30,7 @@ class EntityManagerFactoryProvider {
         String username = config.getValue("datasource.user", String.class);
         String password = config.getValue("datasource.password", String.class);
         String schema = config.getValue("datasource.schema.generation.strategy", String.class);
-        String showSQL = config.getValue("datasource.show_sql", String.class);
+        String showSQL = config.getValue("app.mode.debug", String.class);
 
         var properties = Map.of(
                 "hibernate.hikari.jdbcUrl", url,

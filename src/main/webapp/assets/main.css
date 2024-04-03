@@ -1,4 +1,3 @@
-
 .blurred::after {
     content: "";
     position: absolute;
@@ -28,7 +27,7 @@
 .main-nav>.nav-link.active,
 .main-nav>.nav-link.active:active,
 .main-nav>.nav-link:hover,
-.main-nav>.nav-link:focus{
+.main-nav>.nav-link:focus {
     color: #0d6efd !important;
 }
 
@@ -42,11 +41,20 @@ table tr th {
     padding: 20px;
 }
 
-table caption{
+table caption {
     width: fit-content;
     background-color: #daeaff99;
 }
 
-.hide{
+.hide {
     display: none !important;
+}
+
+.pagination .page-link {
+    background: #d8e1ff26;
+    border: 1px solid #989eb1;
+}
+
+.pagination .active>.page-link {
+    color: #3f3f46;
 }

@@ -8,7 +8,7 @@
     // Loop over them and prevent submission
     Array.from(forms).forEach(form => {
         form.addEventListener('submit', event => {
-            clearOldMessages(['balance', 'debt', 'overdraft_limit', 'minimum_balance', 'withdraw_amount']);
+            clearOldMessages(['balance', 'debt', 'overdraft_limit', 'minimum_balance', 'withdraw_amount', 'username', 'email']);
             if (!form.checkValidity() || !checkCustomValidation(form)) {
                 event.preventDefault()
                 event.stopPropagation()
@@ -22,7 +22,9 @@ function checkCustomValidation(form) {
     return (
         validateCheckingAccountForm(form)
         && validateSavingAccountForm(form)
-        && validateWithdrawForm(form)
+        && validateUsernameOfAccount(form)
+        && validateUserForSignup(form)
+        && validateUserForUpdate(form)
     );
 }
 
@@ -81,4 +83,65 @@ function validateSavingAccountForm(form) {
         }
     }
     return true;
+}
+
+function validateUsernameOfAccount(form) {
+    if (form.classList.contains("add-account-form")) {
+
+        const username = form["username"].value;
+        const isAvailable = httpGet(`${ctx}/users/available?username=${username}`);
+
+        if (isAvailable.username) {
+            showInvalidMessage("Username is not registered!", ['username']);
+            return false;
+        }
+    }
+    return true;
+}
+
+function validateUserForSignup(form) {
+    if (form["id"] == "signup") {
+
+        const username = form["username"].value;
+        const email = form["email"].value;
+        const isAvailable = httpGet(`${ctx}/users/available?username=${username}&email=${email}`);
+
+        if (!isAvailable.username) {
+            showInvalidMessage("Username is taken!", ['username']);
+            return false;
+        }
+        if (!isAvailable.email) {
+            showInvalidMessage("You have already registered with this email.", ['email']);
+            return false;
+        }
+    }
+    return true;
+}
+
+function validateUserForUpdate(form) {
+    if (form["id"] == "update-user") {
+
+        const username = form["username"].value;
+        const email = form["email"].value;
+
+        const isAvailable = httpGet(`${ctx}/users/available?username=${username}&email=${email}`);
+
+        if (!isAvailable.username && username != form["username"].getAttribute("original")) {
+            showInvalidMessage("Username is taken!", ['username']);
+            return false;
+        }
+
+        if (!isAvailable.email && email != form["email"].getAttribute("original")) {
+            showInvalidMessage("This email is already registered with another user.", ['email']);
+            return false;
+        }
+    }
+    return true;
+}
+
+function httpGet(url) {
+    var request = new XMLHttpRequest();
+    request.open("GET", url, false);
+    request.send(null);
+    return JSON.parse(request.responseText);
 }

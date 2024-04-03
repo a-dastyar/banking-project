@@ -44,13 +44,19 @@ public interface UserService {
 
     User getByUsername(@NotNull @NotBlank String username);
 
+    boolean isUsernameAvailable(@NotNull @NotBlank String username);
+
+    boolean isEmailAvailable(@NotNull @NotBlank String email);
+
     void add(@NotNull @Valid User user);
 
     void signup(@NotNull @Valid User user);
 
     void update(@NotNull @Valid User user);
 
-    Page<User> getAll(@Positive int page);
+    void updateEmail(@NotNull @Valid User user);
+
+    Page<User> getAll(@Positive int page, Optional<Integer> size);
 
     void setupAdminAccount();
 }

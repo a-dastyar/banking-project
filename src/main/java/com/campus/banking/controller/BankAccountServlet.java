@@ -3,6 +3,7 @@ package com.campus.banking.controller;
 import java.io.IOException;
 import java.util.Optional;
 
+import com.campus.banking.exception.InvalidArgumentException;
 import com.campus.banking.model.BankAccount;
 import com.campus.banking.model.Role;
 import com.campus.banking.service.BankAccountService;
@@ -36,9 +37,12 @@ public class BankAccountServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         log.debug("GET");
-        var page = ServletUtils.getPageNumber(req.getParameter("page"));
-        var result = service.getPage(page);
-        req.setAttribute("accounts", result);
+        var page = ServletUtils.getPositiveIntWithDefault(req.getParameter("page"), "1")
+                .orElseThrow(() -> InvalidArgumentException.NON_POSITIVE_INTEGER);
+        var size = ServletUtils.getPositiveInt(req.getParameter("size"));
+
+        var result = service.getPage(page, size);
+        var minInitialBalance = service.getMinimumInitialBalance();
 
         var min = Optional.ofNullable(req.getParameter("sum_min"));
         if (min.isPresent()) {
@@ -47,6 +51,8 @@ public class BankAccountServlet extends HttpServlet {
             req.setAttribute("min", val);
             req.setAttribute("sum", sum);
         }
+        req.setAttribute("accounts", result);
+        req.setAttribute("minInitialBalance", minInitialBalance);
         req.getRequestDispatcher("/views/pages/accounts/bank_accounts.jsp").forward(req, resp);
     }
 

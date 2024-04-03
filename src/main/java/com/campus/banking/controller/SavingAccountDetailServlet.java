@@ -3,6 +3,9 @@ package com.campus.banking.controller;
 import java.io.IOException;
 import java.util.Optional;
 
+import com.campus.banking.dto.AccountDetailDTO;
+import com.campus.banking.exception.InvalidArgumentException;
+import com.campus.banking.exception.RequiredParamException;
 import com.campus.banking.model.Role;
 import com.campus.banking.service.SavingAccountService;
 import com.campus.banking.util.ServletUtils;
@@ -36,16 +39,26 @@ public class SavingAccountDetailServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         log.debug("GET");
         var accountNumber = Optional.ofNullable(req.getParameter("account_number"))
-                .orElseThrow(IllegalArgumentException::new);
-        var trxPage = ServletUtils.getPageNumber(req.getParameter("transaction_page"));
+                .orElseThrow(() -> RequiredParamException.getException("account_number"));
+        var trxPage = ServletUtils.getPositiveIntWithDefault(req.getParameter("transaction_page"),"1")
+                .orElseThrow(() -> InvalidArgumentException.NON_POSITIVE_INTEGER);
+        var size = ServletUtils.getPositiveInt(req.getParameter("size"));
 
         var account = service.getByAccountNumber(accountNumber);
-        var transactions = service.getTransactions(accountNumber, trxPage);
-        
-        req.setAttribute("account", account);
-        req.setAttribute("maxWithdraw", service.getAllowedWithdraw(account));
-        req.setAttribute("minDeposit", service.getMinimumDeposit(account));
-        req.setAttribute("transactions", transactions);
+        var transactions = service.getTransactions(accountNumber, trxPage, size);
+        var maxWithdraw = service.getAllowedWithdraw(account);
+        var minWithdraw = service.getMinimumWithdraw(account);
+        var minDeposit = service.getMinimumDeposit(account);
+
+        var accountDetails = AccountDetailDTO.builder()
+                .account(account)
+                .maxWithdraw(maxWithdraw)
+                .minWithdraw(minWithdraw)
+                .minDeposit(minDeposit)
+                .transactions(transactions)
+                .build();
+
+        req.setAttribute("accountDetails", accountDetails);
         req.getRequestDispatcher("/views/pages/accounts/saving_account_details.jsp").forward(req, resp);
     }
 }

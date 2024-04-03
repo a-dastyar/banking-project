@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.only;
 import static org.mockito.Mockito.verify;
@@ -13,26 +12,22 @@ import static org.mockito.Mockito.when;
 
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Consumer;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.stubbing.Answer;
 
-import com.campus.banking.exception.InsufficientFundsException;
+import com.campus.banking.exception.InvalidTransactionException;
 import com.campus.banking.model.BankAccount;
 import com.campus.banking.model.User;
 import com.campus.banking.persistence.BankAccountDAO;
-import com.campus.banking.persistence.TransactionDAO;
-
-import jakarta.persistence.EntityManager;
 
 @ExtendWith(MockitoExtension.class)
-public class BankAccountServiceTest {
+public class BankAccountServiceTest extends AbstractAccountServiceTest<BankAccount> {
 
     @Mock
     private BankAccountDAO<BankAccount> dao;
@@ -41,48 +36,19 @@ public class BankAccountServiceTest {
     private UserService users;
 
     @Mock
-    private TransactionDAO trxDao;
+    private AccountNumberGenerator generator;
 
-    private int maxPageSize = 10;
+    private int maxPageSize = 50;
+
+    private int defaultPagesize = 10;
 
     private BankAccountService<BankAccount> service;
 
     @BeforeEach
     void setup() {
-        service = new BankAccountServiceImpl(dao, trxDao, users, maxPageSize);
-    }
-
-    @SuppressWarnings("unchecked")
-    private Answer<Object> executeConsumer(InvocationOnMock invocation) {
-        var consumer = (Consumer<EntityManager>) invocation.getArgument(0);
-        consumer.accept(mock(EntityManager.class));
-        return null;
-    }
-
-    @Test
-    void add_withNullUser_shouldFail() {
-        var account = BankAccount.builder()
-                .accountNumber("3000")
-                .build();
-        assertThatThrownBy(() -> service.add(account)).isInstanceOf(IllegalArgumentException.class);
-    }
-
-    @Test
-    void add_withNullUsername_shouldFail() {
-        var account = BankAccount.builder()
-                .accountHolder(User.builder().build())
-                .accountNumber("3000")
-                .build();
-        assertThatThrownBy(() -> service.add(account)).isInstanceOf(IllegalArgumentException.class);
-    }
-
-    @Test
-    void add_withBlankUsername_shouldFail() {
-        var account = BankAccount.builder()
-                .accountHolder(User.builder().username("").build())
-                .accountNumber("3000")
-                .build();
-        assertThatThrownBy(() -> service.add(account)).isInstanceOf(IllegalArgumentException.class);
+        service = new BankAccountServiceImpl(dao, trxDao, generator, users, maxPageSize, defaultPagesize);
+        super.service = service;
+        super.dao = dao;
     }
 
     @Test
@@ -123,17 +89,6 @@ public class BankAccountServiceTest {
     }
 
     @Test
-    void getByAccountNumber_withNullAccountNumber_shouldReturnAccount() {
-        var account = BankAccount.builder()
-                .accountHolder(User.builder().username("Tester").build())
-                .accountNumber("3000")
-                .build();
-        when(dao.findByAccountNumber(any())).thenReturn(Optional.of(account));
-        var found = service.getByAccountNumber(account.getAccountNumber());
-        assertThat(found.getAccountNumber()).isEqualTo(account.getAccountNumber());
-    }
-
-    @Test
     void withdraw_withMoreThanBalance_shouldFail() {
         var account = BankAccount.builder()
                 .accountNumber("3000")
@@ -143,7 +98,7 @@ public class BankAccountServiceTest {
         doAnswer(this::executeConsumer).when(dao).inTransaction(any());
         when(dao.findByAccountNumberForUpdate(any(), any())).thenReturn(Optional.of(account));
         assertThatThrownBy(() -> service.withdraw(account.getAccountNumber(), 11.0))
-                .isInstanceOf(InsufficientFundsException.class);
+                .isInstanceOf(InvalidTransactionException.class);
     }
 
     @Test
@@ -173,9 +128,9 @@ public class BankAccountServiceTest {
         service.deposit(account.getAccountNumber(), 10.0);
         assertThat(account.getBalance()).isEqualTo(20.0);
     }
-    
+
     @Test
-    void getMinimumDeposit_shouldReturnConstant(){
+    void getMinimumDeposit_shouldReturnConstant() {
         var account = BankAccount.builder()
                 .accountHolder(User.builder().username("Tester").build())
                 .accountNumber("3000")
@@ -192,7 +147,7 @@ public class BankAccountServiceTest {
     }
 
     @Test
-    void getAllowedWithdraw_withNoBalance_shouldReturnZero(){
+    void getAllowedWithdraw_withNoBalance_shouldReturnZero() {
         var account = BankAccount.builder()
                 .accountHolder(User.builder().username("Tester").build())
                 .accountNumber("3000")
@@ -203,7 +158,7 @@ public class BankAccountServiceTest {
     }
 
     @Test
-    void getAllowedWithdraw_withBalance_shouldReturnBalance(){
+    void getAllowedWithdraw_withBalance_shouldReturnBalance() {
         var account = BankAccount.builder()
                 .accountHolder(User.builder().username("Tester").build())
                 .accountNumber("3000")
@@ -244,4 +199,19 @@ public class BankAccountServiceTest {
         assertThat(account.getBalance()).isEqualTo(10.0);
         assertThat(account.getAccountHolder().getUsername()).isEqualTo("tester");
     }
+
+    @Override
+    Stream<BankAccount> generate(int count) {
+        return IntStream.range(0, count)
+                .mapToObj(this::make);
+    }
+
+    BankAccount make(int i) {
+        return BankAccount.builder()
+                .accountHolder(User.builder().username("user" + i).build())
+                .accountNumber("4000" + i)
+                .balance(100.0 * i + 200)
+                .build();
+    }
+
 }

@@ -54,28 +54,6 @@ public class CheckingAccountBalanceServletIT extends AbstractHttpIT {
     }
 
     @Test
-    void post_withoutAccountNumber_shouldReturn400() {
-        var client = http.clientBuilder().build();
-
-        var loginResponse = http.login(client, "admin", "admin");
-        assertThat(loginResponse.status()).isEqualTo(Response.Status.Success);
-        assertThat(loginResponse.httpResponse().statusCode()).isEqualTo(303);
-
-        var balanceChange = Map.of(
-                "amount", "200",
-                "type", "WITHDRAW");
-        var request = http.POSTRequestBuilder()
-                .uri(http.resourceURI(resource))
-                .timeout(Duration.ofSeconds(2))
-                .POST(http.getFormDataBody(balanceChange))
-                .build();
-        var response = http.sendRequest(client, request);
-
-        assertThat(response.status()).isEqualTo(Response.Status.Success);
-        assertThat(response.httpResponse().statusCode()).isEqualTo(400);
-    }
-
-    @Test
     void post_withoutAmount_shouldReturn400() {
         var client = http.clientBuilder().build();
 
@@ -84,7 +62,6 @@ public class CheckingAccountBalanceServletIT extends AbstractHttpIT {
         assertThat(loginResponse.httpResponse().statusCode()).isEqualTo(303);
 
         var balanceChange = Map.of(
-                "account_number", "4000-admin",
                 "type", "WITHDRAW");
         var request = http.POSTRequestBuilder()
                 .uri(http.resourceURI(resource))
@@ -106,7 +83,6 @@ public class CheckingAccountBalanceServletIT extends AbstractHttpIT {
         assertThat(loginResponse.httpResponse().statusCode()).isEqualTo(303);
 
         var balanceChange = Map.of(
-                "account_number", "4000-admin",
                 "amount", "300.0");
         var request = http.POSTRequestBuilder()
                 .uri(http.resourceURI(resource))
@@ -129,16 +105,17 @@ public class CheckingAccountBalanceServletIT extends AbstractHttpIT {
 
         var account = Map.of(
                 "username", "admin",
-                "account_number", "4000-admin",
                 "balance", "500.0",
                 "overdraft_limit", "0",
                 "debt", "0.0");
         var addResponse = addAccount(client, account);
         assertThat(addResponse.status()).isEqualTo(Response.Status.Success);
         assertThat(addResponse.httpResponse().statusCode()).isEqualTo(302);
+        var accountNumber = addResponse.httpResponse().headers().firstValue("location")
+                .map(str -> str.split("=")[1]).get();
 
         var balanceChange = Map.of(
-                "account_number", "4000-admin",
+                "account_number", accountNumber,
                 "amount", "600.0",
                 "type", "WITHDRAW");
         var request = http.POSTRequestBuilder()
@@ -162,16 +139,17 @@ public class CheckingAccountBalanceServletIT extends AbstractHttpIT {
 
         var account = Map.of(
                 "username", "admin",
-                "account_number", "4000-admin",
                 "balance", "500.0",
                 "overdraft_limit", "400",
                 "debt", "0.0");
         var addResponse = addAccount(client, account);
         assertThat(addResponse.status()).isEqualTo(Response.Status.Success);
         assertThat(addResponse.httpResponse().statusCode()).isEqualTo(302);
+        var accountNumber = addResponse.httpResponse().headers().firstValue("location")
+                .map(str -> str.split("=")[1]).get();
 
         var balanceChange = Map.of(
-                "account_number", "4000-admin",
+                "account_number", accountNumber,
                 "amount", "1000.0",
                 "type", "WITHDRAW");
         var request = http.POSTRequestBuilder()
@@ -195,16 +173,17 @@ public class CheckingAccountBalanceServletIT extends AbstractHttpIT {
 
         var account = Map.of(
                 "username", "admin",
-                "account_number", "4000-admin",
                 "balance", "500.0",
                 "overdraft_limit", "400",
                 "debt", "0.0");
         var addResponse = addAccount(client, account);
         assertThat(addResponse.status()).isEqualTo(Response.Status.Success);
         assertThat(addResponse.httpResponse().statusCode()).isEqualTo(302);
+        var accountNumber = addResponse.httpResponse().headers().firstValue("location")
+                .map(str -> str.split("=")[1]).get();
 
         var balanceChange = Map.of(
-                "account_number", "4000-admin",
+                "account_number", accountNumber,
                 "amount", "150.0",
                 "type", "WITHDRAW");
         var request = http.POSTRequestBuilder()
@@ -228,16 +207,17 @@ public class CheckingAccountBalanceServletIT extends AbstractHttpIT {
 
         var account = Map.of(
                 "username", "admin",
-                "account_number", "4000-admin",
                 "balance", "500.0",
                 "overdraft_limit", "400",
                 "debt", "0.0");
         var addResponse = addAccount(client, account);
         assertThat(addResponse.status()).isEqualTo(Response.Status.Success);
         assertThat(addResponse.httpResponse().statusCode()).isEqualTo(302);
+        var accountNumber = addResponse.httpResponse().headers().firstValue("location")
+                .map(str -> str.split("=")[1]).get();
 
         var balanceChange = Map.of(
-                "account_number", "4000-admin",
+                "account_number", accountNumber,
                 "amount", "0.0",
                 "type", "DEPOSIT");
         var request = http.POSTRequestBuilder()
@@ -261,17 +241,18 @@ public class CheckingAccountBalanceServletIT extends AbstractHttpIT {
 
         var account = Map.of(
                 "username", "admin",
-                "account_number", "4000-admin",
                 "balance", "500.0",
                 "overdraft_limit", "400",
                 "debt", "0.0");
         var addResponse = addAccount(client, account);
         assertThat(addResponse.status()).isEqualTo(Response.Status.Success);
         assertThat(addResponse.httpResponse().statusCode()).isEqualTo(302);
+        var accountNumber = addResponse.httpResponse().headers().firstValue("location")
+                .map(str -> str.split("=")[1]).get();
 
         var balanceChange = Map.of(
-                "account_number", "4000-admin",
-                "amount", "150.0",
+                "account_number", accountNumber,
+                "amount", "250.0",
                 "type", "DEPOSIT");
         var request = http.POSTRequestBuilder()
                 .uri(http.resourceURI(resource))

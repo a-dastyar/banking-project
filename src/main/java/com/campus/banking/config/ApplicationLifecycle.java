@@ -1,5 +1,11 @@
 package com.campus.banking.config;
 
+import java.util.Arrays;
+
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+
+import com.campus.banking.persistence.DatabaseSchemaMigrator;
+import com.campus.banking.service.AccountNumberGenerator;
 import com.campus.banking.service.UserService;
 
 import jakarta.enterprise.context.control.RequestContextController;
@@ -20,17 +26,34 @@ public class ApplicationLifecycle implements ServletContextListener {
     @Inject
     private UserService users;
 
+    @Inject
+    private AccountNumberGenerator generator;
+
+    @Inject
+    private DatabaseSchemaMigrator migrator;
+
+    @Inject
+    @ConfigProperty(name = "datasource.schema.migration")
+    private boolean migration;
+
     @Override
     public void contextInitialized(ServletContextEvent sce) {
         log.debug("Setting up database");
-        setupAdminAccount();
+        if (migration) {
+            log.debug("Migrating database schema");
+            migrator.migrate();
+        }
+        inRequestScope(
+                users::setupAdminAccount,
+                generator::setupNumberGenerator);
     }
 
-    void setupAdminAccount() {
+    void inRequestScope(Runnable... runnables) {
         RequestContextController requestScope = context.get();
         requestScope.activate();
         try {
-            users.setupAdminAccount();
+            Arrays.stream(runnables)
+                    .forEach(Runnable::run);
         } finally {
             requestScope.deactivate();
         }

@@ -1,6 +1,5 @@
 package com.campus.banking.persistence;
 
-import java.util.List;
 import java.util.Optional;
 
 import com.campus.banking.model.BankAccount;
@@ -11,7 +10,9 @@ public interface BankAccountDAO<T extends BankAccount> extends DAO<T, Long> {
 
     Optional<T> findByAccountNumber(String accountNumber);
 
-    List<T> findByUsername(String username);
+    Page<T> findByUsername(String username, int page, int size);
+    
+    long countByUsername(String username);
 
     Optional<T>  findByAccountNumberForUpdate(EntityManager em, String accountNumber);
 

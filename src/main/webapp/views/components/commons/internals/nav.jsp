@@ -34,6 +34,9 @@
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
                     <li>
+                        <a class="dropdown-item"  href="${pageContext.request.contextPath}/dashboard">Dashboard</a>
+                    </li>
+                    <li>
                         <form method="post" action="${pageContext.request.contextPath}/logout">
                             <button type="submit" class="dropdown-item">Logout</button>
                         </form>

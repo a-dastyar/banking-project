@@ -37,14 +37,42 @@ class CheckingAccountDAOImpl extends AbstractDAO<CheckingAccount, Long>
     }
 
     @Override
-    public List<CheckingAccount> findByUsername(String username) {
-        return withEntityManager(em -> {
-            var query = em.createQuery("FROM CheckingAccount account JOIN account.accountHolder user where user.username = :username",
-                    CheckingAccount.class);
-            query.setParameter("username", username);
-            return query.getResultList();
+    public long countByUsername(String username) {
+        return withEntityManager(em->{
+            var query="""
+                    SELECT COUNT(*) 
+                      FROM CheckingAccount account 
+                      JOIN account.accountHolder user 
+                     WHERE user.username = :username 
+                       AND TYPE(account) = :type
+                    """;
+            var typedQuery = em.createQuery(query, Long.class);
+            typedQuery.setParameter("username", username);
+            typedQuery.setParameter("type", getType());
+            return typedQuery.getSingleResult();
         });
     }
+
+    @Override
+    public Page<CheckingAccount> findByUsername(String username, int page, int size) {
+        return withEntityManager(em -> {
+            var query = """
+                    FROM CheckingAccount account
+                    JOIN account.accountHolder user
+                   WHERE user.username = :username
+                     AND TYPE(account) = :type
+                    """;
+            var typedQuery = em.createQuery(query, CheckingAccount.class);
+            typedQuery.setFirstResult((page - 1) * size);
+            typedQuery.setMaxResults(size);
+            typedQuery.setParameter("username", username);
+            typedQuery.setParameter("type", getType());
+            List<CheckingAccount> list = typedQuery.getResultList();
+            long countAll = countByUsername(username);
+            return new Page<>(list, countAll, page, size);
+        });
+    }
+
 
     @Override
     public boolean exists(CheckingAccount entity) {

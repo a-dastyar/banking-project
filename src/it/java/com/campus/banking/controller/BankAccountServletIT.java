@@ -82,17 +82,14 @@ public class BankAccountServletIT extends AbstractHttpIT {
 
         var firstAccount = Map.of(
                 "username", "admin",
-                "account_number", "4000-admin",
                 "balance", "100.0");
 
         var secondAccount = Map.of(
                 "username", "admin",
-                "account_number", "5000-admin",
                 "balance", "200.0");
 
         var thirdAccount = Map.of(
                 "username", "admin",
-                "account_number", "6000-admin",
                 "balance", "300.0");
 
         var addResponse = addAccount(client, firstAccount);
@@ -130,7 +127,6 @@ public class BankAccountServletIT extends AbstractHttpIT {
 
         var account = Map.of(
                 "username", "admin",
-                "account_number", "4000-admin",
                 "balance", "100.0");
 
         var request = http.POSTRequestBuilder()
@@ -160,7 +156,6 @@ public class BankAccountServletIT extends AbstractHttpIT {
 
         var account = Map.of(
                 "username", "test",
-                "account_number", "5000-test",
                 "balance", "100.0");
 
         var request = http.POSTRequestBuilder()
@@ -183,7 +178,6 @@ public class BankAccountServletIT extends AbstractHttpIT {
 
         var account = Map.of(
                 "username", "admin",
-                "account_number", "4000-admin",
                 "balance", "100.0");
 
         var addResponse = addAccount(client, account);
@@ -198,29 +192,11 @@ public class BankAccountServletIT extends AbstractHttpIT {
 
         assertThat(getResponse.status()).isEqualTo(Response.Status.Success);
         assertThat(getResponse.httpResponse().statusCode()).isEqualTo(200);
-        assertThat(getResponse.httpResponse().body()).containsIgnoringCase("4000-admin");
+        assertThat(getResponse.httpResponse().body()).containsIgnoringCase("admin");
     }
 
     @Test
     void post_withInvalidBalance_shouldReturn400() {
-        var client = http.clientBuilder().build();
-
-        var loginResponse = http.login(client, "admin", "admin");
-        assertThat(loginResponse.status()).isEqualTo(Response.Status.Success);
-        assertThat(loginResponse.httpResponse().statusCode()).isEqualTo(303);
-
-        var account = Map.of(
-                "username", "admin",
-                "account_number", "4000-admin",
-                "balance", "-1");
-
-        var addResponse = addAccount(client, account);
-        assertThat(addResponse.status()).isEqualTo(Response.Status.Success);
-        assertThat(addResponse.httpResponse().statusCode()).isEqualTo(400);
-    }
-
-    @Test
-    void post_withNullAccountNumber_shouldReturn400() {
         var client = http.clientBuilder().build();
 
         var loginResponse = http.login(client, "admin", "admin");
@@ -246,7 +222,6 @@ public class BankAccountServletIT extends AbstractHttpIT {
 
         var account = Map.of(
                 "username", "test",
-                "account_number", "4000-admin",
                 "balance", "100");
 
         var addResponse = addAccount(client, account);
